@@ -1,0 +1,44 @@
+{
+  "hash": "5ed5af94",
+  "configHash": "dc648829",
+  "lockfileHash": "0e6ad8aa",
+  "browserHash": "a7f267bd",
+  "optimized": {
+    "@angular/core": {
+      "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
+      "file": "@angular_core.js",
+      "fileHash": "944f9527",
+      "needsInterop": false
+    },
+    "@angular/platform-browser": {
+      "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
+      "file": "@angular_platform-browser.js",
+      "fileHash": "ccd3bde6",
+      "needsInterop": false
+    },
+    "gsap": {
+      "src": "../../../../../../node_modules/gsap/index.js",
+      "file": "gsap.js",
+      "fileHash": "d18b359d",
+      "needsInterop": false
+    },
+    "three": {
+      "src": "../../../../../../node_modules/three/build/three.module.js",
+      "file": "three.js",
+      "fileHash": "4145a5c8",
+      "needsInterop": false
+    },
+    "tslib": {
+      "src": "../../../../../../node_modules/tslib/tslib.es6.mjs",
+      "file": "tslib.js",
+      "fileHash": "ed4ebe07",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "core-DaY8p02L": {
+      "file": "core-DaY8p02L.js",
+      "isDynamicEntry": false
+    }
+  }
+}

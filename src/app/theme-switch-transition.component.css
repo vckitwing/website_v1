@@ -1,0 +1,6 @@
+:host { position:fixed; z-index:10000; inset:0; display:block; pointer-events:none; }
+.theme-reveal { position:fixed; inset:0; z-index:10000; visibility:hidden; opacity:0; overflow:hidden; pointer-events:none; }
+.theme-reveal.is-active { visibility:visible; opacity:1; }
+.theme-reveal-surface { position:absolute; inset:0; background:#07111f; opacity:.94; will-change:mask-image; }
+.theme-reveal-edge { position:absolute; left:0; top:0; width:108px; height:108px; border:1px solid rgba(246,55,74,.92); border-radius:50%; background:radial-gradient(circle,rgba(39,133,223,.2),rgba(215,31,55,.12) 42%,transparent 72%); box-shadow:0 0 22px rgba(39,133,223,.34),inset 0 0 20px rgba(239,42,64,.2); will-change:transform,opacity; }
+@media (prefers-reduced-motion:reduce) { .theme-reveal-edge { display:none; } }
