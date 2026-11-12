@@ -1,0 +1,44 @@
+<section #sectionRoot class="history-section" [attr.lang]="language" [attr.aria-label]="language === 'ta' ? 'விடுதலைச் சிறுத்தைகள் கட்சியின் வரலாறு' : 'History of Viduthalai Chiruthaigal Katchi'">
+  <header class="history-intro">
+    <p class="history-eyebrow">{{ language === 'ta' ? 'கொள்கையிலிருந்து அரசியல் பயணம் வரை' : 'FROM IDEOLOGY TO POLITICAL JOURNEY' }}</p>
+    <h2>{{ language === 'ta' ? 'மக்கள் இயக்கத்தின் வரலாறு' : 'A movement shaped by its people' }}</h2>
+    <p class="history-lede">{{ language === 'ta' ? 'ஒவ்வொரு மைல்கல்லிலும், சமத்துவத்திற்கான தொடர்ந்த பயணம்.' : 'A continuing journey for equality, marked one milestone at a time.' }}</p>
+    <span class="history-scroll-cue" aria-hidden="true">{{ language === 'ta' ? 'காலவரிசையில் தொடர்ந்து செல்லவும்' : 'SCROLL TO FOLLOW THE JOURNEY' }}</span>
+  </header>
+
+  <div class="history-track">
+    <svg class="history-timeline" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="history-trail-gradient" gradientUnits="userSpaceOnUse" x1="0" y1="50" x2="0" y2="950">
+          <stop offset="0" stop-color="#6bbcff" />
+          <stop offset="1" stop-color="#e84f67" />
+        </linearGradient>
+      </defs>
+      <path class="history-path-base" d="M 500 50 L 500 950" pathLength="1000" />
+      <path class="history-path-trail" d="M 500 50 L 500 950" pathLength="1000" />
+      @for (milestone of milestones; track milestone.year; let i = $index) {
+        <circle class="history-node" [class.is-active]="activeIndex() === i" [class.is-complete]="i < activeIndex()"
+          cx="500" [attr.cy]="50 + (900 * i / (milestones.length - 1))" r="7" />
+      }
+    </svg>
+    <div #historyMarker class="history-star-marker" aria-hidden="true"></div>
+
+    @for (milestone of milestones; track milestone.year; let i = $index) {
+      <article class="history-item" [class.is-active]="activeIndex() === i" [class.is-complete]="i < activeIndex()" [class.is-upcoming]="i > activeIndex()">
+        <span class="history-branch" [class.branch-left]="i % 2 === 0" [class.branch-right]="i % 2 !== 0" aria-hidden="true"></span>
+        <div class="history-card" [class.card-left]="i % 2 === 0" [class.card-right]="i % 2 !== 0" [attr.aria-current]="activeIndex() === i ? 'step' : null">
+          <div class="history-card-copy">
+            <p class="history-year">{{ milestone.year }} <span>{{ language === 'ta' ? 'வரலாற்றுப் பயணம்' : 'MILESTONE' }}</span></p>
+            <h3>{{ milestone.title[language] }}</h3>
+            <p class="history-description">{{ milestone.description[language] }}</p>
+            @if (milestone.source) {
+              <a class="history-source" [href]="milestone.source.url" target="_blank" rel="noopener noreferrer">
+                {{ milestone.source.label[language] }} <span aria-hidden="true">↗</span>
+              </a>
+            }
+          </div>
+        </div>
+      </article>
+    }
+  </div>
+</section>
