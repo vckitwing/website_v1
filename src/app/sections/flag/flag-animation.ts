@@ -58,7 +58,7 @@ export async function createFlagAnimation(root: HTMLElement): Promise<() => void
 
     gsap.set(blue, { scaleY: 0, transformOrigin: '50% 0%' });
     gsap.set(red, { scaleY: 0, transformOrigin: '50% 100%' });
-    gsap.set(star, { scale: 0, rotation: -32, autoAlpha: 0, transformOrigin: '50% 50%' });
+    gsap.set(star, { x: mobile ? 0 : 30, y: mobile ? 0 : -16, scale: 0, rotation: -32, autoAlpha: 0, transformOrigin: '50% 50%' });
     gsap.set(aura, { scale: .35, autoAlpha: 0, transformOrigin: '50% 50%' });
     gsap.set(blueCard, { x: mobile ? 0 : -48, y: 26, autoAlpha: 0 });
     gsap.set(redCard, { x: mobile ? 0 : 48, y: 26, autoAlpha: 0 });
