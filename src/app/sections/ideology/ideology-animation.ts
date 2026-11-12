@@ -1,4 +1,5 @@
 import { gsap } from 'gsap';
+import { getStarJourneyElements, updateStarThreadPath } from '../../story/star-journey';
 
 type AnimationConditions = {
   isDesktop: boolean;
@@ -23,7 +24,6 @@ export async function createIdeologyAnimation(root: HTMLElement, onActiveChange:
 
   const stage = root.querySelector<HTMLElement>('.ideology-stage');
   const star = root.querySelector<SVGSVGElement>('.ideology-star');
-  const transitionStar = root.querySelector<HTMLElement>('.star-transition');
   const faces = Array.from(root.querySelectorAll<SVGPathElement>('.star-point-face'));
   const connections = Array.from(root.querySelectorAll<SVGPathElement>('.star-connection'));
   const travelers = Array.from(root.querySelectorAll<SVGCircleElement>('.star-traveler'));
@@ -32,14 +32,16 @@ export async function createIdeologyAnimation(root: HTMLElement, onActiveChange:
   const host = root.closest('vck-ideology-section');
   const source = host?.previousElementSibling?.querySelector<SVGSVGElement>('.star-meaning-mark');
 
-  if (!stage || !star || !transitionStar || faces.length !== 5 || connections.length !== 5 || travelers.length !== 5 || cards.length !== 5 || !progress || !source) {
+  if (!stage || !star || faces.length !== 5 || connections.length !== 5 || travelers.length !== 5 || cards.length !== 5 || !progress || !source) {
     throw new Error('The ideology section requires its five star points, principle cards, and the preceding flag star.');
   }
+  const ideologyStar = star;
+  const journey = getStarJourneyElements(root);
 
   const geometry = (): FlightGeometry => {
     const rootBounds = root.getBoundingClientRect();
     const sourceBounds = source.getBoundingClientRect();
-    const targetBounds = star.getBoundingClientRect();
+    const targetBounds = ideologyStar.getBoundingClientRect();
     const sectionTop = rootBounds.top + window.scrollY;
     const transitionStart = sectionTop - window.innerHeight;
     const targetCenterX = targetBounds.left + targetBounds.width / 2 + window.scrollX;
@@ -65,9 +67,13 @@ export async function createIdeologyAnimation(root: HTMLElement, onActiveChange:
   }, (context) => {
     const { reduceMotion } = context.conditions as AnimationConditions;
     const moveDuration = reduceMotion ? .01 : 1;
+    let updateEntryThread = (): void => {};
+    let updateExitThread = (): void => {};
 
-    gsap.set(transitionStar, { xPercent: -50, yPercent: -50, autoAlpha: 0 });
-    gsap.set(star, { autoAlpha: 0 });
+    gsap.set(journey.overlay, { autoAlpha: 0 });
+    gsap.set(journey.star, { xPercent: -50, yPercent: -50, autoAlpha: 0 });
+    gsap.set(journey.thread, { strokeDasharray: 1, strokeDashoffset: 1, autoAlpha: 0 });
+    gsap.set(ideologyStar, { autoAlpha: 0 });
     const highlightDuration = reduceMotion ? .01 : .24;
     const edgeDuration = reduceMotion ? .01 : .34;
     const contentDuration = reduceMotion ? .01 : .22;
@@ -80,33 +86,60 @@ export async function createIdeologyAnimation(root: HTMLElement, onActiveChange:
         start: 'top bottom',
         end: 'top top',
         scrub: reduceMotion ? true : .45,
-        invalidateOnRefresh: true
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          if (self.isActive) updateEntryThread();
+        }
       }
     });
 
     if (reduceMotion) {
       transition
         .fromTo(source, { autoAlpha: 1 }, { autoAlpha: 0, duration: .01 }, 0)
-        .fromTo(star, { autoAlpha: 0 }, { autoAlpha: 1, duration: .01 }, 0);
+        .fromTo(ideologyStar, { autoAlpha: 0 }, { autoAlpha: 1, duration: .01 }, 0);
     } else {
+      const entryThreadPath = (): string => {
+        const points = geometry();
+        updateStarThreadPath(
+          journey.threadSvg,
+          journey.thread,
+          { x: points.fromX, y: points.fromY },
+          { x: points.toX, y: points.toY }
+        );
+        return journey.thread.getAttribute('d') ?? '';
+      };
+      updateEntryThread = entryThreadPath;
+
       transition
-        .fromTo(transitionStar, {
+        .set(journey.thread, {
+          strokeDasharray: 1,
+          strokeDashoffset: 1,
+          autoAlpha: 1,
+          immediateRender: false
+        }, 0)
+        .fromTo(journey.star, {
           x: () => geometry().fromX,
           y: () => geometry().fromY,
           width: () => geometry().fromWidth,
           height: () => geometry().fromHeight,
-          autoAlpha: 0
+          autoAlpha: 0,
+          xPercent: -50,
+          yPercent: -50
         }, {
           x: () => geometry().toX,
           y: () => geometry().toY,
           width: () => geometry().toWidth,
           height: () => geometry().toHeight,
           autoAlpha: 1,
-          duration: moveDuration * .78
+          duration: moveDuration * .78,
+          ease: 'none',
+          immediateRender: false
         }, 0)
+        .to(journey.overlay, { autoAlpha: 1, duration: .01 }, 0)
         .fromTo(source, { autoAlpha: 1 }, { autoAlpha: 0, duration: .55 }, 0)
-        .to(transitionStar, { autoAlpha: 0, duration: .2 }, .78)
-        .to(star, { autoAlpha: 1, duration: .2 }, .78);
+        .to(journey.thread, { strokeDashoffset: 0, duration: moveDuration * .78 }, 0)
+        .to(journey.overlay, { autoAlpha: 0, duration: .08 }, .92)
+        .to(ideologyStar, { autoAlpha: 1, duration: .2 }, .78);
     }
 
     gsap.set(faces, { scale: 1, transformOrigin: '50% 50%' });
@@ -128,7 +161,10 @@ export async function createIdeologyAnimation(root: HTMLElement, onActiveChange:
         pinSpacing: false,
         scrub: reduceMotion ? true : .55,
         invalidateOnRefresh: true,
-        anticipatePin: 1
+        anticipatePin: 1,
+        onUpdate: (self) => {
+          if (self.isActive) updateExitThread();
+        }
       }
     });
     timeline.eventCallback('onUpdate', () => {
@@ -168,6 +204,60 @@ export async function createIdeologyAnimation(root: HTMLElement, onActiveChange:
           ease: 'power1.inOut'
         }, index);
       }
+
+      const getExitGeometry = () => {
+        const starBounds = ideologyStar.getBoundingClientRect();
+        return {
+          from: {
+            x: starBounds.left + starBounds.width / 2,
+            y: starBounds.top + starBounds.height / 2
+          },
+          fromWidth: Math.max(starBounds.width, 1),
+          fromHeight: Math.max(starBounds.height, 1),
+          to: { x: window.innerWidth / 2, y: window.innerHeight + 26 }
+        };
+      };
+      const exitThreadPath = (): string => {
+        const points = getExitGeometry();
+        updateStarThreadPath(journey.threadSvg, journey.thread, points.from, points.to);
+        return journey.thread.getAttribute('d') ?? '';
+      };
+      updateExitThread = exitThreadPath;
+      const handoffTime = 4.47;
+
+      timeline
+        .addLabel('historyHandoff', handoffTime)
+        .set(journey.star, {
+          xPercent: -50,
+          yPercent: -50,
+          x: () => getExitGeometry().from.x,
+          y: () => getExitGeometry().from.y,
+          width: () => getExitGeometry().fromWidth,
+          height: () => getExitGeometry().fromHeight,
+          rotation: 0,
+          autoAlpha: 1
+        }, handoffTime)
+        .set(journey.thread, {
+          strokeDasharray: 1,
+          strokeDashoffset: 1,
+          autoAlpha: 0
+        }, handoffTime)
+        .to(ideologyStar, { autoAlpha: 0, duration: .12 }, handoffTime)
+        .to(journey.overlay, { autoAlpha: 1, duration: .01 }, handoffTime)
+        .to(journey.star, {
+          x: () => getExitGeometry().to.x,
+          y: () => getExitGeometry().to.y,
+          width: 52,
+          height: 52,
+          autoAlpha: 1,
+          duration: .55,
+          ease: 'none'
+        }, handoffTime + .01)
+        .to(journey.thread, {
+          strokeDashoffset: 0,
+          autoAlpha: .9,
+          duration: .55
+        }, handoffTime + .01);
     }
 
     ScrollTrigger.refresh();

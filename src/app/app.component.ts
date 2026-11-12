@@ -3,12 +3,13 @@ import { ParticlePortrait } from './particle-portrait';
 import { FlagSectionComponent } from './sections/flag/flag-section.component';
 import { HistorySectionComponent } from './sections/history/history-section.component';
 import { IdeologySectionComponent } from './sections/ideology/ideology-section.component';
+import { ThinkersSectionComponent } from './sections/thinkers/thinkers-section.component';
 import { ThemeSwitchTransitionComponent } from './theme-switch-transition.component';
 
 @Component({
   selector: 'vck-root',
   standalone: true,
-  imports: [FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThemeSwitchTransitionComponent],
+  imports: [FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ThemeSwitchTransitionComponent],
   template: `
     <main class="hero-shell" [class.light-theme]="theme() === 'light'" [attr.lang]="language()">
       <header class="topbar">
@@ -81,12 +82,28 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
       <vck-flag-section [language]="language()" />
       <vck-ideology-section [language]="language()" />
       <vck-history-section [language]="language()" />
+      <vck-thinkers-section [language]="language()" />
 
       <footer class="hero-footer" id="story">
         <span class="footer-label">{{ language() === 'ta' ? 'நமது இயக்கம், நமது எதிர்காலம்' : 'OUR MOVEMENT, OUR FUTURE' }}</span>
         <span class="scroll-cue"><span></span> {{ language() === 'ta' ? 'தொடர்ந்து பார்க்க கீழே நகர்த்தவும்' : 'SCROLL TO EXPLORE' }}</span>
       </footer>
     </main>
+    <div class="story-star-journey" aria-hidden="true">
+      <svg class="story-star-journey-thread" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="story-star-thread-gradient">
+            <stop offset="0" stop-color="#69bdff" />
+            <stop offset=".52" stop-color="#fff" />
+            <stop offset="1" stop-color="#ee5269" />
+          </linearGradient>
+        </defs>
+        <path class="story-star-thread-path" pathLength="1" />
+      </svg>
+      <svg class="story-star-journey-shape" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polygon points="50,4 61,36 96,37 68,58 78,92 50,73 22,92 32,58 4,37 39,36" />
+      </svg>
+    </div>
     <vck-theme-switch-transition #themeTransition />
   `,
   styleUrl: './app.component.css',
