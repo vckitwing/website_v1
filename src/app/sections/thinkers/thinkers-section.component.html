@@ -1,0 +1,71 @@
+<section #sectionRoot class="thinkers-section" [class.has-selection]="selectedIndex() !== null"
+  [attr.lang]="language" [attr.aria-label]="language === 'ta' ? 'சிந்தனை வழிகாட்டிகள்' : 'Ideological thinkers'">
+  <header class="thinkers-intro">
+    <p class="thinkers-eyebrow">{{ language === 'ta' ? 'சிந்தனை வழிகாட்டிகள்' : 'THOUGHT LEADERS' }}</p>
+    <h2>{{ language === 'ta' ? 'மாற்றத்தை வடிவமைத்த சிந்தனைகள்' : 'Ideas that shaped change' }}</h2>
+    <p class="thinkers-lede">{{ language === 'ta' ? 'மூன்று சிந்தனையாளர்கள். சிந்தனைக்கான மூன்று வழிகள்.' : 'Three thinkers. Three paths of thought.' }}</p>
+  </header>
+
+  <div class="thinker-stage">
+    <span class="thinker-ambient thinker-ambient-blue" aria-hidden="true"></span>
+    <span class="thinker-ambient thinker-ambient-red" aria-hidden="true"></span>
+    <div class="thinker-fan" role="group" [attr.aria-label]="language === 'ta' ? 'சிந்தனையாளரைத் தேர்ந்தெடுக்கவும்' : 'Choose a thinker'">
+      @for (thinker of thinkers; track thinker.id; let i = $index) {
+        <button class="thinker-card" type="button" [class.is-selected]="selectedIndex() === i"
+          [class.is-dimmed]="selectedIndex() !== null && selectedIndex() !== i"
+          [disabled]="selectedIndex() !== null && selectedIndex() !== i"
+          [attr.data-thinker-index]="i" [attr.aria-expanded]="selectedIndex() === i"
+          [attr.aria-label]="selectedIndex() === i
+            ? (language === 'ta' ? thinker.name.ta + ' அட்டையைத் திருப்பவும்' : 'Return ' + thinker.name.en + ' card')
+            : (language === 'ta' ? thinker.name.ta + ' அட்டையைத் திறக்கவும்' : 'Flip ' + thinker.name.en + ' card')"
+          (click)="toggleThinker(i)">
+          <span class="thinker-card-face thinker-card-front" [attr.aria-hidden]="selectedIndex() === i">
+            <span class="thinker-card-index">{{ thinker.number }} <span>·</span> VCK THINKERS</span>
+            <span class="thinker-portrait">
+              @if (thinker.imagePath) {
+                <img [src]="thinker.imagePath" [alt]="thinker.name[language]" loading="lazy" decoding="async" />
+              } @else {
+                <span class="portrait-placeholder" role="img"
+                  [attr.aria-label]="language === 'ta' ? 'அங்கீகரிக்கப்பட்ட உருவப்படம் பின்னர் சேர்க்கப்படும்' : 'Approved portrait to be added'">
+                  <svg viewBox="0 0 240 280" aria-hidden="true">
+                    <circle cx="120" cy="82" r="39" />
+                    <path d="M43 248c5-56 34-88 77-88s72 32 77 88" />
+                  </svg>
+                  <span class="portrait-monogram">{{ thinker.monogram }}</span>
+                  <span class="portrait-note">{{ language === 'ta' ? 'உருவப்படம் பின்னர் சேர்க்கப்படும்' : 'PORTRAIT TO BE ADDED' }}</span>
+                </span>
+              }
+            </span>
+            <span class="thinker-card-name">{{ thinker.name[language] }}</span>
+            <span class="thinker-card-name-alt">{{ language === 'ta' ? thinker.name.en : thinker.name.ta }}</span>
+            <span class="thinker-card-rule" aria-hidden="true"><span></span></span>
+            <span class="thinker-card-foot">{{ language === 'ta' ? 'தொட்டு திறக்கவும்' : 'TAP TO TURN' }} <span aria-hidden="true">↗</span></span>
+          </span>
+
+          <span class="thinker-card-face thinker-card-back" [attr.aria-hidden]="selectedIndex() !== i">
+            <span class="thinker-back-index">{{ thinker.number }} <span>·</span> THOUGHT LEADERS</span>
+            <span class="thinker-back-emblem" aria-hidden="true">{{ thinker.monogram }}</span>
+            <span class="thinker-back-name">{{ thinker.name.en }}</span>
+            <span class="thinker-back-name-ta">{{ thinker.name.ta }}</span>
+            <span class="thinker-back-divider" aria-hidden="true"></span>
+            <span class="thinker-back-note">
+              {{ language === 'ta' ? 'விரிவான அறிமுகமும் கருத்துகளும் அடுத்த கட்டத்தில்.' : 'Full profiles and ideas follow in the next phase.' }}
+            </span>
+          </span>
+        </button>
+      }
+
+      @if (selectedIndex() !== null) {
+        <button #closeButton class="thinker-close" type="button" (click)="closeThinker()"
+          [attr.aria-label]="language === 'ta' ? 'அட்டையை மூடி திரும்பவும்' : 'Close thinker card and return'">
+          <span aria-hidden="true">×</span>
+          <span>{{ language === 'ta' ? 'திரும்பு' : 'BACK' }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <p class="thinkers-hint" aria-hidden="true">
+    {{ language === 'ta' ? 'ஒரு அட்டையைத் தேர்ந்தெடுத்து திருப்பிப் பார்க்கவும்' : 'Select a card to bring it forward and turn it over' }}
+  </p>
+</section>
