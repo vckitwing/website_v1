@@ -16,11 +16,13 @@
       </defs>
       <path class="history-path-base" d="M 500 50 L 500 950" pathLength="1000" />
       <path class="history-path-trail" d="M 500 50 L 500 950" pathLength="1000" />
-      @for (milestone of milestones; track milestone.year; let i = $index) {
-        <circle class="history-node" [class.is-active]="activeIndex() === i" [class.is-complete]="i < activeIndex()"
-          cx="500" [attr.cy]="50 + (900 * i / (milestones.length - 1))" r="7" />
-      }
     </svg>
+    <div class="history-node-layer" aria-hidden="true">
+      @for (milestone of milestones; track milestone.year; let i = $index) {
+        <span class="history-node" [class.is-active]="activeIndex() === i" [class.is-complete]="i < activeIndex()"
+          [style.top.%]="5 + (90 * i / (milestones.length - 1))"></span>
+      }
+    </div>
     <div #historyMarker class="history-star-marker" aria-hidden="true"></div>
 
     @for (milestone of milestones; track milestone.year; let i = $index) {

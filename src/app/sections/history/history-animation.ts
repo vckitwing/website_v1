@@ -62,10 +62,8 @@ export async function createHistoryAnimation(
   }, (context) => {
     const { isMobile, reduceMotion } = context.conditions as HistoryAnimationConditions;
     const pathData = isMobile ? 'M 70 50 L 70 950' : 'M 500 50 L 500 950';
-    const nodeX = isMobile ? 70 : 500;
     base.setAttribute('d', pathData);
     trail.setAttribute('d', pathData);
-    root.querySelectorAll<SVGCircleElement>('.history-node').forEach((node) => node.setAttribute('cx', String(nodeX)));
 
     const pathLength = trail.getTotalLength();
     gsap.set(trail, { strokeDasharray: pathLength, strokeDashoffset: reduceMotion ? 0 : pathLength });
@@ -118,7 +116,7 @@ export async function createHistoryAnimation(
         gsap.set(trail, { strokeDashoffset: pathLength * (1 - travelProgress) });
         gsap.set(marker, { x, y, scale: markerScale });
         starFaces.forEach((face, index) => {
-          const pointProgress = gsap.utils.clamp(0, 1, (formation - index * .15) / .55);
+          const pointProgress = gsap.utils.clamp(0, 1, (formation - index * .2) / .2);
           face.style.fill = gsap.utils.interpolate(inactiveStarColor, activeStarColor, pointProgress);
           face.style.opacity = String(.48 + .52 * pointProgress);
         });
