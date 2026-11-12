@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
 import { ParticlePortrait } from './particle-portrait';
+import { FlagSectionComponent } from './sections/flag/flag-section.component';
+import { IdeologySectionComponent } from './sections/ideology/ideology-section.component';
 import { ThemeSwitchTransitionComponent } from './theme-switch-transition.component';
 
 @Component({
   selector: 'vck-root',
   standalone: true,
-  imports: [ThemeSwitchTransitionComponent],
+  imports: [FlagSectionComponent, IdeologySectionComponent, ThemeSwitchTransitionComponent],
   template: `
     <main class="hero-shell" [class.light-theme]="theme() === 'light'" [attr.lang]="language()">
       <header class="topbar">
@@ -74,6 +76,9 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
 
         <div class="vertical-note" aria-hidden="true">{{ language() === 'ta' ? 'மக்கள் · நீதி · விடுதலை' : 'PEOPLE · JUSTICE · LIBERATION' }}</div>
       </section>
+
+      <vck-flag-section [language]="language()" />
+      <vck-ideology-section [language]="language()" />
 
       <footer class="hero-footer" id="story">
         <span class="footer-label">{{ language() === 'ta' ? 'நமது இயக்கம், நமது எதிர்காலம்' : 'OUR MOVEMENT, OUR FUTURE' }}</span>

@@ -1,0 +1,59 @@
+<section #sectionRoot class="flag-section" [attr.lang]="language" [attr.aria-label]="language === 'ta' ? 'விசிக கொடியும் அதன் பொருளும்' : 'The VCK flag and what it represents'">
+  <div class="flag-stage">
+    <header class="flag-heading">
+      <p class="flag-eyebrow">{{ language === 'ta' ? 'நமது அடையாளம் · நமது உறுதி' : 'OUR IDENTITY · OUR RESOLVE' }}</p>
+      <h2>{{ language === 'ta' ? 'ஒரு கொடி. ஒரு சமத்துவக் கனவு.' : 'One flag. A vision of equality.' }}</h2>
+      <p class="flag-intro">{{ language === 'ta' ? 'ஒவ்வொரு நிறத்திலும் ஒரு மக்கள் கனவு.' : 'A people’s vision carried in every colour.' }}</p>
+    </header>
+
+    <figure class="flag-figure">
+      <svg #flagArtwork class="flag-artwork" viewBox="0 0 900 600" role="img"
+        [attr.aria-label]="language === 'ta' ? 'மேல் பாதியில் வான்நீலமும் கீழ் பாதியில் சிவப்பும் மையத்தில் வெள்ளை ஐந்து முனை நட்சத்திரமும் கொண்ட விசிக கொடி' : 'VCK flag: sky blue on top, red on the bottom, and a white five-pointed star at the centre'">
+        <defs>
+          <radialGradient id="flag-star-glow">
+            <stop offset="0" stop-color="#fff" stop-opacity=".48" />
+            <stop offset="1" stop-color="#fff" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect #blueField class="flag-field flag-field-blue" x="0" y="0" width="900" height="300" />
+        <rect #redField class="flag-field flag-field-red" x="0" y="300" width="900" height="300" />
+        <circle #starAura class="flag-star-aura" cx="450" cy="300" r="155" fill="url(#flag-star-glow)" />
+        <polygon #star class="flag-star" points="450,210 472.3,269.1 534.2,272.2 485.6,311 501.3,370.1 450,336 398.7,370.1 414.4,311 365.8,272.2 427.7,269.1" />
+      </svg>
+      <figcaption class="visually-hidden">{{ language === 'ta' ? 'வான்நீலமும் சிவப்பும் சமத்துவம், சுதந்திரம், அமைதி, போராட்டம், துணிவு மற்றும் தியாகத்தைக் குறிக்கின்றன.' : 'Sky blue and red stand for equality, freedom, peace, struggle, courage and sacrifice.' }}</figcaption>
+    </figure>
+
+    <div class="flag-meanings" [attr.aria-label]="language === 'ta' ? 'கொடியின் நிறங்கள்' : 'Flag colours'">
+      @for (meaning of meanings; track meaning.tone) {
+        <article class="meaning-card" [class.meaning-card-blue]="meaning.tone === 'blue'" [class.meaning-card-red]="meaning.tone === 'red'">
+          <p class="meaning-eyebrow">{{ meaning.eyebrow[language] }}</p>
+          <h3>{{ meaning.title[language] }}</h3>
+          <p class="meaning-qualities">{{ meaning.qualities[language] }}</p>
+          <p class="meaning-description">{{ meaning.description[language] }}</p>
+        </article>
+      }
+    </div>
+
+    <p class="flag-scroll-hint" aria-hidden="true">
+      <span class="flag-scroll-line"></span>
+      {{ language === 'ta' ? 'தொடர்ந்து நகர்த்தி நிறங்களின் பொருளைக் காண்க' : 'SCROLL TO DISCOVER WHAT THE COLOURS CARRY' }}
+    </p>
+  </div>
+
+  <div class="star-flight" aria-hidden="true">
+    <svg viewBox="365.8 210 168.4 160.1" preserveAspectRatio="none">
+      <polygon points="450,210 472.3,269.1 534.2,272.2 485.6,311 501.3,370.1 450,336 398.7,370.1 414.4,311 365.8,272.2 427.7,269.1" />
+    </svg>
+  </div>
+
+  <article class="star-meaning" [attr.aria-label]="language === 'ta' ? 'வெள்ளை நட்சத்திரத்தின் பொருள்' : 'The white star'">
+    <svg class="star-meaning-mark" viewBox="0 0 100 100" aria-hidden="true">
+      <polygon points="50,4 61,36 96,37 68,58 78,92 50,73 22,92 32,58 4,37 39,36" />
+    </svg>
+    <div class="star-meaning-copy">
+      <p class="meaning-eyebrow">{{ starMeaning.eyebrow[language] }}</p>
+      <h3>{{ starMeaning.title[language] }}</h3>
+      <p>{{ starMeaning.description[language] }}</p>
+    </div>
+  </article>
+</section>
