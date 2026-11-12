@@ -2,8 +2,8 @@ import * as THREE from 'three';
 
 type PortraitHooks = { onReady: () => void; onFallback: () => void; onFormed: () => void };
 
-const PORTRAIT_URL = '/portraits/thiruma.png?v=2';
-const CROWD_URL = '/portraits/red-blue-rally.png';
+const PORTRAIT_URL = 'portraits/thiruma.png?v=2';
+const CROWD_URL = 'portraits/red-blue-rally.png';
 type CrowdSample = { x: number; y: number; red: number; green: number; blue: number };
 
 /** Three.js point cloud renderer. Kept outside Angular change detection. */

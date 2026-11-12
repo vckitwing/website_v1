@@ -13,7 +13,7 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
           <span></span><span></span><span></span>
         </button>
         <a class="brand" href="#home" [attr.aria-label]="language() === 'ta' ? 'விசிக முகப்பு' : 'VCK home'">
-          <img class="brand-mark" src="/assets/Logo/vck_logo.jpg" alt="" />
+          <img class="brand-mark" src="assets/Logo/vck_logo.jpg" alt="" />
           <span class="brand-copy"><strong>VCK</strong><small>VIDUTHALAI CHIRUTHAIGAL KATCHI</small></span>
         </a>
         <div class="top-actions">
@@ -48,9 +48,9 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
       </nav>
 
       <section class="hero" id="home" [attr.aria-label]="language() === 'ta' ? 'விசிக முன்னணிப் பகுதி' : 'VCK hero'">
-        <img class="hero-artwork" [class.artwork-visible]="portraitFormed()" src="/portraits/thiruma.png?v=2" alt="" aria-hidden="true" />
+        <img class="hero-artwork" [class.artwork-visible]="portraitFormed()" src="portraits/thiruma.png?v=2" alt="" aria-hidden="true" />
         <div class="crowd-strip" aria-hidden="true">
-          <img src="/portraits/red-blue-rally.png" alt="" />
+          <img src="portraits/red-blue-rally.png" alt="" />
         </div>
         <canvas #portraitCanvas class="story-canvas" [class.canvas-formed]="portraitFormed()" [attr.aria-label]="language() === 'ta' ? 'நீல மற்றும் சிவப்பு மக்கள் கூட்டத் துகள்கள் எழுந்து தோழர் திருமாவளவனின் உருவப்படத்தை உருவாக்குகின்றன.' : 'Blue and red crowd particles rise and form a portrait of Thol. Thirumavalavan.'"></canvas>
         <div class="hero-copy">
@@ -62,7 +62,7 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
 
         <div class="portrait-stage" [class.portrait-ready]="portraitReady()" [class.portrait-fallback]="portraitFailed()" [class.portrait-formed]="portraitFormed()">
           <div class="portrait-halo" aria-hidden="true"></div>
-          <img class="mobile-artwork" [class.artwork-visible]="portraitFormed()" src="/portraits/thiruma.png?v=2" [attr.alt]="language() === 'ta' ? 'தந்தை பெரியார் மற்றும் டாக்டர் பி. ஆர். அம்பேத்கருடன் தோழர் திருமாவளவன்' : 'Thol. Thirumavalavan with Periyar and Dr. B. R. Ambedkar'" />
+          <img class="mobile-artwork" [class.artwork-visible]="portraitFormed()" src="portraits/thiruma.png?v=2" [attr.alt]="language() === 'ta' ? 'தந்தை பெரியார் மற்றும் டாக்டர் பி. ஆர். அம்பேத்கருடன் தோழர் திருமாவளவன்' : 'Thol. Thirumavalavan with Periyar and Dr. B. R. Ambedkar'" />
           @if (portraitFailed()) {
             <div class="portrait-alt" role="img" [attr.aria-label]="language() === 'ta' ? 'உருவப்படம் கிடைக்கவில்லை. விசிக தலைவர் தோழர் திருமாவளவன்.' : 'Portrait unavailable. Thol. Thirumavalavan, VCK President.'">
               <span>விடுதலை</span><strong>தொல்.<br>திருமாவளவன்</strong><small>{{ language() === 'ta' ? 'தோழர் திருமாவளவன்' : 'THOL. THIRUMAVALAVAN' }}</small>
