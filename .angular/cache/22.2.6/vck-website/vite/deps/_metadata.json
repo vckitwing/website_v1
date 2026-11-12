@@ -1,43 +1,43 @@
 {
-  "hash": "5ed5af94",
-  "configHash": "dc648829",
+  "hash": "b1da0452",
+  "configHash": "11e358e9",
   "lockfileHash": "0e6ad8aa",
-  "browserHash": "a7f267bd",
+  "browserHash": "e6bc0741",
   "optimized": {
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "944f9527",
+      "fileHash": "b29c8105",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "ccd3bde6",
+      "fileHash": "2b56cfd8",
       "needsInterop": false
     },
     "gsap": {
       "src": "../../../../../../node_modules/gsap/index.js",
       "file": "gsap.js",
-      "fileHash": "d18b359d",
+      "fileHash": "7969e69d",
+      "needsInterop": false
+    },
+    "gsap/ScrollTrigger": {
+      "src": "../../../../../../node_modules/gsap/ScrollTrigger.js",
+      "file": "gsap_ScrollTrigger.js",
+      "fileHash": "2e653b0c",
       "needsInterop": false
     },
     "three": {
       "src": "../../../../../../node_modules/three/build/three.module.js",
       "file": "three.js",
-      "fileHash": "4145a5c8",
-      "needsInterop": false
-    },
-    "tslib": {
-      "src": "../../../../../../node_modules/tslib/tslib.es6.mjs",
-      "file": "tslib.js",
-      "fileHash": "ed4ebe07",
+      "fileHash": "04138965",
       "needsInterop": false
     }
   },
   "chunks": {
-    "core-DaY8p02L": {
-      "file": "core-DaY8p02L.js",
+    "core-Bgwmfya_": {
+      "file": "core-Bgwmfya_.js",
       "isDynamicEntry": false
     }
   }
