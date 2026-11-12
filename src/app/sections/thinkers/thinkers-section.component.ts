@@ -18,13 +18,21 @@ export class ThinkersSectionComponent implements AfterViewInit, OnDestroy {
 
   private animation?: ThinkerFanAnimation;
   private closing = false;
+  private destroyed = false;
 
   ngAfterViewInit(): void {
-    try {
-      this.animation = createThinkerFanAnimation(this.sectionRoot.nativeElement);
-    } catch (error) {
-      console.error('Unable to initialize the VCK thinker-card animation.', error);
-    }
+    void createThinkerFanAnimation(this.sectionRoot.nativeElement).then(
+      (animation) => {
+        if (this.destroyed) {
+          animation.destroy();
+          return;
+        }
+        this.animation = animation;
+        const selectedIndex = this.selectedIndex();
+        if (selectedIndex !== null) animation.open(selectedIndex);
+      },
+      (error: unknown) => console.error('Unable to initialize the VCK thinker-card animation.', error)
+    );
   }
 
   toggleThinker(index: number): void {
@@ -64,6 +72,7 @@ export class ThinkersSectionComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
     this.animation?.destroy();
   }
 }

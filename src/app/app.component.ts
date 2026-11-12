@@ -89,6 +89,21 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
         <span class="scroll-cue"><span></span> {{ language() === 'ta' ? 'தொடர்ந்து பார்க்க கீழே நகர்த்தவும்' : 'SCROLL TO EXPLORE' }}</span>
       </footer>
     </main>
+    <div class="story-star-journey" aria-hidden="true">
+      <svg class="story-star-journey-thread" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="story-star-thread-gradient">
+            <stop offset="0" stop-color="#69bdff" />
+            <stop offset=".52" stop-color="#fff" />
+            <stop offset="1" stop-color="#ee5269" />
+          </linearGradient>
+        </defs>
+        <path class="story-star-thread-path" pathLength="1" />
+      </svg>
+      <svg class="story-star-journey-shape" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polygon points="50,4 61,36 96,37 68,58 78,92 50,73 22,92 32,58 4,37 39,36" />
+      </svg>
+    </div>
     <vck-theme-switch-transition #themeTransition />
   `,
   styleUrl: './app.component.css',

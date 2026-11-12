@@ -8,6 +8,7 @@ export type Thinker = {
   number: string;
   monogram: string;
   name: ThinkerName;
+  description: ThinkerName;
   imagePath: string | null;
   imageCredit: string | null;
 };

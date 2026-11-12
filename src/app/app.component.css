@@ -198,4 +198,10 @@ h1 span { color:#d1a56c; font-style:italic; }
 @media (max-width:1050px) { .site-nav { right:clamp(18px,4vw,40px); width:auto; }.top-actions { margin-left:auto; } }
 @media (max-width:760px) { .top-actions { margin-left:auto; } }
 @media (max-width:760px) { .brand-mark { width:38px; height:38px; flex-basis:38px; } }
+.story-star-journey { position:fixed; z-index:90; inset:0; visibility:hidden; opacity:0; pointer-events:none; }
+.story-star-journey-thread { display:none; }
+.story-star-thread-path { fill:none; stroke:url(#story-star-thread-gradient); stroke-width:2; stroke-linecap:round; stroke-dasharray:1; filter:drop-shadow(0 0 7px rgba(113,190,255,.8)); opacity:0; }
+.story-star-journey-shape { position:absolute; top:0; left:0; display:block; width:0; height:0; overflow:visible; transform-origin:center; }
+.story-star-journey-shape polygon { fill:#fff; filter:drop-shadow(0 0 11px rgba(255,255,255,.75)); }
+.hero-shell.light-theme + .story-star-journey .story-star-journey-shape polygon { stroke:#1e4f7d; stroke-width:2.5; stroke-linejoin:round; vector-effect:non-scaling-stroke; filter:drop-shadow(0 0 9px rgba(32,105,167,.52)); }
 /* The tagline uses the golden-ratio scale: 9px × 1.618 on desktop, 8px × 1.618 on mobile. */

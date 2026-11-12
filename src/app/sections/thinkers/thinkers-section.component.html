@@ -48,9 +48,7 @@
             <span class="thinker-back-name">{{ thinker.name.en }}</span>
             <span class="thinker-back-name-ta">{{ thinker.name.ta }}</span>
             <span class="thinker-back-divider" aria-hidden="true"></span>
-            <span class="thinker-back-note">
-              {{ language === 'ta' ? 'விரிவான அறிமுகமும் கருத்துகளும் அடுத்த கட்டத்தில்.' : 'Full profiles and ideas follow in the next phase.' }}
-            </span>
+            <span class="thinker-back-note">{{ thinker.description[language] }}</span>
           </span>
         </button>
       }

@@ -1,4 +1,5 @@
 import { gsap } from 'gsap';
+import { getStarJourneyElements, updateStarThreadPath } from '../../story/star-journey';
 
 type HistoryAnimationConditions = {
   isDesktop: boolean;
@@ -21,6 +22,7 @@ export async function createHistoryAnimation(
   const marker = root.querySelector<HTMLElement>('.history-star-marker');
   const cards = Array.from(root.querySelectorAll<HTMLElement>('.history-card'));
   const source = root.closest('vck-history-section')?.previousElementSibling?.querySelector<SVGSVGElement>('.ideology-star');
+  const journey = getStarJourneyElements(root);
 
   if (!track || !timeline || !base || !trail || !marker || !source || cards.length !== milestoneCount || milestoneCount < 2) {
     throw new Error('The history section requires its timeline, milestone cards, and the preceding ideology star.');
@@ -67,7 +69,79 @@ export async function createHistoryAnimation(
 
     const pathLength = trail.getTotalLength();
     gsap.set(trail, { strokeDasharray: pathLength, strokeDashoffset: reduceMotion ? 0 : pathLength });
-    gsap.set(marker, { xPercent: -50, yPercent: -50, autoAlpha: reduceMotion ? 0 : 1, scale: reduceMotion ? 1 : 1.4 });
+    gsap.set(marker, { xPercent: -50, yPercent: -50, autoAlpha: reduceMotion ? 1 : 0, scale: reduceMotion ? 1 : 1.4 });
+
+    let entryTimeline: gsap.core.Timeline | undefined;
+    if (!reduceMotion) {
+      const getEntryGeometry = () => ({
+        from: { x: window.innerWidth / 2, y: window.innerHeight + 26 },
+        to: {
+          x: track.getBoundingClientRect().left + (isMobile ? 70 : 500) * track.clientWidth / 1000,
+          y: track.clientHeight * .05
+        },
+        markerSize: marker.getBoundingClientRect().width
+      });
+      const entryThreadPath = (): string => {
+        const points = getEntryGeometry();
+        updateStarThreadPath(journey.threadSvg, journey.thread, points.from, points.to);
+        return journey.thread.getAttribute('d') ?? '';
+      };
+
+      entryTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: root,
+          start: 'top bottom',
+          endTrigger: track,
+          end: 'top top',
+          scrub: .45,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            if (self.isActive) entryThreadPath();
+          }
+        }
+      });
+      entryTimeline
+        .set(journey.thread, {
+          strokeDasharray: 1,
+          strokeDashoffset: 1,
+          autoAlpha: 0,
+          immediateRender: false
+        }, 0)
+        .fromTo(journey.star, {
+          xPercent: -50,
+          yPercent: -50,
+          x: () => getEntryGeometry().from.x,
+          y: () => getEntryGeometry().from.y,
+          width: 52,
+          height: 52,
+          rotation: -18,
+          autoAlpha: 1
+        }, {
+          x: () => getEntryGeometry().to.x,
+          y: () => getEntryGeometry().to.y,
+          width: () => getEntryGeometry().markerSize,
+          height: () => getEntryGeometry().markerSize,
+          rotation: 0,
+          autoAlpha: 1,
+          duration: 1,
+          ease: 'none',
+          immediateRender: false
+        }, 0)
+        .fromTo(journey.thread, { strokeDashoffset: 1, autoAlpha: 0 }, {
+          strokeDashoffset: 0,
+          autoAlpha: .88,
+          duration: 1,
+          immediateRender: false
+        }, 0)
+        .to(journey.overlay, { autoAlpha: 1, duration: .01 }, 0)
+        .to(journey.overlay, { autoAlpha: 0, duration: .03 }, .97);
+
+      entryTimeline.eventCallback('onUpdate', () => {
+        if (entryTimeline?.scrollTrigger?.isActive) entryThreadPath();
+        const progress = entryTimeline?.progress() ?? 0;
+        gsap.set(marker, { autoAlpha: gsap.utils.clamp(0, 1, (progress - .88) / .12) });
+      });
+    }
 
     let activeIndex = -1;
     const updateMilestone = (index: number): void => {
@@ -112,6 +186,7 @@ export async function createHistoryAnimation(
 
       if (reduceMotion) {
         gsap.set(trail, { strokeDashoffset: 0 });
+        gsap.set(marker, { x, y, scale: 1 });
       } else {
         gsap.set(trail, { strokeDashoffset: pathLength * (1 - travelProgress) });
         gsap.set(marker, { x, y, scale: markerScale });
@@ -142,6 +217,7 @@ export async function createHistoryAnimation(
     return () => {
       themeObserver?.disconnect();
       trigger.kill();
+      entryTimeline?.scrollTrigger?.kill();
     };
   });
 
