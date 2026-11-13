@@ -78,6 +78,7 @@ export class OpeningAnimation {
     const compactScale = Math.max(0.36, this.fontSize(this.elements.name) * 2 / this.fontSize(this.elements.vck));
     const expandedNameLeft = window.innerWidth / 2 - (nameFrom.width + identityGap + starStart.width) / 2;
     const expandedCopyX = expandedNameLeft - nameFrom.left;
+    const expandedVckX = expandedCopyX + nameFrom.width - vckFrom.width * (1 + compactScale) / 2;
     const expandedStarX = expandedNameLeft + nameFrom.width + identityGap + starStart.width / 2 - starCenterX;
     const expandedNameY = -vckFrom.height * (1 - compactScale) / 2;
     const expandedContentHeight = vckFrom.height * compactScale
@@ -130,7 +131,7 @@ export class OpeningAnimation {
         ease: 'power2.inOut'
       }, 1.82)
       .to(this.elements.vck, {
-        x: expandedCopyX,
+        x: expandedVckX,
         scale: compactScale,
         duration: 0.82,
         ease: 'power2.inOut'
@@ -157,6 +158,7 @@ export class OpeningAnimation {
         ease: 'power2.inOut',
         onStart: this.onStarArrival
       }, 3.02)
+      .set([this.elements.vck, this.elements.name], { textAlign: 'left' }, 3.1)
       .to(this.elements.vck, {
         x: brandVck.left + brandVck.width / 2 - (vckFrom.left + vckFrom.width / 2),
         y: brandVck.top + brandVck.height / 2 - (vckFrom.top + vckFrom.height / 2),
@@ -165,9 +167,10 @@ export class OpeningAnimation {
         ease: 'power2.inOut'
       }, 3.1)
       .to(this.elements.name, {
-        x: brandName.width ? brandName.left + brandName.width / 2 - (nameFrom.left + nameFrom.width / 2) : 0,
+        x: brandName.width ? brandName.left - nameFrom.left : 0,
         y: brandName.height ? brandName.top + brandName.height / 2 - (nameFrom.top + nameFrom.height / 2) : 0,
-        scale: brandName.width ? nameScale : 0.8,
+        scaleX: brandName.width ? brandName.width / nameFrom.width : 0.8,
+        scaleY: brandName.width ? nameScale : 0.8,
         autoAlpha: brandName.width ? 1 : 0,
         duration: 0.9,
         ease: 'power2.inOut'

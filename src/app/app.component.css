@@ -10,9 +10,9 @@
 .opening-star-vertex-blue { fill:#73c7ff; filter:drop-shadow(0 0 5px #2785df); }
 .opening-star-vertex-red { fill:#ff687b; filter:drop-shadow(0 0 5px #ed2a40); }
 .opening-identity { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:clamp(18px,3vw,46px); padding:24px; }
-.opening-copy { position:relative; flex:0 0 auto; width:max-content; min-width:0; text-align:left; }
+.opening-copy { position:relative; flex:0 0 auto; width:max-content; min-width:0; text-align:right; }
 .opening-vck { display:block; color:#fff; background:linear-gradient(100deg,#2785df 5%,#8bcaff 48%,#ed2a40 95%); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; font:700 clamp(52px,10vw,144px)/.9 'Montserrat','Noto Sans Tamil',sans-serif; letter-spacing:.06em; white-space:nowrap; }
-.opening-name { position:absolute; top:calc(100% + 8px); left:0; display:block; width:max-content; max-width:min(74vw,720px); color:#eef5ff; font:600 clamp(10px,1.3vw,15px)/1.5 'Montserrat','Noto Sans Tamil',sans-serif; letter-spacing:.16em; text-align:left; white-space:nowrap; transform-origin:left center; }
+.opening-name { position:absolute; top:calc(100% + 8px); left:0; display:block; width:max-content; max-width:min(74vw,720px); color:#eef5ff; font:600 clamp(10px,1.3vw,15px)/1.5 'Montserrat','Noto Sans Tamil',sans-serif; letter-spacing:.16em; text-align:right; white-space:nowrap; transform-origin:left center; }
 .hero-shell::before { content:""; position:absolute; inset:0; z-index:-2; background:radial-gradient(ellipse at 77% 49%,rgba(76,145,128,.14),transparent 39%),radial-gradient(ellipse at 83% 98%,rgba(169,88,51,.12),transparent 35%),var(--page-surface); }
 .hero-shell::after { content:""; position:absolute; inset:0; z-index:-1; opacity:.14; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.17'/%3E%3C/svg%3E"); }
 .topbar { height:92px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(242,239,223,.12); flex-shrink:0; }
@@ -198,10 +198,10 @@ h1 span { color:#d1a56c; font-style:italic; }
 }
 @media (max-width:370px) {
   .topbar { gap:7px; }
-  .brand-copy small { display:none; }
   .language { padding:0 9px; }
   .site-nav { left:14px; right:14px; }
 }
+@media (max-width:350px) { .brand-copy small { display:none; } }
 
 /* Keep blue dominant and reserve red for restrained accents. */
 .hero-shell::before { background:radial-gradient(ellipse at 77% 43%,rgba(33,112,212,.24),transparent 42%),radial-gradient(ellipse at 20% 100%,rgba(215,31,55,.07),transparent 38%),var(--page-surface); }
