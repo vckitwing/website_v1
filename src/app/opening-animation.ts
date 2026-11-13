@@ -73,16 +73,22 @@ export class OpeningAnimation {
     const vckFrom = this.elements.vck.getBoundingClientRect();
     const nameFrom = this.elements.name.getBoundingClientRect();
     const identityGap = Number.parseFloat(getComputedStyle(this.elements.identity).columnGap) || 0;
-    const expandedNameLeft = window.innerWidth / 2 - (nameFrom.width + identityGap + starStart.width) / 2;
-    const expandedCopyX = expandedNameLeft - nameFrom.left;
-    const expandedStarX = expandedNameLeft + nameFrom.width + identityGap + starStart.width / 2 - starCenterX;
-    const expandedContentCenterY = (
-      vckFrom.top + vckFrom.height / 2 + nameFrom.top + nameFrom.height / 2
-    ) / 2;
-    const expandedStarY = expandedContentCenterY - starCenterY;
     const vckScale = this.fontSize(this.elements.brandVck) / this.fontSize(this.elements.vck);
     const nameScale = this.fontSize(this.elements.brandName) / this.fontSize(this.elements.name);
     const compactScale = Math.max(0.36, this.fontSize(this.elements.name) * 2 / this.fontSize(this.elements.vck));
+    const expandedNameLeft = window.innerWidth / 2 - (nameFrom.width + identityGap + starStart.width) / 2;
+    const expandedCopyX = expandedNameLeft - nameFrom.left;
+    const expandedStarX = expandedNameLeft + nameFrom.width + identityGap + starStart.width / 2 - starCenterX;
+    const expandedNameY = -vckFrom.height * (1 - compactScale) / 2;
+    const expandedContentHeight = vckFrom.height * compactScale
+      + nameFrom.top - (vckFrom.top + vckFrom.height)
+      + nameFrom.height;
+    const expandedStarScale = expandedContentHeight / starStart.height;
+    const expandedContentCenterY = (
+      vckFrom.top + vckFrom.height / 2
+      + nameFrom.top + expandedNameY + nameFrom.height / 2
+    ) / 2;
+    const expandedStarY = expandedContentCenterY - starCenterY;
 
     this.elements.screen.classList.add('opening-active');
     gsap.set(this.elements.screen, { autoAlpha: 1 });
@@ -116,7 +122,13 @@ export class OpeningAnimation {
       }, 0.72)
       .to(this.elements.star, { x: 0, duration: 0.5, ease: 'power2.inOut' }, 0.82)
       .fromTo(this.elements.vck, { autoAlpha: 0, y: 18, scale: 0.94 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.62, ease: 'power3.out' }, 1.06)
-      .to(this.elements.star, { x: expandedStarX, y: expandedStarY, duration: 0.82, ease: 'power2.inOut' }, 1.82)
+      .to(this.elements.star, {
+        x: expandedStarX,
+        y: expandedStarY,
+        scale: expandedStarScale,
+        duration: 0.82,
+        ease: 'power2.inOut'
+      }, 1.82)
       .to(this.elements.vck, {
         x: expandedCopyX,
         scale: compactScale,
@@ -126,11 +138,13 @@ export class OpeningAnimation {
       .fromTo(this.elements.name, {
         autoAlpha: 0,
         x: expandedCopyX,
+        y: expandedNameY,
         scaleX: 0.08,
         transformOrigin: '0% 50%'
       }, {
         autoAlpha: 1,
         x: expandedCopyX,
+        y: expandedNameY,
         scaleX: 1,
         duration: 0.82,
         ease: 'power2.out'

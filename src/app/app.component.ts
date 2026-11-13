@@ -32,9 +32,6 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
         </div>
       </div>
       <header class="topbar">
-        <button class="mobile-menu-toggle" type="button" (click)="toggleMobileNavigation(); $event.stopPropagation()" [class.menu-open]="mobileNavigationOpen()" [attr.aria-expanded]="mobileNavigationOpen()" aria-controls="main-navigation" [attr.aria-label]="language() === 'ta' ? (mobileNavigationOpen() ? 'வழிசெலுத்தல் பட்டியை மூடவும்' : 'வழிசெலுத்தல் பட்டியைத் திறக்கவும்') : (mobileNavigationOpen() ? 'Close navigation menu' : 'Open navigation menu')">
-          <span></span><span></span><span></span>
-        </button>
         <a class="brand" href="#home" [attr.aria-label]="language() === 'ta' ? 'விசிக முகப்பு' : 'VCK home'">
           <img class="brand-mark" src="assets/Logo/vck_logo.jpg" alt="" />
           <span class="brand-copy"><strong #brandVck>VCK</strong><small #brandName>VIDUTHALAI CHIRUTHAIGAL KATCHI</small></span>
@@ -47,6 +44,9 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
             <span aria-hidden="true">{{ theme() === 'dark' ? '☼' : '☾' }}</span>
           </button>
         </div>
+        <button class="mobile-menu-toggle" type="button" (click)="toggleMobileNavigation(); $event.stopPropagation()" [class.menu-open]="mobileNavigationOpen()" [attr.aria-expanded]="mobileNavigationOpen()" aria-controls="main-navigation" [attr.aria-label]="language() === 'ta' ? (mobileNavigationOpen() ? 'வழிசெலுத்தல் பட்டியை மூடவும்' : 'வழிசெலுத்தல் பட்டியைத் திறக்கவும்') : (mobileNavigationOpen() ? 'Close navigation menu' : 'Open navigation menu')">
+          <span></span><span></span><span></span>
+        </button>
       </header>
 
       <nav id="main-navigation" class="site-nav" [class.mobile-open]="mobileNavigationOpen()" [attr.aria-label]="language() === 'ta' ? 'முதன்மை வழிசெலுத்தல்' : 'Main navigation'" (click)="$event.stopPropagation()">
