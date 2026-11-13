@@ -4,6 +4,7 @@ type OpeningElements = {
   screen: HTMLElement;
   canvas: HTMLCanvasElement;
   star: SVGSVGElement;
+  identity: HTMLElement;
   vck: HTMLElement;
   name: HTMLElement;
   brandVck: HTMLElement;
@@ -66,14 +67,26 @@ export class OpeningAnimation {
     const brandName = this.elements.brandName.getBoundingClientRect();
     const size = Math.min(150, anchor.width * 0.38, anchor.height * 0.28);
     const destinationScale = size / Math.max(starStart.width, 1);
+    const starCenterX = starStart.left + starStart.width / 2;
+    const starCenterY = starStart.top + starStart.height / 2;
+    const centerStarX = window.innerWidth / 2 - starCenterX;
     const vckFrom = this.elements.vck.getBoundingClientRect();
     const nameFrom = this.elements.name.getBoundingClientRect();
+    const identityGap = Number.parseFloat(getComputedStyle(this.elements.identity).columnGap) || 0;
+    const expandedNameLeft = window.innerWidth / 2 - (nameFrom.width + identityGap + starStart.width) / 2;
+    const expandedCopyX = expandedNameLeft - nameFrom.left;
+    const expandedStarX = expandedNameLeft + nameFrom.width + identityGap + starStart.width / 2 - starCenterX;
+    const expandedContentCenterY = (
+      vckFrom.top + vckFrom.height / 2 + nameFrom.top + nameFrom.height / 2
+    ) / 2;
+    const expandedStarY = expandedContentCenterY - starCenterY;
     const vckScale = this.fontSize(this.elements.brandVck) / this.fontSize(this.elements.vck);
     const nameScale = this.fontSize(this.elements.brandName) / this.fontSize(this.elements.name);
+    const compactScale = Math.max(0.36, this.fontSize(this.elements.name) * 2 / this.fontSize(this.elements.vck));
 
     this.elements.screen.classList.add('opening-active');
     gsap.set(this.elements.screen, { autoAlpha: 1 });
-    gsap.set(this.elements.star, { scale: 0.18, autoAlpha: 0, x: 0, y: 0, xPercent: -50, yPercent: -50 });
+    gsap.set(this.elements.star, { scale: 0.18, autoAlpha: 0, x: centerStarX, y: 0 });
     gsap.set([this.elements.vck, this.elements.name], { autoAlpha: 0, x: 0, y: 0, scale: 1 });
     const vertices = Array.from(this.elements.star.querySelectorAll<SVGCircleElement>('.opening-star-vertex'));
     gsap.set(vertices, { scale: 0.2, autoAlpha: 0, transformOrigin: '50% 50%' });
@@ -101,8 +114,27 @@ export class OpeningAnimation {
         ease: 'sine.inOut',
         onUpdate: () => this.draw(state.progress, state.glow)
       }, 0.72)
+      .to(this.elements.star, { x: 0, duration: 0.5, ease: 'power2.inOut' }, 0.82)
       .fromTo(this.elements.vck, { autoAlpha: 0, y: 18, scale: 0.94 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.62, ease: 'power3.out' }, 1.06)
-      .fromTo(this.elements.name, { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.52, ease: 'power2.out' }, 1.55)
+      .to(this.elements.star, { x: expandedStarX, y: expandedStarY, duration: 0.82, ease: 'power2.inOut' }, 1.82)
+      .to(this.elements.vck, {
+        x: expandedCopyX,
+        scale: compactScale,
+        duration: 0.82,
+        ease: 'power2.inOut'
+      }, 1.82)
+      .fromTo(this.elements.name, {
+        autoAlpha: 0,
+        x: expandedCopyX,
+        scaleX: 0.08,
+        transformOrigin: '0% 50%'
+      }, {
+        autoAlpha: 1,
+        x: expandedCopyX,
+        scaleX: 1,
+        duration: 0.82,
+        ease: 'power2.out'
+      }, 1.82)
       .to(this.elements.star, {
         x: anchor.left + anchor.width / 2 - (starStart.left + starStart.width / 2),
         y: anchor.top + anchor.height / 2 - (starStart.top + starStart.height / 2),
@@ -110,14 +142,14 @@ export class OpeningAnimation {
         duration: 1.25,
         ease: 'power2.inOut',
         onStart: this.onStarArrival
-      }, 2.3)
+      }, 3.02)
       .to(this.elements.vck, {
         x: brandVck.left + brandVck.width / 2 - (vckFrom.left + vckFrom.width / 2),
         y: brandVck.top + brandVck.height / 2 - (vckFrom.top + vckFrom.height / 2),
         scale: vckScale,
         duration: 0.9,
         ease: 'power2.inOut'
-      }, 2.38)
+      }, 3.1)
       .to(this.elements.name, {
         x: brandName.width ? brandName.left + brandName.width / 2 - (nameFrom.left + nameFrom.width / 2) : 0,
         y: brandName.height ? brandName.top + brandName.height / 2 - (nameFrom.top + nameFrom.height / 2) : 0,
@@ -125,9 +157,9 @@ export class OpeningAnimation {
         autoAlpha: brandName.width ? 1 : 0,
         duration: 0.9,
         ease: 'power2.inOut'
-      }, 2.38)
-      .to(state, { progress: 1.2, duration: 0.7, ease: 'power1.in', onUpdate: () => this.draw(state.progress, state.glow) }, 2.95)
-      .to(this.elements.screen, { autoAlpha: 0, duration: 0.42, ease: 'power1.out' }, 3.18);
+      }, 3.1)
+      .to(state, { progress: 1.2, duration: 0.7, ease: 'power1.in', onUpdate: () => this.draw(state.progress, state.glow) }, 3.65)
+      .to(this.elements.screen, { autoAlpha: 0, duration: 0.42, ease: 'power1.out' }, 4.25);
     vertices.forEach((vertex, index) => {
       const time = 0.52 + index * 0.085;
       this.timeline?.fromTo(vertex, { scale: 0.2, autoAlpha: 0 }, {

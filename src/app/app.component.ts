@@ -16,17 +16,19 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
     <main class="hero-shell" [class.light-theme]="theme() === 'light'" [class.opening-active]="openingActive()" [attr.lang]="language()">
       <div #openingScreen class="opening-screen" aria-hidden="true">
         <canvas #openingCanvas class="opening-particles"></canvas>
-        <svg #openingStar class="opening-star" viewBox="0 0 100 100" aria-hidden="true">
-          <polygon points="50,4 61,36 96,37 68,58 78,92 50,73 22,92 32,58 4,37 39,36" />
-          <circle class="opening-star-vertex opening-star-vertex-blue" cx="50" cy="4" r="2.5" />
-          <circle class="opening-star-vertex opening-star-vertex-red" cx="96" cy="37" r="2.5" />
-          <circle class="opening-star-vertex opening-star-vertex-blue" cx="78" cy="92" r="2.5" />
-          <circle class="opening-star-vertex opening-star-vertex-red" cx="22" cy="92" r="2.5" />
-          <circle class="opening-star-vertex opening-star-vertex-blue" cx="4" cy="37" r="2.5" />
-        </svg>
-        <div class="opening-identity">
-          <span #openingVck class="opening-vck">VCK</span>
-          <span #openingName class="opening-name">VIDUTHALAI CHIRUTHAIGAL KATCHI</span>
+        <div #openingIdentity class="opening-identity">
+          <svg #openingStar class="opening-star" viewBox="0 0 100 100" aria-hidden="true">
+            <polygon points="50,4 61,36 96,37 68,58 78,92 50,73 22,92 32,58 4,37 39,36" />
+            <circle class="opening-star-vertex opening-star-vertex-blue" cx="50" cy="4" r="2.5" />
+            <circle class="opening-star-vertex opening-star-vertex-red" cx="96" cy="37" r="2.5" />
+            <circle class="opening-star-vertex opening-star-vertex-blue" cx="78" cy="92" r="2.5" />
+            <circle class="opening-star-vertex opening-star-vertex-red" cx="22" cy="92" r="2.5" />
+            <circle class="opening-star-vertex opening-star-vertex-blue" cx="4" cy="37" r="2.5" />
+          </svg>
+          <div class="opening-copy">
+            <span #openingVck class="opening-vck">VCK</span>
+            <span #openingName class="opening-name">VIDUTHALAI CHIRUTHAIGAL KATCHI</span>
+          </div>
         </div>
       </div>
       <header class="topbar">
@@ -156,6 +158,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('openingScreen', { static: true }) private openingScreenRef!: ElementRef<HTMLElement>;
   @ViewChild('openingCanvas', { static: true }) private openingCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('openingStar', { static: true }) private openingStarRef!: ElementRef<SVGSVGElement>;
+  @ViewChild('openingIdentity', { static: true }) private openingIdentityRef!: ElementRef<HTMLElement>;
   @ViewChild('openingVck', { static: true }) private openingVckRef!: ElementRef<HTMLElement>;
   @ViewChild('openingName', { static: true }) private openingNameRef!: ElementRef<HTMLElement>;
   @ViewChild('brandVck', { static: true }) private brandVckRef!: ElementRef<HTMLElement>;
@@ -239,6 +242,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       screen: this.openingScreenRef.nativeElement,
       canvas: this.openingCanvasRef.nativeElement,
       star: this.openingStarRef.nativeElement,
+      identity: this.openingIdentityRef.nativeElement,
       vck: this.openingVckRef.nativeElement,
       name: this.openingNameRef.nativeElement,
       brandVck: this.brandVckRef.nativeElement,
