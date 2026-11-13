@@ -18,7 +18,8 @@
             "styles": ["src/styles.css"],
           "assets": [
             { "glob": "**/*", "input": "public" },
-            { "glob": "**/*", "input": "assets/Ideology_leaders", "output": "assets/Ideology_leaders" }
+            { "glob": "**/*", "input": "assets/Ideology_leaders", "output": "assets/Ideology_leaders" },
+            { "glob": "**/*", "input": "assets/hero_section", "output": "assets/hero_section" }
           ]
           },
           "configurations": {

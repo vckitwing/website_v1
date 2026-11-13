@@ -1,4 +1,5 @@
 import { gsap } from 'gsap';
+import { getFlagStarArrivalScroll } from '../../story/flag-star-geometry';
 
 type AnimationConditions = {
   isDesktop: boolean;
@@ -37,6 +38,16 @@ export async function createFlagAnimation(root: HTMLElement): Promise<() => void
 
     const mobile = conditions.isMobile;
     const starBounds = star.getBBox();
+    const separationAt = mobile ? 4 : 2.05;
+    const colourCardsAt = mobile ? 4.9 : 2.42;
+    const starMeaningAt = mobile ? 1.9 : 3.32;
+    const starFlightAt = mobile ? 2.45 : 3.32;
+    const starMergeAt = mobile ? 3.25 : 4.1;
+    const getStarMeaningLift = () => {
+      const figureBounds = figure.getBoundingClientRect();
+      const meaningBounds = starMeaning.getBoundingClientRect();
+      return figureBounds.bottom - meaningBounds.top + 20;
+    };
     const getStarFlight = () => {
       const sectionBounds = root.getBoundingClientRect();
       const sourceBounds = star.getBoundingClientRect();
@@ -70,7 +81,7 @@ export async function createFlagAnimation(root: HTMLElement): Promise<() => void
       defaults: { ease: 'power2.inOut' },
       scrollTrigger: {
         trigger: section,
-        start: 'top 82%',
+        start: conditions.isDesktop ? () => getFlagStarArrivalScroll(star) + 1 : 'top 82%',
         end: 'bottom bottom',
         scrub: mobile ? .35 : .65,
         invalidateOnRefresh: true
@@ -78,6 +89,7 @@ export async function createFlagAnimation(root: HTMLElement): Promise<() => void
     });
 
     timeline
+      .set(starMeaning, { y: () => mobile ? getStarMeaningLift() : 0 }, 0)
       .addLabel('formation', 0)
       .to(blue, { scaleY: 1, duration: .65 }, 0)
       .to(red, { scaleY: 1, duration: .65 }, .12)
@@ -87,30 +99,31 @@ export async function createFlagAnimation(root: HTMLElement): Promise<() => void
       .addLabel('expansion', 1.15)
       .to(figure, { scale: mobile ? 1.08 : 1.2, duration: .8 }, 1.15)
       .to(aura, { scale: 1.35, autoAlpha: .88, duration: .75 }, 1.2)
-      .addLabel('separation', 2.05)
+      .addLabel('separation', separationAt)
       .to(blue, {
         attr: mobile
           ? { x: 0, y: -38, width: 900, height: 230 }
           : { x: 35, y: 112, width: 330, height: 376 },
         duration: .85
-      }, 2.05)
+      }, separationAt)
       .to(red, {
         attr: mobile
           ? { x: 0, y: 408, width: 900, height: 230 }
           : { x: 535, y: 112, width: 330, height: 376 },
         duration: .85
-      }, 2.05)
-      .to([blue, red], { autoAlpha: 0, duration: .42 }, 2.52)
-      .to(star, { scale: 1.08, duration: .55 }, 2.16)
-      .to(aura, { autoAlpha: 0, duration: .35 }, 2.7)
-      .to(star, { autoAlpha: 0, duration: .12 }, 3.4)
-      .to(heading, { y: -16, autoAlpha: 0, duration: .45, ease: 'power2.out' }, 2.12)
-      .to(scrollHint, { autoAlpha: 0, duration: .35 }, 2.12)
-      .addLabel('colourCards', 2.42)
-      .to(blueCard, { x: 0, y: 0, autoAlpha: 1, duration: .72, ease: 'power2.out' }, 2.42)
-      .to(redCard, { x: 0, y: 0, autoAlpha: 1, duration: .72, ease: 'power2.out' }, 2.56)
-      .addLabel('starMeaning', 3.32)
-      .to(starMeaning, { autoAlpha: 1, duration: .65, ease: 'power2.out' }, 3.32)
+      }, separationAt)
+      .to([blue, red], { autoAlpha: 0, duration: .42 }, separationAt + .47)
+      .to(star, { scale: 1.08, duration: .55 }, separationAt + .11)
+      .to(aura, { autoAlpha: 0, duration: .35 }, separationAt + .65)
+      .to(star, { autoAlpha: 0, duration: .12 }, mobile ? starFlightAt : 3.4)
+      .to(heading, { y: -16, autoAlpha: 0, duration: .45, ease: 'power2.out' }, separationAt + .07)
+      .to(scrollHint, { autoAlpha: 0, duration: .35 }, separationAt + .07)
+      .addLabel('colourCards', colourCardsAt)
+      .to(blueCard, { x: 0, y: 0, autoAlpha: 1, duration: .72, ease: 'power2.out' }, colourCardsAt)
+      .to(redCard, { x: 0, y: 0, autoAlpha: 1, duration: .72, ease: 'power2.out' }, colourCardsAt + .14)
+      .addLabel('starMeaning', starMeaningAt)
+      .to(starMeaning, { autoAlpha: 1, duration: .65, ease: 'power2.out' }, starMeaningAt)
+      .to(starMeaning, { y: 0, duration: .85, ease: 'power2.inOut' }, mobile ? separationAt : starMeaningAt)
       .set(starFlight, {
         x: () => getStarFlight().sourceX,
         y: () => getStarFlight().sourceY,
@@ -120,23 +133,23 @@ export async function createFlagAnimation(root: HTMLElement): Promise<() => void
         xPercent: -50,
         yPercent: -50,
         autoAlpha: 0
-      }, 3.32)
+      }, starFlightAt)
       .to(starFlight, {
         x: () => getStarFlight().targetX,
         y: () => getStarFlight().targetY,
         scale: () => getStarFlight().scale,
-        duration: .9,
+        duration: mobile ? .8 : .9,
         ease: 'power2.inOut'
-      }, 3.32)
-      .to(starFlight, { autoAlpha: 1, duration: .12 }, 3.32)
-      .to(starFlight, { autoAlpha: 0, duration: .12 }, 4.1)
+      }, starFlightAt)
+      .to(starFlight, { autoAlpha: 1, duration: .12 }, starFlightAt)
+      .to(starFlight, { autoAlpha: 0, duration: .12 }, starMergeAt)
       .to(starMeaningMark, {
         scale: 1,
         rotation: 0,
         autoAlpha: 1,
         duration: .18,
         ease: 'back.out(1.6)'
-      }, 4.1);
+      }, starMergeAt);
 
     return () => timeline.scrollTrigger?.kill();
   });
