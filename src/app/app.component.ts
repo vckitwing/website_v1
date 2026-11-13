@@ -112,7 +112,7 @@ type SloganLine = { parts: SloganPart[] };
         <div class="hero-copy">
           <p #heroEyebrow class="eyebrow"><span class="eyebrow-line"></span> {{ language() === 'ta' ? 'மக்களிலிருந்து எழும் தலைவர்' : 'A LEADER RISES FROM THE PEOPLE' }}</p>
           <div class="slogan" aria-live="polite" aria-atomic="true">
-            <p #heroHeadline class="slogan-text" [class.slogan-long]="formattedSlogan().length > 82" [attr.lang]="language()">
+            <p #heroHeadline class="slogan-text" [class.slogan-long]="formattedSlogan().length > 48" [attr.lang]="language()">
               @for (line of formattedSloganLines(); track $index) {
                 <span #heroHeadlineLine class="hero-headline-line">
                   @for (part of line.parts; track $index) {
