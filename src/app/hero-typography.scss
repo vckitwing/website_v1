@@ -1,0 +1,59 @@
+.hero-copy {
+  .eyebrow {
+    font-family: 'Manrope', 'Noto Sans Tamil', sans-serif;
+    font-weight: 700;
+    color: var(--theme-accent);
+  }
+
+  .slogan .slogan-text {
+    color: #f4f7fc;
+    font-family: 'Space Grotesk', 'Manrope', sans-serif;
+    font-size: clamp(48px, 7.3vw, 112px);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.05em;
+    text-wrap: pretty;
+  }
+
+  .slogan .slogan-text.slogan-long {
+    font-size: clamp(36px, 5.1vw, 78px);
+  }
+
+  .slogan .slogan-text[lang='ta'] {
+    font-family: 'Anek Tamil', 'Noto Sans Tamil', sans-serif;
+    font-size: clamp(42px, 6.5vw, 96px);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0;
+  }
+
+  .slogan .slogan-text[lang='ta'].slogan-long {
+    font-size: clamp(34px, 4.5vw, 70px);
+  }
+}
+
+.hero-headline-line {
+  display: block;
+  overflow: hidden;
+}
+
+.hero-highlight {
+  color: transparent;
+  background-image: linear-gradient(90deg, #2785df 0%, #ed2a40 100%);
+  background-position: 0% 50%;
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-shell.light-theme {
+  .hero-copy .slogan .slogan-text {
+    color: #14243c;
+  }
+
+  .hero-highlight {
+    background-image: linear-gradient(90deg, #176bb8 0%, #c51c35 100%);
+  }
+}
+
