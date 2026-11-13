@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
-import { ParticlePortrait } from './particle-portrait';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
+import { HeroStarNetwork } from './hero-star-network';
+import { createHeroFlagHandoff } from './hero-star-handoff';
+import { OpeningAnimation } from './opening-animation';
 import { FlagSectionComponent } from './sections/flag/flag-section.component';
 import { HistorySectionComponent } from './sections/history/history-section.component';
 import { IdeologySectionComponent } from './sections/ideology/ideology-section.component';
@@ -11,14 +13,29 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
   standalone: true,
   imports: [FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ThemeSwitchTransitionComponent],
   template: `
-    <main class="hero-shell" [class.light-theme]="theme() === 'light'" [attr.lang]="language()">
+    <main class="hero-shell" [class.light-theme]="theme() === 'light'" [class.opening-active]="openingActive()" [attr.lang]="language()">
+      <div #openingScreen class="opening-screen" aria-hidden="true">
+        <canvas #openingCanvas class="opening-particles"></canvas>
+        <svg #openingStar class="opening-star" viewBox="0 0 100 100" aria-hidden="true">
+          <polygon points="50,4 61,36 96,37 68,58 78,92 50,73 22,92 32,58 4,37 39,36" />
+          <circle class="opening-star-vertex opening-star-vertex-blue" cx="50" cy="4" r="2.5" />
+          <circle class="opening-star-vertex opening-star-vertex-red" cx="96" cy="37" r="2.5" />
+          <circle class="opening-star-vertex opening-star-vertex-blue" cx="78" cy="92" r="2.5" />
+          <circle class="opening-star-vertex opening-star-vertex-red" cx="22" cy="92" r="2.5" />
+          <circle class="opening-star-vertex opening-star-vertex-blue" cx="4" cy="37" r="2.5" />
+        </svg>
+        <div class="opening-identity">
+          <span #openingVck class="opening-vck">VCK</span>
+          <span #openingName class="opening-name">VIDUTHALAI CHIRUTHAIGAL KATCHI</span>
+        </div>
+      </div>
       <header class="topbar">
         <button class="mobile-menu-toggle" type="button" (click)="toggleMobileNavigation(); $event.stopPropagation()" [class.menu-open]="mobileNavigationOpen()" [attr.aria-expanded]="mobileNavigationOpen()" aria-controls="main-navigation" [attr.aria-label]="language() === 'ta' ? (mobileNavigationOpen() ? 'வழிசெலுத்தல் பட்டியை மூடவும்' : 'வழிசெலுத்தல் பட்டியைத் திறக்கவும்') : (mobileNavigationOpen() ? 'Close navigation menu' : 'Open navigation menu')">
           <span></span><span></span><span></span>
         </button>
         <a class="brand" href="#home" [attr.aria-label]="language() === 'ta' ? 'விசிக முகப்பு' : 'VCK home'">
           <img class="brand-mark" src="assets/Logo/vck_logo.jpg" alt="" />
-          <span class="brand-copy"><strong>VCK</strong><small>VIDUTHALAI CHIRUTHAIGAL KATCHI</small></span>
+          <span class="brand-copy"><strong #brandVck>VCK</strong><small #brandName>VIDUTHALAI CHIRUTHAIGAL KATCHI</small></span>
         </a>
         <div class="top-actions">
           <button class="language" type="button" (click)="toggleLanguage()" [attr.aria-label]="language() === 'en' ? 'தமிழுக்கு மாற்று' : 'Switch language to English'" [attr.aria-pressed]="language() === 'ta'">
@@ -52,11 +69,40 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
       </nav>
 
       <section class="hero" id="home" [attr.aria-label]="language() === 'ta' ? 'விசிக முன்னணிப் பகுதி' : 'VCK hero'">
-        <img class="hero-artwork" [class.artwork-visible]="portraitFormed()" src="portraits/thiruma.png?v=2" alt="" aria-hidden="true" />
-        <div class="crowd-strip" aria-hidden="true">
-          <img src="portraits/red-blue-rally.png" alt="" />
+        <div class="hero-waves" aria-hidden="true">
+          <svg viewBox="0 0 1600 900" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="hero-wave-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#2785df" stop-opacity="0" />
+                <stop offset="16%" stop-color="#2785df" stop-opacity=".8" />
+                <stop offset="48%" stop-color="#8fcaff" stop-opacity=".45" />
+                <stop offset="82%" stop-color="#ed2a40" stop-opacity=".7" />
+                <stop offset="100%" stop-color="#ed2a40" stop-opacity="0" />
+              </linearGradient>
+              <filter id="hero-wave-blur" x="-20%" y="-30%" width="140%" height="160%">
+                <feGaussianBlur stdDeviation="18" />
+              </filter>
+            </defs>
+            <g class="hero-wave-glow">
+              <path d="M-80 355 C190 185 360 490 620 350 S1010 180 1210 295 S1500 460 1680 240" />
+              <path d="M-80 555 C160 365 380 690 610 530 S980 330 1200 445 S1480 640 1680 410" />
+              <path d="M-80 735 C170 560 370 820 600 700 S1000 500 1210 610 S1485 795 1680 565" />
+            </g>
+            <g class="hero-wave-lines">
+              <path d="M-80 260 C180 100 380 390 610 255 S990 95 1205 205 S1480 360 1680 155" />
+              <path d="M-80 445 C200 300 380 560 630 425 S1010 280 1220 380 S1500 540 1680 345" />
+              <path d="M-80 625 C170 440 380 740 610 585 S990 390 1205 500 S1490 685 1680 455" />
+              <path d="M-80 810 C150 650 365 880 610 770 S1000 590 1220 675 S1490 835 1680 650" />
+              <path d="M-80 350 C160 205 360 500 590 365 S965 190 1175 300 S1470 475 1680 270" />
+              <path d="M-80 700 C200 510 405 795 650 650 S1030 455 1240 570 S1510 735 1680 530" />
+            </g>
+          </svg>
         </div>
-        <canvas #portraitCanvas class="story-canvas" [class.canvas-formed]="portraitFormed()" [attr.aria-label]="language() === 'ta' ? 'நீல மற்றும் சிவப்பு மக்கள் கூட்டத் துகள்கள் எழுந்து தோழர் திருமாவளவனின் உருவப்படத்தை உருவாக்குகின்றன.' : 'Blue and red crowd particles rise and form a portrait of Thol. Thirumavalavan.'"></canvas>
+        <img class="hero-artwork" src="assets/hero_section/thiruma.png" [attr.alt]="language() === 'ta' ? 'தோழர் திருமாவளவன்' : 'Thol. Thirumavalavan'" />
+        <div class="crowd-strip" aria-hidden="true">
+          <img src="assets/hero_section/crowd.png" alt="" />
+        </div>
+        <canvas #portraitCanvas class="story-canvas" aria-hidden="true"></canvas>
         <div class="hero-copy">
           <p class="eyebrow"><span class="eyebrow-line"></span> {{ language() === 'ta' ? 'மக்களிலிருந்து எழும் தலைவர்' : 'A LEADER RISES FROM THE PEOPLE' }}</p>
           <div class="slogan" aria-live="polite" aria-atomic="true">
@@ -64,14 +110,8 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
           </div>
         </div>
 
-        <div class="portrait-stage" [class.portrait-ready]="portraitReady()" [class.portrait-fallback]="portraitFailed()" [class.portrait-formed]="portraitFormed()">
+        <div #heroAnchor class="portrait-stage portrait-settled">
           <div class="portrait-halo" aria-hidden="true"></div>
-          <img class="mobile-artwork" [class.artwork-visible]="portraitFormed()" src="portraits/thiruma.png?v=2" [attr.alt]="language() === 'ta' ? 'தந்தை பெரியார் மற்றும் டாக்டர் பி. ஆர். அம்பேத்கருடன் தோழர் திருமாவளவன்' : 'Thol. Thirumavalavan with Periyar and Dr. B. R. Ambedkar'" />
-          @if (portraitFailed()) {
-            <div class="portrait-alt" role="img" [attr.aria-label]="language() === 'ta' ? 'உருவப்படம் கிடைக்கவில்லை. விசிக தலைவர் தோழர் திருமாவளவன்.' : 'Portrait unavailable. Thol. Thirumavalavan, VCK President.'">
-              <span>விடுதலை</span><strong>தொல்.<br>திருமாவளவன்</strong><small>{{ language() === 'ta' ? 'தோழர் திருமாவளவன்' : 'THOL. THIRUMAVALAVAN' }}</small>
-            </div>
-          }
           <div class="portrait-caption"><span class="caption-dot"></span><span>{{ language() === 'ta' ? 'தொல். திருமாவளவன்' : 'THOL. THIRUMAVALAVAN' }}</span><span class="caption-role">{{ language() === 'ta' ? 'தலைவர், விசிக' : 'PRESIDENT, VCK' }}</span></div>
           <p class="portrait-hint">{{ language() === 'ta' ? 'தொட்டு நகர்த்தவும்' : 'TOUCH TO MOVE' }} <span aria-hidden="true">✳</span></p>
         </div>
@@ -109,10 +149,18 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
   styleUrl: './app.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('portraitCanvas', { static: true }) private canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('themeToggleButton', { static: true }) private themeToggleButtonRef!: ElementRef<HTMLButtonElement>;
   @ViewChild('themeTransition', { static: true }) private themeTransitionRef!: ThemeSwitchTransitionComponent;
+  @ViewChild('openingScreen', { static: true }) private openingScreenRef!: ElementRef<HTMLElement>;
+  @ViewChild('openingCanvas', { static: true }) private openingCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('openingStar', { static: true }) private openingStarRef!: ElementRef<SVGSVGElement>;
+  @ViewChild('openingVck', { static: true }) private openingVckRef!: ElementRef<HTMLElement>;
+  @ViewChild('openingName', { static: true }) private openingNameRef!: ElementRef<HTMLElement>;
+  @ViewChild('brandVck', { static: true }) private brandVckRef!: ElementRef<HTMLElement>;
+  @ViewChild('brandName', { static: true }) private brandNameRef!: ElementRef<HTMLElement>;
+  @ViewChild('heroAnchor', { static: true }) private heroAnchorRef!: ElementRef<HTMLElement>;
   readonly slogans = [
     { ta: 'அடங்க மறு, அத்து மீறு, திமிறி எழு, திருப்பி அடி', en: 'Refuse to submit, transgress the limits, rise up in defiance, strike back.' },
     { ta: 'விழிப்பாய் இரு! நெருப்பாய் எழு!', en: 'Stay alert! Rise up like fire!' },
@@ -169,18 +217,14 @@ export class AppComponent implements OnInit, OnDestroy {
       ]
     }
   ];
-  readonly portraitReady = signal(false);
-  readonly portraitFailed = signal(false);
-  readonly portraitFormed = signal(false);
-  private portrait?: ParticlePortrait;
+  readonly openingActive = signal(true);
+  private starNetwork?: HeroStarNetwork;
+  private opening?: OpeningAnimation;
+  private handoffCleanup?: () => void;
   private sloganTimer?: number;
 
   ngOnInit(): void {
-    this.portrait = new ParticlePortrait(this.canvasRef.nativeElement, {
-      onReady: () => this.portraitReady.set(true),
-      onFallback: () => this.portraitFailed.set(true),
-      onFormed: () => this.portraitFormed.set(true)
-    });
+    this.starNetwork = new HeroStarNetwork(this.canvasRef.nativeElement);
     this.sloganTimer = window.setInterval(() => {
       this.activeSlogan.update((current) => {
         const next = Math.floor(Math.random() * (this.slogans.length - 1));
@@ -188,6 +232,26 @@ export class AppComponent implements OnInit, OnDestroy {
       });
       this.animateSlogan();
     }, 4600);
+  }
+
+  ngAfterViewInit(): void {
+    this.opening = new OpeningAnimation({
+      screen: this.openingScreenRef.nativeElement,
+      canvas: this.openingCanvasRef.nativeElement,
+      star: this.openingStarRef.nativeElement,
+      vck: this.openingVckRef.nativeElement,
+      name: this.openingNameRef.nativeElement,
+      brandVck: this.brandVckRef.nativeElement,
+      brandName: this.brandNameRef.nativeElement,
+      heroAnchor: this.heroAnchorRef.nativeElement
+    }, () => this.starNetwork?.revealNetwork(), () => this.openingActive.set(false));
+    this.opening.play(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+    void createHeroFlagHandoff(this.heroAnchorRef.nativeElement, (progress) => {
+      this.starNetwork?.setStarHandoff(progress);
+    }).then((cleanup) => {
+      this.handoffCleanup = cleanup;
+    }, (error: unknown) => console.error('Unable to initialize the hero-to-flag star handoff.', error));
   }
 
   toggleLanguage(): void {
@@ -243,6 +307,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     window.clearInterval(this.sloganTimer);
-    this.portrait?.destroy();
+    this.opening?.destroy();
+    this.handoffCleanup?.();
+    this.starNetwork?.destroy();
   }
 }

@@ -140,6 +140,11 @@
   transform-origin: center;
 }
 
+.flag-section.hero-star-covered .flag-star,
+.flag-section.hero-star-covered .flag-star-aura {
+  visibility: hidden !important;
+}
+
 .flag-scroll-hint {
   position: absolute;
   z-index: 4;
