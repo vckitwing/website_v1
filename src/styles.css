@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anek+Tamil:wght@700;800&family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap');
 :root { color-scheme:dark; font-family:'Montserrat','Noto Sans Tamil',sans-serif; font-synthesis:none; text-rendering:optimizeLegibility; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
 * { box-sizing:border-box; }
 html { min-height:100%; scroll-behavior:smooth; background:#07111f; scrollbar-color:#405069 #07111f; scrollbar-width:thin; }

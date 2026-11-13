@@ -1,4 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, signal } from '@angular/core';
+import { gsap } from 'gsap';
 import { HeroStarNetwork } from './hero-star-network';
 import { createHeroFlagHandoff } from './hero-star-handoff';
 import { OpeningAnimation } from './opening-animation';
@@ -7,6 +8,9 @@ import { HistorySectionComponent } from './sections/history/history-section.comp
 import { IdeologySectionComponent } from './sections/ideology/ideology-section.component';
 import { ThinkersSectionComponent } from './sections/thinkers/thinkers-section.component';
 import { ThemeSwitchTransitionComponent } from './theme-switch-transition.component';
+
+type SloganPart = { text: string; highlighted: boolean };
+type SloganLine = { parts: SloganPart[] };
 
 @Component({
   selector: 'vck-root',
@@ -106,9 +110,17 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
         </div>
         <canvas #portraitCanvas class="story-canvas" aria-hidden="true"></canvas>
         <div class="hero-copy">
-          <p class="eyebrow"><span class="eyebrow-line"></span> {{ language() === 'ta' ? 'மக்களிலிருந்து எழும் தலைவர்' : 'A LEADER RISES FROM THE PEOPLE' }}</p>
+          <p #heroEyebrow class="eyebrow"><span class="eyebrow-line"></span> {{ language() === 'ta' ? 'மக்களிலிருந்து எழும் தலைவர்' : 'A LEADER RISES FROM THE PEOPLE' }}</p>
           <div class="slogan" aria-live="polite" aria-atomic="true">
-            <p class="slogan-text" [class.slogan-motion-a]="sloganMotion()" [class.slogan-motion-b]="!sloganMotion()" [attr.lang]="language()">{{ formattedSlogan() }}</p>
+            <p #heroHeadline class="slogan-text" [class.slogan-long]="formattedSlogan().length > 82" [attr.lang]="language()">
+              @for (line of formattedSloganLines(); track $index) {
+                <span #heroHeadlineLine class="hero-headline-line">
+                  @for (part of line.parts; track $index) {
+                    <span [class.hero-highlight]="part.highlighted">{{ part.text }}</span>
+                  }
+                </span>
+              }
+            </p>
           </div>
         </div>
 
@@ -148,7 +160,7 @@ import { ThemeSwitchTransitionComponent } from './theme-switch-transition.compon
     </div>
     <vck-theme-switch-transition #themeTransition />
   `,
-  styleUrl: './app.component.css',
+  styleUrls: ['./app.component.css', './hero-typography.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -164,6 +176,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('brandVck', { static: true }) private brandVckRef!: ElementRef<HTMLElement>;
   @ViewChild('brandName', { static: true }) private brandNameRef!: ElementRef<HTMLElement>;
   @ViewChild('heroAnchor', { static: true }) private heroAnchorRef!: ElementRef<HTMLElement>;
+  @ViewChild('heroEyebrow', { static: true }) private heroEyebrowRef!: ElementRef<HTMLElement>;
+  @ViewChild('heroHeadline', { static: true }) private heroHeadlineRef!: ElementRef<HTMLParagraphElement>;
+  @ViewChildren('heroHeadlineLine') private heroHeadlineLineRefs!: QueryList<ElementRef<HTMLElement>>;
   readonly slogans = [
     { ta: 'அடங்க மறு, அத்து மீறு, திமிறி எழு, திருப்பி அடி', en: 'Refuse to submit, transgress the limits, rise up in defiance, strike back.' },
     { ta: 'விழிப்பாய் இரு! நெருப்பாய் எழு!', en: 'Stay alert! Rise up like fire!' },
@@ -173,10 +188,44 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     { ta: 'தேவையை உணராமல் போராட முடியாது; களத்தில் போராடத் தெரியாமல் நீ வாழ முடியாது', en: 'You cannot fight without realizing the need; you cannot live without knowing how to fight in the field.' },
     { ta: 'பிறப்பொக்கும் எல்லா உயிர்க்கும்! சாதியற்ற சமத்துவ சமுதாயம் படைப்போம்!', en: 'All lives are equal by birth! Let us build a casteless, egalitarian society!' }
   ];
+  private readonly sloganHighlights = [
+    { ta: 'எழு', en: 'rise' },
+    { ta: 'நெருப்பாய்', en: 'fire' },
+    { ta: 'தலைகீழாய்', en: 'revolution' },
+    { ta: 'சாதியத்தை', en: 'casteism' },
+    { ta: 'அதிகாரம்', en: 'power' },
+    { ta: 'போராட', en: 'fight' },
+    { ta: 'சமத்துவ', en: 'equal' }
+  ];
   readonly activeSlogan = signal(Math.floor(Math.random() * this.slogans.length));
   readonly language = signal<'en' | 'ta'>('en');
   readonly formattedSlogan = computed(() => this.slogans[this.activeSlogan()][this.language()].replace(/([!;])\s*/g, '$1\n'));
-  readonly sloganMotion = signal(false);
+  readonly formattedSloganLines = computed<SloganLine[]>(() => {
+    const text = this.formattedSlogan();
+    const highlight = this.sloganHighlights[this.activeSlogan()][this.language()];
+    const matchIndex = this.language() === 'en'
+      ? text.toLowerCase().indexOf(highlight.toLowerCase())
+      : text.indexOf(highlight);
+    let offset = 0;
+
+    return text.split('\n').map((line) => {
+      const lineStart = offset;
+      const lineEnd = lineStart + line.length;
+      offset = lineEnd + 1;
+
+      if (matchIndex < lineStart || matchIndex >= lineEnd) {
+        return { parts: [{ text: line, highlighted: false }] };
+      }
+
+      const highlightStart = matchIndex - lineStart;
+      const highlightEnd = highlightStart + highlight.length;
+      const parts: SloganPart[] = [];
+      if (highlightStart > 0) parts.push({ text: line.slice(0, highlightStart), highlighted: false });
+      parts.push({ text: line.slice(highlightStart, highlightEnd), highlighted: true });
+      if (highlightEnd < line.length) parts.push({ text: line.slice(highlightEnd), highlighted: false });
+      return { parts };
+    });
+  });
   readonly theme = signal<'dark' | 'light'>(this.readSavedTheme());
   readonly openNavigation = signal<string | null>(null);
   readonly mobileNavigationOpen = signal(false);
@@ -225,6 +274,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private opening?: OpeningAnimation;
   private handoffCleanup?: () => void;
   private sloganTimer?: number;
+  private heroTextTimeline?: gsap.core.Timeline;
+  private heroAnimationFrame?: number;
 
   ngOnInit(): void {
     this.starNetwork = new HeroStarNetwork(this.canvasRef.nativeElement);
@@ -248,7 +299,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       brandVck: this.brandVckRef.nativeElement,
       brandName: this.brandNameRef.nativeElement,
       heroAnchor: this.heroAnchorRef.nativeElement
-    }, () => this.starNetwork?.revealNetwork(), () => this.openingActive.set(false));
+    }, () => this.starNetwork?.revealNetwork(), () => {
+      this.openingActive.set(false);
+      this.animateHeroTypography(true);
+    });
     this.opening.play(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
     void createHeroFlagHandoff(this.heroAnchorRef.nativeElement, (progress) => {
@@ -263,7 +317,64 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.animateSlogan();
   }
 
-  private animateSlogan(): void { this.sloganMotion.update((value) => !value); }
+  private animateSlogan(): void {
+    if (this.heroAnimationFrame !== undefined) window.cancelAnimationFrame(this.heroAnimationFrame);
+    this.heroAnimationFrame = window.requestAnimationFrame(() => {
+      this.heroAnimationFrame = undefined;
+      this.animateHeroTypography(false);
+    });
+  }
+
+  private animateHeroTypography(includeEyebrow: boolean): void {
+    this.heroTextTimeline?.kill();
+    const eyebrow = this.heroEyebrowRef.nativeElement;
+    const lines = this.heroHeadlineLineRefs.toArray().map((line) => line.nativeElement);
+    const highlights = Array.from(this.heroHeadlineRef.nativeElement.querySelectorAll<HTMLElement>('.hero-highlight'));
+    const animatedElements = [...(includeEyebrow ? [eyebrow] : []), ...lines, ...highlights];
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      gsap.set(animatedElements, { clearProps: 'clipPath,transform,opacity,visibility,backgroundPosition' });
+      return;
+    }
+
+    const timeline = gsap.timeline();
+    if (includeEyebrow) {
+      timeline.fromTo(eyebrow, {
+        clipPath: 'inset(0 100% 0 0)',
+        x: -8,
+        autoAlpha: 0
+      }, {
+        clipPath: 'inset(0 0% 0 0)',
+        x: 0,
+        autoAlpha: 1,
+        duration: 0.42,
+        ease: 'power2.out'
+      });
+    }
+    if (lines.length) {
+      timeline.fromTo(lines, {
+        clipPath: 'inset(0 100% 0 0)',
+        y: 14
+      }, {
+        clipPath: 'inset(0 0% 0 0)',
+        y: 0,
+        duration: 0.68,
+        stagger: 0.11,
+        ease: 'power3.out'
+      }, includeEyebrow ? 0.14 : 0);
+    }
+    if (highlights.length) {
+      timeline.fromTo(highlights, {
+        backgroundPosition: '0% 50%'
+      }, {
+        backgroundPosition: '100% 50%',
+        duration: 0.85,
+        ease: 'sine.inOut'
+      }, includeEyebrow ? 0.84 : 0.68);
+    }
+    this.heroTextTimeline = timeline;
+  }
+
   toggleMobileNavigation(): void {
     this.mobileNavigationOpen.update((isOpen) => !isOpen);
     this.openNavigation.set(null);
@@ -311,6 +422,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     window.clearInterval(this.sloganTimer);
+    if (this.heroAnimationFrame !== undefined) window.cancelAnimationFrame(this.heroAnimationFrame);
+    this.heroTextTimeline?.kill();
     this.opening?.destroy();
     this.handoffCleanup?.();
     this.starNetwork?.destroy();
