@@ -11,9 +11,10 @@ Official website for **Viduthalai Chiruthaigal Katchi (VCK)**, a Tamil Nadu poli
 - Angular 22 (standalone components, signals, `OnPush`, no NgModules, no router yet) — `@angular/build:application` builder
 - TypeScript 6, `strict` + `strictTemplates`
 - GSAP 3 (+ `ScrollTrigger`, dynamically imported) for all animation
-- three.js 0.180 (hero star network / particles)
+- three.js 0.180 (hero star network / particles, and the 3D headline). Plain three.js is used rather than Angular Three, to match the existing `HeroStarNetwork` pattern and avoid a new dependency.
 - **SCSS only** — component-scoped `.scss` files, global styles in `frontend/src/styles.scss`
 - Node 26 in CI
+- Dev-only: `fontkit` + `@fontsource/*` fonts for the headline outline generator (not shipped)
 
 ## Commands
 
@@ -51,6 +52,8 @@ frontend/src/
     pages/home/                        The landing page (only page for now)
       hero/                            hero-star-network, hero-portrait-reveal,
                                        hero-star-handoff, opening-animation, hero-typography.scss
+        typography/                    3D headline: hero-typography-3d.ts (three.js class) and
+                                       hero-headline-outlines.ts (GENERATED glyph outlines)
       sections/<name>/                 flag, ideology, history, thinkers
         <name>-section.component.{ts,html,scss}
         <name>-animation.ts            GSAP/ScrollTrigger timeline factory for that section
@@ -59,6 +62,7 @@ frontend/src/
     shared/                            Cross-page code (import via `@shared/...` alias)
       story/                           star-journey.ts, flag-star-geometry.ts
       theme-switch-transition/         Theme change overlay component
+frontend/tools/    Dev-time Node scripts (generate-typography-outlines.mjs)
 frontend/assets/   Source images (Ideology_leaders, Logo, hero_section, portraits, book_assets, vendor)
 frontend/public/   Served at site root (portraits/, assets/Logo/)
 ```
@@ -66,6 +70,7 @@ frontend/public/   Served at site root (portraits/, assets/Logo/)
 ### Conventions
 
 - **Bilingual everywhere.** Every user-visible string needs `en` and `ta` variants. Content lives in `data/` files (`{ en, ta }` objects, or separate `*.en.ts` / `*.ta.ts` as in ideology). Template strings in `app.component.ts` use `language() === 'ta' ? … : …`. Never ship an English-only string. Tamil text uses `Noto Sans Tamil` / `Anek Tamil`; test line wrapping.
+- **3D hero headline** ("ORGANIZE AND UNITE" / "அமைப்பாய்த் திரள்வோம்"). Real extruded three.js geometry (`HeroTypography3D`), lazy-loaded from `AppComponent.ngOnInit`, in a `<canvas class="hero-headline-3d">` behind the portrait. API: `reveal()` (after the opening animation), `setLanguage()`, `setTheme()`, `destroy()`. It handles pointer parallax, float, reduced-motion (static frame), pausing off-screen, and compact/mobile quality. Tamil needs complex-script shaping that `TextGeometry` can't do, so glyph outlines are pre-shaped at dev time with `fontkit` into `hero-headline-outlines.ts` — **never edit that file by hand**; to change the text or fonts edit `tools/generate-typography-outlines.mjs` and run `npm run generate:headline` (fonts come from the `@fontsource/anek-tamil` and `@fontsource/montserrat` devDependencies, OFL). The frontend is Node/Angular only — no Python. Layout/lighting constants live in `HERO_TYPOGRAPHY_CONFIG`. Desktop: the copy block sits at the bottom-left under the headline; mobile: the headline is pinned to the top and `.hero-copy` has top padding to make room (both in `hero-typography.scss`).
 - **Section pattern.** New section = standalone component with `@Input({ required: true }) language`, `OnPush`, `sectionRoot` ViewChild, and animation in a sibling `*-animation.ts` returning a cleanup function; call cleanup in `ngOnDestroy`. Register it in `AppComponent.imports` and its template.
 - **Content as data.** Keep copy, years, names and image paths in typed `data/` files, not in templates.
 - **Animation.** GSAP only. Respect `prefers-reduced-motion` (see `hero-star-handoff.ts`). Always kill timelines/ScrollTriggers/animation frames on destroy. Desktop breakpoint used in code is `min-width: 1101px`.

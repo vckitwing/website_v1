@@ -2,7 +2,11 @@
   "name": "vck-website",
   "version": "0.1.0",
   "private": true,
-  "scripts": { "start": "ng serve", "build": "ng build" },
+  "scripts": {
+    "start": "ng serve",
+    "build": "ng build",
+    "generate:headline": "node tools/generate-typography-outlines.mjs"
+  },
   "dependencies": {
     "@angular/animations": "^22.2.0",
     "@angular/common": "^22.2.0",
@@ -10,8 +14,8 @@
     "@angular/core": "^22.2.0",
     "@angular/platform-browser": "^22.2.0",
     "gsap": "^3.13.0",
-    "three": "^0.180.0",
     "rxjs": "~7.8.2",
+    "three": "^0.180.0",
     "tslib": "^2.8.1",
     "zone.js": "^0.16.0"
   },
@@ -19,7 +23,11 @@
     "@angular/build": "^22.2.0",
     "@angular/cli": "^22.2.0",
     "@angular/compiler-cli": "^22.2.0",
+    "@fontsource/anek-tamil": "^5.3.0",
+    "@fontsource/montserrat": "^5.3.0",
+    "@types/fontkit": "^2.0.9",
     "@types/three": "^0.180.0",
+    "fontkit": "^3.0.0",
     "typescript": "~6.0.0"
   }
 }

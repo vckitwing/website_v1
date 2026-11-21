@@ -4,6 +4,7 @@ import { hasCompletedHeroPortraitReveal, HeroPortraitReveal } from './pages/home
 import { HeroStarNetwork } from './pages/home/hero/hero-star-network';
 import { createHeroFlagHandoff } from './pages/home/hero/hero-star-handoff';
 import { OpeningAnimation } from './pages/home/hero/opening-animation';
+import type { HeroTypography3D } from './pages/home/hero/typography/hero-typography-3d';
 import { FlagSectionComponent } from './pages/home/sections/flag/flag-section.component';
 import { HistorySectionComponent } from './pages/home/sections/history/history-section.component';
 import { IdeologySectionComponent } from './pages/home/sections/ideology/ideology-section.component';
@@ -23,6 +24,7 @@ type SloganLine = { parts: SloganPart[] };
 })
 export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('portraitCanvas', { static: true }) private canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('headlineCanvas', { static: true }) private headlineCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('themeToggleButton', { static: true }) private themeToggleButtonRef!: ElementRef<HTMLButtonElement>;
   @ViewChild('themeTransition', { static: true }) private themeTransitionRef!: ThemeSwitchTransitionComponent;
   @ViewChild('openingScreen', { static: true }) private openingScreenRef!: ElementRef<HTMLElement>;
@@ -132,6 +134,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly openingActive = signal(true);
   readonly portraitRevealPending = signal(true);
   private starNetwork?: HeroStarNetwork;
+  private headline3d?: HeroTypography3D;
+  private destroyed = false;
   private portraitReveal?: HeroPortraitReveal;
   private opening?: OpeningAnimation;
   private handoffCleanup?: () => void;
@@ -142,6 +146,12 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.portraitRevealPending.set(!hasCompletedHeroPortraitReveal());
     this.starNetwork = new HeroStarNetwork(this.canvasRef.nativeElement);
+    // Lazy chunk: the extruded headline (outlines, SVGLoader, environment map) is not needed for first paint.
+    void import('./pages/home/hero/typography/hero-typography-3d').then(({ HeroTypography3D }) => {
+      if (this.destroyed) return;
+      this.headline3d = new HeroTypography3D(this.headlineCanvasRef.nativeElement, this.language(), this.theme());
+      if (!this.openingActive()) this.headline3d.reveal();
+    }, (error: unknown) => console.error('Unable to load the 3D hero headline.', error));
     this.sloganTimer = window.setInterval(() => {
       this.activeSlogan.update((current) => {
         const next = Math.floor(Math.random() * (this.slogans.length - 1));
@@ -172,6 +182,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     }, () => this.startPortraitReveal(), () => {
       this.openingActive.set(false);
       this.animateHeroTypography(true);
+      this.headline3d?.reveal();
     });
     this.opening.play(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -184,6 +195,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleLanguage(): void {
     this.language.update((value) => value === 'en' ? 'ta' : 'en');
+    this.headline3d?.setLanguage(this.language());
     this.animateSlogan();
   }
 
@@ -298,6 +310,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     const previous = this.theme();
     const next = previous === 'dark' ? 'light' : 'dark';
     this.theme.set(next);
+    this.headline3d?.setTheme(next);
     try { localStorage.setItem('vck-theme', next); } catch { /* Theme still works if storage is unavailable. */ }
     this.themeTransitionRef.play(this.themeToggleButtonRef.nativeElement, previous);
   }
@@ -308,6 +321,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
     window.clearInterval(this.sloganTimer);
     if (this.heroAnimationFrame !== undefined) window.cancelAnimationFrame(this.heroAnimationFrame);
     this.heroTextTimeline?.kill();
@@ -315,5 +329,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.portraitReveal?.destroy();
     this.handoffCleanup?.();
     this.starNetwork?.destroy();
+    this.headline3d?.destroy();
   }
 }
