@@ -1,0 +1,12 @@
+<figure #figure class="signature">
+  <svg class="signature-svg" [attr.viewBox]="viewBox" preserveAspectRatio="xMidYMid meet" role="img" [attr.aria-label]="label">
+    <defs>
+      <mask [attr.id]="maskId" maskUnits="userSpaceOnUse" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="box.width" [attr.height]="box.height">
+        @for (stroke of strokes; track stroke.id) {
+          <path #penStroke class="signature-pen" [attr.d]="stroke.d" [attr.stroke-width]="stroke.width" />
+        }
+      </mask>
+    </defs>
+    <path class="signature-ink" [attr.d]="fillPath" fill-rule="evenodd" [attr.mask]="'url(#' + maskId + ')'" />
+  </svg>
+</figure>

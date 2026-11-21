@@ -9,20 +9,20 @@ export type HeroTheme = 'dark' | 'light';
 /** Tunables, all in font units (1000 per em) unless noted. */
 export const HERO_TYPOGRAPHY_CONFIG = {
   cameraFov: 30,
+  /** Shadow softness (VSM blur radius in shadow-map texels; higher = blurrier). */
+  shadowBlur: 18,
   cameraDistance: 100,
   extrudeDepth: 170,
   bevelThickness: 16,
   bevelSize: 11,
   /** Fraction of the viewport width the average headline line spans (>1 bleeds past the edges). */
-  coverage: { desktop: { en: .88, ta: .8 }, mobile: { en: 1, ta: .92 } },
+  coverage: { desktop: { en: .68, ta: .68 }, mobile: { en: .8, ta: .8 } },
   /** Vertical offset of the stack as a fraction of the visible height (positive = up). */
   verticalOffset: { desktop: 0.15 },
-  /** Mobile: px between the top of the hero and the top of the headline. */
-  mobileTopMargin: 14,
   /** Horizontal offset as a fraction of the visible width (negative = left, away from the portrait). */
-  horizontalOffset: { desktop: -0.045, mobile: 0 },
+  horizontalOffset: { desktop: -0.1, mobile: 0 },
   /** Distance between baselines. */
-  lineAdvance: { en: 800, ta: 1180 },
+  lineAdvance: { en: 980, ta: 1180 },
   baseRotation: { x: 0.1, y: -0.2, z: 0.03 },
   parallax: { rotateX: 0.12, rotateY: 0.2, shift: 0.035 },
   maxPixelRatio: { desktop: 1.75, mobile: 1.5 }
@@ -31,9 +31,46 @@ export const HERO_TYPOGRAPHY_CONFIG = {
 type Palette = { face: number; side: number; shadow: number; envIntensity: number; exposure: number };
 
 const PALETTES: Record<HeroTheme, Palette> = {
-  dark: { face: 0xf1f5fc, side: 0x9fb4d2, shadow: 0x02060f, envIntensity: 1, exposure: 1.05 },
+  dark: { face: 0xf4f7fc, side: 0x9fb4d2, shadow: 0x02060f, envIntensity: 1, exposure: 1.05 },
   light: { face: 0x2a4a78, side: 0x14294a, shadow: 0x4b6283, envIntensity: .7, exposure: 1 }
 };
+
+/** Shared uniforms for the flowing white -> blue -> red -> white colour gradient on the letters. */
+const GRADIENT = {
+  uTime: { value: 0 },
+  uSpan: { value: 60 },
+  uStrength: { value: 0.85 },
+  uWhite: { value: new THREE.Color(0xf4f7fc) },
+  uBlue: { value: new THREE.Color(0x2f8cf0) },
+  uRed: { value: new THREE.Color(0xed2a40) }
+};
+
+function applyFlowingGradient(material: THREE.MeshPhysicalMaterial): void {
+  material.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, GRADIENT);
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', `#include <common>
+varying vec3 vFlowPos;`)
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+vFlowPos = (modelMatrix * vec4(transformed, 1.0)).xyz;`);
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>
+varying vec3 vFlowPos;
+uniform float uTime;
+uniform float uSpan;
+uniform float uStrength;
+uniform vec3 uWhite;
+uniform vec3 uBlue;
+uniform vec3 uRed;`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        float flow = fract(vFlowPos.x / uSpan * 0.8 + vFlowPos.y / uSpan * 0.25 - uTime * 0.07);
+        float seg = flow * 3.0;
+        float k = smoothstep(0.0, 1.0, fract(seg));
+        vec3 flowColor = seg < 1.0 ? mix(uWhite, uBlue, k) : (seg < 2.0 ? mix(uBlue, uRed, k) : mix(uRed, uWhite, k));
+        diffuseColor.rgb = mix(diffuseColor.rgb, flowColor, uStrength);`);
+  };
+  material.customProgramCacheKey = () => 'vck-flow-gradient';
+}
 
 type BuiltLine = { mesh: THREE.Mesh; bounds: HeadlineLine['bounds']; baseline: number };
 
@@ -43,6 +80,7 @@ type BuiltLine = { mesh: THREE.Mesh; bounds: HeadlineLine['bounds']; baseline: n
  */
 export class HeroTypography3D {
   private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  private readonly mobileLayout = window.matchMedia('(max-width: 760px)');
   private readonly compactQuery = window.matchMedia('(max-width: 760px), (pointer: coarse)');
   private readonly clock = new THREE.Clock();
   private readonly pointer = { x: 0, y: 0, smoothX: 0, smoothY: 0 };
@@ -52,8 +90,9 @@ export class HeroTypography3D {
     this.updateLoop();
   }, { threshold: 0.01 });
   private readonly resizeObserver = new ResizeObserver(() => this.resize());
-  private readonly faceMaterial = new THREE.MeshPhysicalMaterial({ metalness: .92, roughness: .24, clearcoat: 1, clearcoatRoughness: .12 });
-  private readonly sideMaterial = new THREE.MeshPhysicalMaterial({ metalness: .96, roughness: .36 });
+  // Satin finish (about 10% duller than the original glossy chrome): higher roughness, softer clear-coat.
+  private readonly faceMaterial = new THREE.MeshPhysicalMaterial({ metalness: .9, roughness: .34, clearcoat: .8, clearcoatRoughness: .22 });
+  private readonly sideMaterial = new THREE.MeshPhysicalMaterial({ metalness: .94, roughness: .46 });
   private readonly cache = new Map<HeadlineLanguage, { group: THREE.Group; geometries: THREE.BufferGeometry[]; lines: BuiltLine[] }>();
 
   private renderer?: THREE.WebGLRenderer;
@@ -100,7 +139,8 @@ export class HeroTypography3D {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.setClearColor(0x000000, 0);
     renderer.shadowMap.enabled = this.shadowsEnabled();
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    // VSM is the shadow type whose blur radius actually works (PCFSoft ignores it), giving a very soft, blurry shadow.
+    renderer.shadowMap.type = THREE.VSMShadowMap;
 
     // Studio reflections give the extruded metal its chrome-white look.
     const pmrem = new THREE.PMREMGenerator(renderer);
@@ -112,8 +152,10 @@ export class HeroTypography3D {
     this.scene.add(this.stage, this.keyLight, this.keyLight.target, this.redLight, this.blueLight);
     this.keyLight.castShadow = this.shadowsEnabled();
     this.keyLight.shadow.mapSize.set(this.compactQuery.matches ? 1024 : 2048, this.compactQuery.matches ? 1024 : 2048);
-    this.keyLight.shadow.bias = -0.0004;
-    this.keyLight.shadow.radius = 5;
+    this.keyLight.shadow.bias = -0.0005;
+    this.keyLight.shadow.normalBias = 0.02;
+    this.keyLight.shadow.radius = HERO_TYPOGRAPHY_CONFIG.shadowBlur;
+    this.keyLight.shadow.blurSamples = 25;
 
     const plane = new THREE.Mesh(
       new THREE.PlaneGeometry(1, 1),
@@ -123,6 +165,8 @@ export class HeroTypography3D {
     this.shadowPlane = plane;
     this.scene.add(plane);
 
+    applyFlowingGradient(this.faceMaterial);
+    applyFlowingGradient(this.sideMaterial);
     this.applyPalette();
     this.mount(this.language);
     this.resizeObserver.observe(canvas);
@@ -211,13 +255,15 @@ export class HeroTypography3D {
   private applyPalette(): void {
     const palette = PALETTES[this.theme];
     this.faceMaterial.color.setHex(palette.face);
+    GRADIENT.uWhite.value.setHex(palette.face);
+    GRADIENT.uStrength.value = this.theme === 'dark' ? 0.82 : 0.7;
     this.sideMaterial.color.setHex(palette.side);
     this.faceMaterial.envMapIntensity = palette.envIntensity;
     this.sideMaterial.envMapIntensity = palette.envIntensity * .85;
     (this.shadowPlane?.material as THREE.ShadowMaterial | undefined)?.color.setHex(palette.shadow);
     if (this.renderer) this.renderer.toneMappingExposure = palette.exposure;
     const dark = this.theme === 'dark';
-    this.keyLight.color.setHex(dark ? 0xdfeaff : 0xffffff);
+    this.keyLight.color.setHex(dark ? 0xdfeaff : 0xf4f7fc);
     this.keyLight.intensity = dark ? 2.6 : 2.1;
     this.redLight.intensity = dark ? 16000 : 5000;
     this.blueLight.intensity = dark ? 9000 : 5000;
@@ -288,35 +334,35 @@ export class HeroTypography3D {
     this.renderOnce();
   }
 
-  /** Scales the stack so the headline is monumental, bleeding past the viewport edges. */
+  /**
+   * Scales the stack. Desktop: monumental, bleeding past the viewport edges. Mobile: the canvas is its own block at the
+   * top of the hero, and the text is fitted *inside* it (longest line = `coverage` of the width) so no edge is cut.
+   */
   private layout(): void {
     if (!this.active) return;
     const config = HERO_TYPOGRAPHY_CONFIG;
-    const compact = this.compactQuery.matches;
+    const mobile = this.mobileLayout.matches;
     const language = this.language;
     const visibleHeight = 2 * config.cameraDistance * Math.tan(THREE.MathUtils.degToRad(config.cameraFov / 2));
     const visibleWidth = visibleHeight * this.camera.aspect;
     const lines = this.active.lines;
 
-    const averageWidth = lines.reduce((sum, line) => sum + (line.bounds[2] - line.bounds[0]), 0) / lines.length;
-    const coverage = (compact ? config.coverage.mobile : config.coverage.desktop)[language];
-    // On very wide/short heroes keep the stack from outgrowing the height.
+    const lineWidths = lines.map((line) => line.bounds[2] - line.bounds[0]);
+    const referenceWidth = mobile ? Math.max(...lineWidths) : lineWidths.reduce((sum, width) => sum + width, 0) / lines.length;
+    const coverage = (mobile ? config.coverage.mobile : config.coverage.desktop)[language];
     const stackHeight = Math.max(...lines.map((line) => line.baseline - line.bounds[1])) - Math.min(...lines.map((line) => line.baseline - line.bounds[3]));
-    const scale = Math.min((coverage * visibleWidth) / averageWidth, (visibleHeight * .6) / stackHeight);
+    const scale = Math.min((coverage * visibleWidth) / referenceWidth, (visibleHeight * (mobile ? .78 : .6)) / stackHeight);
     this.layoutScale = scale;
 
     const top = Math.max(...lines.map((line) => line.baseline - line.bounds[1]));
     const bottom = Math.min(...lines.map((line) => line.baseline - line.bounds[3]));
     this.stage.scale.setScalar(scale);
-    const stackWorldHeight = (top - bottom) * scale;
-    // Desktop: centred band, nudged up. Mobile: pinned to the top of the hero (the copy leaves room for it, see hero-typography.scss).
     const centerLocal = ((top + bottom) / 2) * scale;
-    const targetCenter = compact
-      ? visibleHeight / 2 - stackWorldHeight / 2 - visibleHeight * (config.mobileTopMargin / this.height)
-      : visibleHeight * config.verticalOffset.desktop;
+    const targetCenter = mobile ? 0 : visibleHeight * config.verticalOffset.desktop;
     this.stage.userData['centerY'] = targetCenter - centerLocal;
     this.stage.userData['visibleWidth'] = visibleWidth;
-    this.stage.userData['centerX'] = visibleWidth * (compact ? config.horizontalOffset.mobile : config.horizontalOffset.desktop);
+    GRADIENT.uSpan.value = visibleWidth;
+    this.stage.userData['centerX'] = visibleWidth * (mobile ? config.horizontalOffset.mobile : config.horizontalOffset.desktop);
 
     const depth = config.extrudeDepth * scale;
     this.keyLight.position.set(-visibleWidth * .35, visibleHeight * .55, 70);
@@ -358,6 +404,7 @@ export class HeroTypography3D {
     const config = HERO_TYPOGRAPHY_CONFIG;
     const animated = !this.reducedMotion.matches;
     const visibleWidth = (this.stage.userData['visibleWidth'] as number | undefined) ?? 1;
+    GRADIENT.uTime.value = animated ? time : 0;
     const centerY = (this.stage.userData['centerY'] as number | undefined) ?? 0;
     const centerX = (this.stage.userData['centerX'] as number | undefined) ?? 0;
     const entrance = 1 - this.intro.progress;
@@ -372,7 +419,7 @@ export class HeroTypography3D {
       config.baseRotation.z + (animated ? Math.sin(time * .35) * .008 : 0)
     );
     this.stage.position.set(
-      centerX + px * visibleWidth * config.parallax.shift,
+      centerX + px * visibleWidth * config.parallax.shift * (this.mobileLayout.matches ? 0.35 : 1),
       centerY + floatY + py * visibleWidth * .012,
       entrance * -visibleWidth * .5
     );

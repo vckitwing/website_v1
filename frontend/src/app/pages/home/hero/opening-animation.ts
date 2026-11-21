@@ -61,54 +61,66 @@ export class OpeningAnimation {
     }
 
     const state = { progress: 0, glow: 0 };
-    const starStart = this.elements.star.getBoundingClientRect();
-    const anchor = this.elements.heroAnchor.getBoundingClientRect();
-    const brandVck = this.elements.brandVck.getBoundingClientRect();
-    const brandName = this.elements.brandName.getBoundingClientRect();
-    const size = Math.min(150, anchor.width * 0.38, anchor.height * 0.28);
-    const destinationScale = size / Math.max(starStart.width, 1);
-    const starCenterX = starStart.left + starStart.width / 2;
-    const starCenterY = starStart.top + starStart.height / 2;
-    const centerStarX = window.innerWidth / 2 - starCenterX;
-    const vckFrom = this.elements.vck.getBoundingClientRect();
-    const nameFrom = this.elements.name.getBoundingClientRect();
-    const identityGap = Number.parseFloat(getComputedStyle(this.elements.identity).columnGap) || 0;
-    const vckScale = this.fontSize(this.elements.brandVck) / this.fontSize(this.elements.vck);
-    const nameScale = this.fontSize(this.elements.brandName) / this.fontSize(this.elements.name);
-    const compactScale = Math.max(0.36, this.fontSize(this.elements.name) * 2 / this.fontSize(this.elements.vck));
-    const expandedNameLeft = window.innerWidth / 2 - (nameFrom.width + identityGap + starStart.width) / 2;
-    const expandedCopyX = expandedNameLeft - nameFrom.left;
-    const expandedVckX = expandedCopyX + nameFrom.width - vckFrom.width * (1 + compactScale) / 2;
-    const expandedStarX = expandedNameLeft + nameFrom.width + identityGap + starStart.width / 2 - starCenterX;
-    const expandedNameY = -vckFrom.height * (1 - compactScale) / 2;
-    const expandedContentHeight = vckFrom.height * compactScale
-      + nameFrom.top - (vckFrom.top + vckFrom.height)
-      + nameFrom.height;
-    const expandedStarScale = expandedContentHeight / starStart.height;
-    const expandedContentCenterY = (
-      vckFrom.top + vckFrom.height / 2
-      + nameFrom.top + expandedNameY + nameFrom.height / 2
-    ) / 2;
-    const expandedStarY = expandedContentCenterY - starCenterY;
+    const { screen, star, vck, name, brandVck, brandName, heroAnchor } = this.elements;
+    const screenRect = screen.getBoundingClientRect();
+    const S = star.getBoundingClientRect(); // natural layout: [ VCK ][ star ], centred on the page
+    const V = vck.getBoundingClientRect();
+    const N = name.getBoundingClientRect();
+    const anchor = heroAnchor.getBoundingClientRect();
+    const bV = brandVck.getBoundingClientRect();
+    const bN = brandName.getBoundingClientRect();
+    const pageCenterX = screenRect.left + screenRect.width / 2;
+    const starCenterX = S.left + S.width / 2;
+    const starCenterY = S.top + S.height / 2;
+    const startOffsetX = pageCenterX - starCenterX; // the star first appears alone, at the page centre
 
-    this.elements.screen.classList.add('opening-active');
-    gsap.set(this.elements.screen, { autoAlpha: 1 });
-    gsap.set(this.elements.star, { scale: 0.18, autoAlpha: 0, x: centerStarX, y: 0 });
-    gsap.set([this.elements.vck, this.elements.name], { autoAlpha: 0, x: 0, y: 0, scale: 1 });
-    const vertices = Array.from(this.elements.star.querySelectorAll<SVGCircleElement>('.opening-star-vertex'));
+    // Step 2 - compact lock-up: VCK shrinks, rises and sits right-aligned above the full name; together they are
+    // exactly as tall as the star, and the whole group is centred on the page.
+    const vckFont = this.fontSize(vck);
+    const nameFont = this.fontSize(name);
+    const compactScale = Math.max(0.36, (nameFont * 2) / vckFont);
+    const nameGap = N.top - (V.top + V.height);
+    const compactVckHeight = V.height * compactScale;
+    const blockHeight = compactVckHeight + nameGap + N.height;
+    const lockupStarScale = blockHeight / S.height;
+    const lockupGap = Math.max(12, blockHeight * 0.35);
+    const groupLeft = pageCenterX - (N.width + lockupGap + blockHeight) / 2;
+    const blockTop = starCenterY - blockHeight / 2;
+    const vckLockup = { x: groupLeft + N.width - V.width * compactScale - V.left, y: blockTop - V.top };
+    const nameLockup = { x: groupLeft - N.left, y: blockTop + compactVckHeight + nameGap - N.top };
+    const starLockup = { x: groupLeft + N.width + lockupGap + blockHeight / 2 - starCenterX, y: 0 };
+
+    // Step 3 - flight to the header: text turns left-aligned and lands exactly on the header's own VCK / name
+    // (same size, letter-spacing, weight and colour), so the hand-off to the real header is seamless.
+    const vckLanding = this.landing(V, vckFont, getComputedStyle(vck), bV, getComputedStyle(brandVck), this.fontSize(brandVck));
+    const nameLanding = this.landing(N, nameFont, getComputedStyle(name), bN, getComputedStyle(brandName), this.fontSize(brandName));
+    // On narrow screens the header wraps the name onto two lines; reflow the flying copy to match.
+    const brandNameLineHeight = this.lineHeight(getComputedStyle(brandName), this.fontSize(brandName));
+    const brandNameWraps = bN.height > brandNameLineHeight * 1.6;
+
+    // Freeze the text column's width: the letter-spacing animation below must not re-centre the flex row.
+    gsap.set(vck.parentElement, { width: V.width });
+
+    screen.classList.add('opening-active');
+    gsap.set(screen, { autoAlpha: 1 });
+    gsap.set(star, { scale: 0.18, autoAlpha: 0, x: startOffsetX, y: 0 });
+    gsap.set([vck, name], { autoAlpha: 0, x: 0, y: 0, scale: 1, transformOrigin: '0 0' });
+    const vertices = Array.from(star.querySelectorAll<SVGCircleElement>('.opening-star-vertex'));
     gsap.set(vertices, { scale: 0.2, autoAlpha: 0, transformOrigin: '50% 50%' });
+    const shell = brandVck.closest('.hero-shell');
 
     this.timeline = gsap.timeline({
       onComplete: () => {
         this.complete = true;
         this.stopDrawing();
-        this.elements.screen.classList.add('opening-complete');
+        screen.classList.add('opening-complete');
         this.onComplete();
       }
     });
 
     this.timeline
-      .to(this.elements.star, { scale: 1, autoAlpha: 1, duration: 0.52, ease: 'back.out(2)' }, 0.12)
+      // 1 - the star comes up in the middle of the page...
+      .to(star, { scale: 1, autoAlpha: 1, duration: 0.52, ease: 'back.out(2)' }, 0.12)
       .to(state, {
         progress: 1,
         duration: 1.12,
@@ -121,62 +133,60 @@ export class OpeningAnimation {
         ease: 'sine.inOut',
         onUpdate: () => this.draw(state.progress, state.glow)
       }, 0.72)
-      .to(this.elements.star, { x: 0, duration: 0.5, ease: 'power2.inOut' }, 0.82)
-      .fromTo(this.elements.vck, { autoAlpha: 0, y: 18, scale: 0.94 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.62, ease: 'power3.out' }, 1.06)
-      .to(this.elements.star, {
-        x: expandedStarX,
-        y: expandedStarY,
-        scale: expandedStarScale,
-        duration: 0.82,
-        ease: 'power2.inOut'
-      }, 1.82)
-      .to(this.elements.vck, {
-        x: expandedVckX,
-        scale: compactScale,
-        duration: 0.82,
-        ease: 'power2.inOut'
-      }, 1.82)
-      .fromTo(this.elements.name, {
+      // ...then moves right to make room, and VCK arrives on its left; the pair is centred.
+      .to(star, { x: 0, duration: 0.5, ease: 'power2.inOut' }, 0.82)
+      .fromTo(vck, { autoAlpha: 0, x: -34, y: 0, scale: 0.94 }, { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 0.62, ease: 'power3.out' }, 1.06)
+      // 2 - VCK shrinks and rises to the star's height; the full name appears beneath it, right-aligned.
+      .to(star, { x: starLockup.x, y: starLockup.y, scale: lockupStarScale, duration: 0.82, ease: 'power2.inOut' }, 1.82)
+      .to(vck, { x: vckLockup.x, y: vckLockup.y, scale: compactScale, duration: 0.82, ease: 'power2.inOut' }, 1.82)
+      .fromTo(name, {
         autoAlpha: 0,
-        x: expandedCopyX,
-        y: expandedNameY,
+        x: nameLockup.x,
+        y: nameLockup.y,
         scaleX: 0.08,
-        transformOrigin: '0% 50%'
+        scaleY: 1
       }, {
         autoAlpha: 1,
-        x: expandedCopyX,
-        y: expandedNameY,
+        x: nameLockup.x,
+        y: nameLockup.y,
         scaleX: 1,
         duration: 0.82,
         ease: 'power2.out'
       }, 1.82)
-      .to(this.elements.star, {
-        x: anchor.left + anchor.width / 2 - (starStart.left + starStart.width / 2),
-        y: anchor.top + anchor.height / 2 - (starStart.top + starStart.height / 2),
-        scale: destinationScale,
+      // 3 - the star flies to the portrait; VCK and the name turn left-aligned and settle into the header.
+      .to(star, {
+        x: anchor.left + anchor.width / 2 - starCenterX,
+        y: anchor.top + anchor.height / 2 - starCenterY,
+        scale: Math.min(150, anchor.width * 0.38, anchor.height * 0.28) / Math.max(S.width, 1),
         duration: 1.25,
         ease: 'power2.inOut',
         onStart: this.onStarArrival
       }, 3.02)
-      .set([this.elements.vck, this.elements.name], { textAlign: 'left' }, 3.1)
-      .to(this.elements.vck, {
-        x: brandVck.left + brandVck.width / 2 - (vckFrom.left + vckFrom.width / 2),
-        y: brandVck.top + brandVck.height / 2 - (vckFrom.top + vckFrom.height / 2),
-        scale: vckScale,
+      .set(name, brandNameWraps ? { textAlign: 'left', whiteSpace: 'normal', maxWidth: 'none', width: bN.width / nameLanding.scale } : { textAlign: 'left' }, 3.1)
+      .set(vck, { textAlign: 'left' }, 3.1)
+      .to(vck, {
+        x: vckLanding.x,
+        y: vckLanding.y,
+        scale: vckLanding.scale,
+        letterSpacing: vckLanding.letterSpacing,
         duration: 0.9,
         ease: 'power2.inOut'
       }, 3.1)
-      .to(this.elements.name, {
-        x: brandName.width ? brandName.left - nameFrom.left : 0,
-        y: brandName.height ? brandName.top + brandName.height / 2 - (nameFrom.top + nameFrom.height / 2) : 0,
-        scaleX: brandName.width ? brandName.width / nameFrom.width : 0.8,
-        scaleY: brandName.width ? nameScale : 0.8,
-        autoAlpha: brandName.width ? 1 : 0,
+      .to(name, {
+        x: nameLanding.x,
+        y: nameLanding.y,
+        scale: nameLanding.scale,
+        letterSpacing: nameLanding.letterSpacing,
+        fontWeight: nameLanding.fontWeight,
+        color: nameLanding.color,
         duration: 0.9,
         ease: 'power2.inOut'
       }, 3.1)
+      // The header's own text becomes visible exactly underneath, then the intro screen fades away.
+      .add(() => shell?.classList.add('opening-brand-ready'), 4.05)
       .to(state, { progress: 1.2, duration: 0.7, ease: 'power1.in', onUpdate: () => this.draw(state.progress, state.glow) }, 3.65)
-      .to(this.elements.screen, { autoAlpha: 0, duration: 0.42, ease: 'power1.out' }, 4.25);
+      .to(screen, { autoAlpha: 0, duration: 0.42, ease: 'power1.out' }, 4.25)
+      .add(() => shell?.classList.remove('opening-brand-ready'), 4.7);
     vertices.forEach((vertex, index) => {
       const time = 0.52 + index * 0.085;
       this.timeline?.fromTo(vertex, { scale: 0.2, autoAlpha: 0 }, {
@@ -192,6 +202,34 @@ export class OpeningAnimation {
     this.timeline?.kill();
     this.resizeObserver.disconnect();
     this.stopDrawing();
+  }
+
+  /** Transform + typography that make a flying element coincide with the header text it becomes. */
+  private landing(
+    from: DOMRect,
+    fromFont: number,
+    fromStyle: CSSStyleDeclaration,
+    to: DOMRect,
+    toStyle: CSSStyleDeclaration,
+    toFont: number
+  ): { x: number; y: number; scale: number; letterSpacing: number; fontWeight: number; color: string } {
+    const scale = toFont / fromFont;
+    const fromLine = this.lineHeight(fromStyle, fromFont) * scale;
+    const toLine = this.lineHeight(toStyle, toFont);
+    const toSpacing = Number.parseFloat(toStyle.letterSpacing);
+    return {
+      x: to.left - from.left, // origin is the top-left corner, so this is the left edge: left-aligned with the header
+      y: to.top + (toLine - fromLine) / 2 - from.top, // first lines share a centre line
+      scale,
+      letterSpacing: (Number.isFinite(toSpacing) ? toSpacing : 0) / scale, // CSS value; the scale then shrinks it
+      fontWeight: Number.parseInt(toStyle.fontWeight, 10) || 400,
+      color: toStyle.color
+    };
+  }
+
+  private lineHeight(style: CSSStyleDeclaration, fontSize: number): number {
+    const value = Number.parseFloat(style.lineHeight);
+    return Number.isFinite(value) ? value : fontSize * 1.2;
   }
 
   private fontSize(element: HTMLElement): number {

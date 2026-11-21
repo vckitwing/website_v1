@@ -1,0 +1,37 @@
+:host {
+  display: block;
+  // Set --signature-ink on a parent to override the theme defaults.
+  --signature-ink-resolved: var(--signature-ink, #eaf1ff);
+}
+
+:host-context(.light-theme) {
+  --signature-ink-resolved: var(--signature-ink, #14243c);
+}
+
+.signature {
+  margin: 0;
+  width: 100%;
+}
+
+.signature-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+// Visible ink: the traced outline of the real signature. The background stays transparent.
+.signature-ink {
+  fill: var(--signature-ink-resolved);
+}
+
+// Mask strokes (white = revealed). They start fully hidden; the component then measures each path and animates
+// stroke-dashoffset to 0. Round caps keep the reveal edge soft, like a pen tip.
+.signature-pen {
+  fill: none;
+  stroke: #fff;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 100000;
+  stroke-dashoffset: 100000;
+}

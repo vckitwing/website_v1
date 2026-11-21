@@ -150,11 +150,11 @@
   border: 1px solid var(--thinker-edge);
   border-radius: inherit;
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, .11), transparent 30%),
+    linear-gradient(145deg, rgba(244, 247, 252, .11), transparent 30%),
     linear-gradient(160deg, rgba(25, 45, 70, .83), var(--thinker-glass) 62%, rgba(8, 21, 37, .82));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .17),
-    inset 0 -1px 0 rgba(255, 255, 255, .04),
+    inset 0 1px 0 rgba(244, 247, 252, .17),
+    inset 0 -1px 0 rgba(244, 247, 252, .04),
     0 28px 66px rgba(0, 0, 0, .38);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
@@ -166,9 +166,9 @@
 .thinker-card-face::before {
   position: absolute;
   inset: 1px;
-  border: 1px solid rgba(255, 255, 255, .035);
+  border: 1px solid rgba(244, 247, 252, .035);
   border-radius: calc(20px - 1px);
-  background: linear-gradient(118deg, rgba(255, 255, 255, .075), transparent 34%, transparent 68%, rgba(255, 255, 255, .035));
+  background: linear-gradient(118deg, rgba(244, 247, 252, .075), transparent 34%, transparent 68%, rgba(244, 247, 252, .035));
   content: '';
   pointer-events: none;
 }
@@ -313,7 +313,7 @@
   width: 25%;
   height: 1px;
   margin: 0 auto;
-  background: #fff;
+  background: #f4f7fc;
   box-shadow: 0 0 9px rgba(213, 234, 255, .8);
 }
 
@@ -348,7 +348,7 @@
   color: rgba(234, 243, 253, .86);
   background:
     radial-gradient(circle, rgba(112, 179, 231, .23), transparent 68%),
-    rgba(255, 255, 255, .025);
+    rgba(244, 247, 252, .025);
   box-shadow: 0 0 42px rgba(96, 165, 221, .17), inset 0 0 22px rgba(202, 228, 250, .055);
   font-size: 20px;
   font-weight: 600;
@@ -445,10 +445,10 @@
 
 :host-context(.light-theme) .thinker-card-face {
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, .75), transparent 34%),
+    linear-gradient(145deg, rgba(244, 247, 252, .75), transparent 34%),
     linear-gradient(160deg, rgba(246, 250, 255, .96), rgba(226, 236, 247, .94));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .9),
+    inset 0 1px 0 rgba(244, 247, 252, .9),
     inset 0 -1px 0 rgba(41, 69, 100, .06),
     0 28px 66px rgba(37, 59, 84, .2);
 }
@@ -468,7 +468,7 @@
   border-color: rgba(28, 64, 101, .12);
   background:
     radial-gradient(ellipse at 50% 52%, rgba(83, 149, 200, .22), transparent 58%),
-    linear-gradient(160deg, rgba(112, 160, 201, .12), rgba(255, 255, 255, .1));
+    linear-gradient(160deg, rgba(112, 160, 201, .12), rgba(244, 247, 252, .1));
 }
 
 :host-context(.light-theme) .portrait-placeholder svg {
@@ -478,7 +478,7 @@
 
 :host-context(.light-theme) .portrait-monogram {
   color: #1d3858;
-  text-shadow: 0 2px 12px rgba(255, 255, 255, .8);
+  text-shadow: 0 2px 12px rgba(244, 247, 252, .8);
 }
 
 :host-context(.light-theme) .portrait-note,
@@ -489,7 +489,7 @@
 :host-context(.light-theme) .thinker-back-emblem {
   border-color: rgba(35, 77, 119, .24);
   color: #24496f;
-  background: radial-gradient(circle, rgba(83, 149, 200, .16), transparent 68%), rgba(255, 255, 255, .38);
+  background: radial-gradient(circle, rgba(83, 149, 200, .16), transparent 68%), rgba(244, 247, 252, .38);
 }
 
 :host-context(.light-theme) .thinker-close {

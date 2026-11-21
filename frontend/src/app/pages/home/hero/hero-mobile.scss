@@ -1,0 +1,85 @@
+// Mobile hero (<= 760px). A single column, top to bottom:
+//   1. the 3D headline (its own block, fitted inside the screen - never cut at the edges)
+//   2. the leader's portrait
+//   3. his signature
+//   4. the running slogan, overlaid on the crowd
+// This file is loaded last so these rules win over the desktop/default rules in the other hero stylesheets.
+$side: clamp(24px, 6.2vw, 96px); // the hero shell's side padding (see app.component.scss)
+$headline-height: clamp(210px, 60vw, 270px);
+$portrait-overlap: 64px; // how far the signature tucks up into the portrait's faded base
+
+@media (max-width: 760px) {
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0;
+  }
+
+  // 1 - headline: a normal-flow block, as wide as the screen.
+  .hero-headline-3d {
+    position: relative;
+    inset: auto;
+    order: 0;
+    flex: 0 0 auto;
+    width: calc(100% + 2 * #{$side});
+    height: $headline-height;
+    margin-inline: calc(-1 * #{$side});
+  }
+
+  // 2 - portrait: the spacer reserves room, the (absolutely placed) portrait layers sit on top of it, starting just
+  // under the headline.
+  .portrait-stage {
+    order: 1;
+    height: calc((100vw + 48px) * 1.094 - #{$portrait-overlap} - 42px);
+    min-height: 0;
+    max-height: none;
+    margin-top: 0;
+  }
+
+  .hero-artwork,
+  .hero-portrait-3d,
+  .portrait-trace {
+    top: calc(#{$headline-height} - 48px);
+    bottom: auto;
+  }
+
+  // The crowd sits behind the lower part of the stack (portrait base, signature and slogan).
+  .crowd-strip {
+    height: clamp(320px, 88vw, 400px);
+  }
+
+  // 3 - signature: in the flow, tucked up into the portrait's faded base.
+  .hero-signature {
+    position: relative;
+    inset: auto;
+    order: 2;
+    z-index: 7;
+    align-self: center;
+    width: clamp(170px, 50vw, 220px);
+    margin: 0 auto 4px;
+    transform: none;
+  }
+
+  // 4 - running slogan over the crowd.
+  .hero-copy {
+    order: 3;
+    top: auto;
+    margin: 0;
+    padding: 0 4px 26px 2px;
+
+    .slogan {
+      min-height: 0;
+      margin-top: 10px;
+    }
+
+    .eyebrow {
+      margin-bottom: 0;
+    }
+  }
+
+  .hero-footer {
+    order: 4;
+  }
+}

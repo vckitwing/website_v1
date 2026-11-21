@@ -148,12 +148,12 @@ $history-node-count: 11;
 }
 
 .history-star-marker {
-  --star-point-active: #fff;
-  --star-point-inactive: rgba(255, 255, 255, .1);
-  --star-point-stroke: rgba(255, 255, 255, .82);
-  --star-point-glow: rgba(255, 255, 255, .72);
+  --star-point-active: #f4f7fc;
+  --star-point-inactive: rgba(244, 247, 252, .1);
+  --star-point-stroke: rgba(244, 247, 252, .82);
+  --star-point-glow: rgba(244, 247, 252, .72);
   --star-focus: #74c4ff;
-  --star-line: rgba(255, 255, 255, .9);
+  --star-line: rgba(244, 247, 252, .9);
   position: absolute;
   z-index: 3;
   top: 0;
@@ -287,7 +287,7 @@ $history-node-count: 11;
   --history-ink: #16283f;
   --history-muted: #52657b;
   --history-line: rgba(43, 74, 108, .22);
-  --history-card: rgba(255, 255, 255, .9);
+  --history-card: rgba(244, 247, 252, .9);
   --history-card-edge: rgba(26, 54, 84, .12);
   --history-accent: #176bb8;
   background:
@@ -312,7 +312,7 @@ $history-node-count: 11;
 
 :host-context(.light-theme) .history-node.is-complete,
 :host-context(.light-theme) .history-node.is-active {
-  border-color: #fff;
+  border-color: #f4f7fc;
   background: #176bb8;
 }
 

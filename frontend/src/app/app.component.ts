@@ -8,22 +8,25 @@ import type { HeroTypography3D } from './pages/home/hero/typography/hero-typogra
 import { FlagSectionComponent } from './pages/home/sections/flag/flag-section.component';
 import { HistorySectionComponent } from './pages/home/sections/history/history-section.component';
 import { IdeologySectionComponent } from './pages/home/sections/ideology/ideology-section.component';
+import { HandwrittenSignatureComponent } from '@shared/handwritten-signature/handwritten-signature.component';
 import { ThinkersSectionComponent } from './pages/home/sections/thinkers/thinkers-section.component';
 import { ThemeSwitchTransitionComponent } from './shared/theme-switch-transition/theme-switch-transition.component';
 
 type SloganPart = { text: string; highlighted: boolean };
-type SloganLine = { parts: SloganPart[] };
+type SloganWord = { parts: SloganPart[] };
+type SloganLine = { parts: SloganPart[]; words: SloganWord[] };
 
 @Component({
   selector: 'vck-root',
   standalone: true,
-  imports: [FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ThemeSwitchTransitionComponent],
+  imports: [FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, HandwrittenSignatureComponent, ThemeSwitchTransitionComponent],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss', './pages/home/hero/hero-typography.scss'],
+  styleUrls: ['./app.component.scss', './pages/home/hero/hero-typography.scss', './pages/home/hero/hero-signature.scss', './pages/home/hero/hero-mobile.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('portrait3dCanvas', { static: true }) private portrait3dCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('heroSignature', { static: true }) private heroSignatureRef!: HandwrittenSignatureComponent;
   @ViewChild('headlineCanvas', { static: true }) private headlineCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('themeToggleButton', { static: true }) private themeToggleButtonRef!: ElementRef<HTMLButtonElement>;
   @ViewChild('themeTransition', { static: true }) private themeTransitionRef!: ThemeSwitchTransitionComponent;
@@ -76,7 +79,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       offset = lineEnd + 1;
 
       if (matchIndex < lineStart || matchIndex >= lineEnd) {
-        return { parts: [{ text: line, highlighted: false }] };
+        const parts = [{ text: line, highlighted: false }];
+        return { parts, words: this.toWords(parts) };
       }
 
       const highlightStart = matchIndex - lineStart;
@@ -85,7 +89,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       if (highlightStart > 0) parts.push({ text: line.slice(0, highlightStart), highlighted: false });
       parts.push({ text: line.slice(highlightStart, highlightEnd), highlighted: true });
       if (highlightEnd < line.length) parts.push({ text: line.slice(highlightEnd), highlighted: false });
-      return { parts };
+      return { parts, words: this.toWords(parts) };
     });
   });
   readonly theme = signal<'dark' | 'light'>(this.readSavedTheme());
@@ -138,6 +142,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private portraitRevealDone = false;
   readonly portrait3dActive = signal(false);
   private destroyed = false;
+  private signatureTimer?: number;
   private portraitReveal?: HeroPortraitReveal;
   private opening?: OpeningAnimation;
   private handoffCleanup?: () => void;
@@ -198,6 +203,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       this.openingActive.set(false);
       this.animateHeroTypography(true);
       this.headline3d?.reveal();
+      // The hero is now visible: let the president sign it (small beat after the intro settles).
+      this.signatureTimer = window.setTimeout(() => this.heroSignatureRef.play(), 900);
     });
     this.opening.play(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -210,6 +217,25 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.language.update((value) => value === 'en' ? 'ta' : 'en');
     this.headline3d?.setLanguage(this.language());
     this.animateSlogan();
+  }
+
+  /** Splits a slogan line into words, keeping a highlighted word whole even when punctuation follows it. */
+  private toWords(parts: SloganPart[]): SloganWord[] {
+    const words: SloganWord[] = [];
+    let current: SloganPart[] = [];
+    const flush = (): void => {
+      if (current.length) words.push({ parts: current });
+      current = [];
+    };
+    for (const part of parts) {
+      for (const piece of part.text.split(/(\s+)/)) {
+        if (!piece) continue;
+        if (/^\s+$/.test(piece)) flush();
+        else current.push({ text: piece, highlighted: part.highlighted });
+      }
+    }
+    flush();
+    return words;
   }
 
   private animateSlogan(): void {
@@ -240,8 +266,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private animateHeroTypography(includeEyebrow: boolean): void {
     this.heroTextTimeline?.kill();
     const eyebrow = this.heroEyebrowRef.nativeElement;
-    const lines = this.heroHeadlineLineRefs.toArray().map((line) => line.nativeElement);
-    const animatedElements = [...(includeEyebrow ? [eyebrow] : []), ...lines];
+    const words = Array.from(this.heroHeadlineRef.nativeElement.querySelectorAll<HTMLElement>('.hero-word'));
+    const animatedElements = [...(includeEyebrow ? [eyebrow] : []), ...words];
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       gsap.set(animatedElements, { clearProps: 'clipPath,transform,opacity,visibility' });
@@ -262,15 +288,16 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         ease: 'power2.out'
       });
     }
-    if (lines.length) {
-      timeline.fromTo(lines, {
-        clipPath: 'inset(0 100% 0 0)',
-        y: 14
+    if (words.length) {
+      // Words rise into place from beneath their line (each line clips its overflow), one after another.
+      timeline.fromTo(words, {
+        yPercent: 110,
+        autoAlpha: 0
       }, {
-        clipPath: 'inset(0 0% 0 0)',
-        y: 0,
-        duration: 0.68,
-        stagger: 0.11,
+        yPercent: 0,
+        autoAlpha: 1,
+        duration: 0.62,
+        stagger: 0.05,
         ease: 'power3.out'
       }, includeEyebrow ? 0.14 : 0);
     }
@@ -326,6 +353,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroyed = true;
     window.clearInterval(this.sloganTimer);
+    window.clearTimeout(this.signatureTimer);
     if (this.heroAnimationFrame !== undefined) window.cancelAnimationFrame(this.heroAnimationFrame);
     this.heroTextTimeline?.kill();
     this.opening?.destroy();

@@ -5,13 +5,16 @@
     color: var(--theme-accent);
   }
 
+  // Outfit (geometric sans, SIL OFL - free for commercial use) in sentence case. Latin only, so Tamil keeps
+  // Noto Sans Tamil. Outfit is a variable font: 700 for the slogan, 800 for the highlighted word.
   .slogan .slogan-text {
     color: #f4f7fc;
-    font-family: 'Space Grotesk', 'Manrope', sans-serif;
+    font-family: 'Outfit', 'Plus Jakarta Sans', 'Noto Sans Tamil', sans-serif;
     font-size: clamp(48px, 7.3vw, 112px);
     font-weight: 700;
-    line-height: 1.02;
-    letter-spacing: -0.05em;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-transform: none;
     text-wrap: pretty;
   }
 
@@ -20,11 +23,12 @@
   }
 
   .slogan .slogan-text[lang='ta'] {
-    font-family: 'Anek Tamil', 'Noto Sans Tamil', sans-serif;
+    font-family: 'Noto Sans Tamil', 'Anek Tamil', sans-serif;
     font-size: clamp(42px, 6.5vw, 96px);
-    font-weight: 800;
-    line-height: 1.2;
+    font-weight: 700;
+    line-height: 1.3;
     letter-spacing: 0;
+    text-transform: none;
   }
 
   .slogan .slogan-text[lang='ta'].slogan-long {
@@ -43,6 +47,21 @@
 // Solid, high-contrast accent (no gradient / colour animation) so the word never fades into the crowd.
 .hero-highlight {
   color: #ff5a6c;
+  font-weight: 800;
+}
+
+// Each word is its own box so it can rise into place; the margin replaces the space between words.
+.hero-word {
+  display: inline-block;
+  margin-right: 0.27em;
+
+  &:last-child {
+    margin-right: 0;
+  }
+}
+
+[lang='ta'] .hero-word {
+  margin-right: 0.24em;
 }
 
 .hero-shell.light-theme {
@@ -114,10 +133,10 @@
     }
 
     .slogan .slogan-text {
-      font-size: clamp(24px, 2.7vw, 42px);
+      font-size: clamp(26px, 3.1vw, 48px);
       font-weight: 700;
-      line-height: 1.18;
-      letter-spacing: -0.01em;
+      line-height: 1.16;
+      letter-spacing: -0.015em;
     }
 
     .slogan .slogan-text.slogan-long {
@@ -126,7 +145,7 @@
 
     .slogan .slogan-text[lang='ta'] {
       font-size: clamp(23px, 2.6vw, 40px);
-      line-height: 1.28;
+      line-height: 1.38;
       letter-spacing: 0;
     }
 
@@ -150,12 +169,6 @@
   }
 }
 
-// Mobile: the extruded headline is pinned to the top of the hero; the copy starts below it.
-@media (max-width: 760px) {
-  .hero-copy {
-    padding-top: clamp(150px, 42vw, 200px);
-  }
-}
 
 .hero-shell.light-theme .hero-copy {
   &::before {
@@ -195,9 +208,9 @@
     }
 
     .slogan .slogan-text {
-      font-size: clamp(24px, 7.4vw, 34px);
-      line-height: 1.12;
-      letter-spacing: -0.01em;
+      font-size: clamp(26px, 8.2vw, 38px);
+      line-height: 1.14;
+      letter-spacing: -0.012em;
       overflow-wrap: anywhere;
     }
 
@@ -211,7 +224,7 @@
 
     .slogan .slogan-text[lang='ta'] {
       font-size: clamp(22px, 6.6vw, 30px);
-      line-height: 1.25;
+      line-height: 1.34;
       letter-spacing: 0;
     }
 

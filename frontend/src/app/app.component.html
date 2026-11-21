@@ -2,6 +2,10 @@
   <div #openingScreen class="opening-screen" aria-hidden="true">
     <canvas #openingCanvas class="opening-particles"></canvas>
     <div #openingIdentity class="opening-identity">
+      <div class="opening-copy">
+        <span #openingVck class="opening-vck">VCK</span>
+        <span #openingName class="opening-name">VIDUTHALAI CHIRUTHAIGAL KATCHI</span>
+      </div>
       <svg #openingStar class="opening-star" viewBox="0 0 100 100" aria-hidden="true">
         <polygon points="50,4 61,36 96,37 68,58 78,92 50,73 22,92 32,58 4,37 39,36" />
         <circle class="opening-star-vertex opening-star-vertex-blue" cx="50" cy="4" r="2.5" />
@@ -10,10 +14,6 @@
         <circle class="opening-star-vertex opening-star-vertex-red" cx="22" cy="92" r="2.5" />
         <circle class="opening-star-vertex opening-star-vertex-blue" cx="4" cy="37" r="2.5" />
       </svg>
-      <div class="opening-copy">
-        <span #openingVck class="opening-vck">VCK</span>
-        <span #openingName class="opening-name">VIDUTHALAI CHIRUTHAIGAL KATCHI</span>
-      </div>
     </div>
   </div>
   <header class="topbar">
@@ -69,13 +69,17 @@
         <p #heroHeadline class="slogan-text" [class.slogan-long]="formattedSlogan().length > 48" [class.slogan-xlong]="formattedSlogan().length > 90" [attr.lang]="language()">
           @for (line of formattedSloganLines(); track $index) {
             <span #heroHeadlineLine class="hero-headline-line">
-              @for (part of line.parts; track $index) {
-                <span [class.hero-highlight]="part.highlighted">{{ part.text }}</span>
+              @for (word of line.words; track $index) {
+                <span class="hero-word">@for (part of word.parts; track $index) {<span [class.hero-highlight]="part.highlighted">{{ part.text }}</span>}</span>
               }
             </span>
           }
         </p>
       </div>
+    </div>
+
+    <div class="hero-signature">
+      <vck-handwritten-signature #heroSignature trigger="manual" [replay]="true" [label]="language() === 'ta' ? 'தொல். திருமாவளவனின் கையொப்பம்' : 'Signature of Thol. Thirumavalavan'" />
     </div>
 
     <div #heroAnchor class="portrait-stage portrait-settled">
@@ -101,7 +105,7 @@
     <defs>
       <linearGradient id="story-star-thread-gradient">
         <stop offset="0" stop-color="#69bdff" />
-        <stop offset=".52" stop-color="#fff" />
+        <stop offset=".52" stop-color="#f4f7fc" />
         <stop offset="1" stop-color="#ee5269" />
       </linearGradient>
     </defs>
