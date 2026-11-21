@@ -11,7 +11,7 @@ Official website for **Viduthalai Chiruthaigal Katchi (VCK)**, a Tamil Nadu poli
 - Angular 22 (standalone components, signals, `OnPush`, no NgModules, no router yet) — `@angular/build:application` builder
 - TypeScript 6, `strict` + `strictTemplates`
 - GSAP 3 (+ `ScrollTrigger`, dynamically imported) for all animation
-- three.js 0.180 (hero star network / particles, and the 3D headline). Plain three.js is used rather than Angular Three, to match the existing `HeroStarNetwork` pattern and avoid a new dependency.
+- three.js 0.180 (3D headline, relief portrait and the opening-screen effects; all lazy-loaded). Plain three.js is used rather than Angular Three, to match the existing `HeroStarNetwork` pattern and avoid a new dependency.
 - **SCSS only** — component-scoped `.scss` files, global styles in `frontend/src/styles.scss`
 - Node 26 in CI
 - Dev-only: `fontkit` + `@fontsource/*` fonts for the headline outline generator (not shipped)
@@ -50,8 +50,9 @@ frontend/src/
   app/
     app.component.{ts,html,scss}       Shell, slogans, nav data, theme/language state
     pages/home/                        The landing page (only page for now)
-      hero/                            hero-star-network, hero-portrait-reveal,
+      hero/                            hero-portrait-reveal,
                                        hero-star-handoff, opening-animation, hero-typography.scss
+        portrait/                      hero-portrait-3d.ts: depth-relief ("3D") view of the leader's photo
         typography/                    3D headline: hero-typography-3d.ts (three.js class) and
                                        hero-headline-outlines.ts (GENERATED glyph outlines)
       sections/<name>/                 flag, ideology, history, thinkers
@@ -70,7 +71,11 @@ frontend/public/   Served at site root (portraits/, assets/Logo/)
 ### Conventions
 
 - **Bilingual everywhere.** Every user-visible string needs `en` and `ta` variants. Content lives in `data/` files (`{ en, ta }` objects, or separate `*.en.ts` / `*.ta.ts` as in ideology). Template strings in `app.component.ts` use `language() === 'ta' ? … : …`. Never ship an English-only string. Tamil text uses `Noto Sans Tamil` / `Anek Tamil`; test line wrapping.
-- **3D hero headline** ("ORGANIZE AND UNITE" / "அமைப்பாய்த் திரள்வோம்"). Real extruded three.js geometry (`HeroTypography3D`), lazy-loaded from `AppComponent.ngOnInit`, in a `<canvas class="hero-headline-3d">` behind the portrait. API: `reveal()` (after the opening animation), `setLanguage()`, `setTheme()`, `destroy()`. It handles pointer parallax, float, reduced-motion (static frame), pausing off-screen, and compact/mobile quality. Tamil needs complex-script shaping that `TextGeometry` can't do, so glyph outlines are pre-shaped at dev time with `fontkit` into `hero-headline-outlines.ts` — **never edit that file by hand**; to change the text or fonts edit `tools/generate-typography-outlines.mjs` and run `npm run generate:headline` (fonts come from the `@fontsource/anek-tamil` and `@fontsource/montserrat` devDependencies, OFL). The frontend is Node/Angular only — no Python. Layout/lighting constants live in `HERO_TYPOGRAPHY_CONFIG`. Desktop: the copy block sits at the bottom-left under the headline; mobile: the headline is pinned to the top and `.hero-copy` has top padding to make room (both in `hero-typography.scss`).
+- **3D hero headline** ("ORGANIZE AND UNITE" / "அமைப்பாய்த் திரள்வோம்"). Real extruded three.js geometry (`HeroTypography3D`), lazy-loaded from `AppComponent.ngOnInit`, in a `<canvas class="hero-headline-3d">` behind the portrait. API: `reveal()` (after the opening animation), `setLanguage()`, `setTheme()`, `destroy()`. It handles pointer parallax, float, reduced-motion (static frame), pausing off-screen, and compact/mobile quality. Tamil needs complex-script shaping that `TextGeometry` can't do, so glyph outlines are pre-shaped at dev time with `fontkit` into `hero-headline-outlines.ts` — **never edit that file by hand**; to change the text or fonts edit `tools/generate-typography-outlines.mjs` and run `npm run generate:headline` (fonts come from the `@fontsource/anek-tamil` and `@fontsource/montserrat` devDependencies, OFL). The frontend is Node/Angular only — no Python. Layout/lighting constants live in `HERO_TYPOGRAPHY_CONFIG`. The canvas is full-bleed (extends past the hero's side padding, explicit `width: calc(...)` because a canvas won't stretch from left/right alone). The hero fills the first screen (`.hero { min-height: calc(100svh - 92px) }`), so the next section starts below the fold. Desktop: the copy block sits at the bottom-left under the headline; mobile: the headline is pinned to the top and `.hero-copy` has top padding to make room (both in `hero-typography.scss`).
+- **3D portrait.** `HeroPortrait3D` (lazy, three.js) renders the *supplied* `thiruma.png` as a shallow depth relief with pointer parallax and brand-coloured rim light. The relief is derived from the photo's own alpha cut-out (rounded per-scanline profile) — no AI-generated face or head model, so the likeness is never altered; keep `HERO_PORTRAIT_3D_CONFIG.depth/parallax` subtle. It sits in `<canvas class="hero-portrait-3d">` over the flat `<img>` (same box and mask), fades in after the portrait reveal finishes, then the `<img>` is hidden via `.portrait-3d-active`. Skipped for reduced motion; the flat photo is the fallback if WebGL fails.
+- **Portrait is mirrored.** The flat `<img>` and the relief canvas are flipped with CSS `transform: scaleX(-1)` (rules in `app.component.scss`, desktop and mobile variants). Mirroring the element also mirrors its mask, so those two use `$portrait-mask-mirrored` (fade runs `to left`), the img uses `object-position: left center`, mobile uses `translateX(-50%) scaleX(-1)`, and the 3D plane is left-aligned with negated parallax. The contour-trace canvas is **not** mirrored via CSS (GSAP animates its `transform`/`scale` and would drop the flip); `hero-portrait-reveal.ts` draws the contours mirrored instead. Don't use the CSS `scale` property on GSAP-animated elements — GSAP resets it to `none`. To un-flip, reverse all of these together.
+- **No hero background decoration.** The hero background wave lines and the connected-dot star network were removed on purpose; don't re-add them. The hero-to-flag star journey (`hero-star-handoff.ts`, shared overlay) is separate and stays.
+- **Hero copy legibility.** The rotating slogan sits over a photo, so it has a dark scrim (`.hero-copy::before`), a text-shadow, and a **solid** highlight colour (`.hero-highlight`) — no gradient/colour animation on the highlighted word. Slogans > 90 chars use `.slogan-xlong` (smaller) so they never reach the 3D headline; on mobile every slogan size is reduced so lines wrap inside the screen.
 - **Section pattern.** New section = standalone component with `@Input({ required: true }) language`, `OnPush`, `sectionRoot` ViewChild, and animation in a sibling `*-animation.ts` returning a cleanup function; call cleanup in `ngOnDestroy`. Register it in `AppComponent.imports` and its template.
 - **Content as data.** Keep copy, years, names and image paths in typed `data/` files, not in templates.
 - **Animation.** GSAP only. Respect `prefers-reduced-motion` (see `hero-star-handoff.ts`). Always kill timelines/ScrollTriggers/animation frames on destroy. Desktop breakpoint used in code is `min-width: 1101px`.
@@ -115,7 +120,7 @@ A **Python backend** will be developed later in `backend/` (same repo; framework
 
 ## Status / roadmap
 
-Done: opening animation, hero (portrait, star network, slogans rotating, theme + language toggles, mobile menu), flag section, ideology (5 principles around a star), history timeline (from 1982), thinkers (Ambedkar, Periyar, Marx).
+Done: opening animation, hero (portrait, 3D headline, relief portrait, slogans rotating, theme + language toggles, mobile menu), flag section, ideology (5 principles around a star), history timeline (from 1982), thinkers (Ambedkar, Periyar, Marx).
 
 Placeholder / TODO: nav menu items are non-linked `<li>` (no routing/pages); no content for MPs/MLAs, leadership, secretaries, wings; footer is minimal; no tests, SEO/OG tags, favicon, or analytics.
 

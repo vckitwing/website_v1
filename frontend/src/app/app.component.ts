@@ -1,9 +1,9 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, signal } from '@angular/core';
 import { gsap } from 'gsap';
 import { hasCompletedHeroPortraitReveal, HeroPortraitReveal } from './pages/home/hero/hero-portrait-reveal';
-import { HeroStarNetwork } from './pages/home/hero/hero-star-network';
 import { createHeroFlagHandoff } from './pages/home/hero/hero-star-handoff';
 import { OpeningAnimation } from './pages/home/hero/opening-animation';
+import type { HeroPortrait3D } from './pages/home/hero/portrait/hero-portrait-3d';
 import type { HeroTypography3D } from './pages/home/hero/typography/hero-typography-3d';
 import { FlagSectionComponent } from './pages/home/sections/flag/flag-section.component';
 import { HistorySectionComponent } from './pages/home/sections/history/history-section.component';
@@ -23,7 +23,7 @@ type SloganLine = { parts: SloganPart[] };
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('portraitCanvas', { static: true }) private canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('portrait3dCanvas', { static: true }) private portrait3dCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('headlineCanvas', { static: true }) private headlineCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('themeToggleButton', { static: true }) private themeToggleButtonRef!: ElementRef<HTMLButtonElement>;
   @ViewChild('themeTransition', { static: true }) private themeTransitionRef!: ThemeSwitchTransitionComponent;
@@ -133,8 +133,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
   readonly openingActive = signal(true);
   readonly portraitRevealPending = signal(true);
-  private starNetwork?: HeroStarNetwork;
   private headline3d?: HeroTypography3D;
+  private portrait3d?: HeroPortrait3D;
+  private portraitRevealDone = false;
+  readonly portrait3dActive = signal(false);
   private destroyed = false;
   private portraitReveal?: HeroPortraitReveal;
   private opening?: OpeningAnimation;
@@ -145,7 +147,15 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.portraitRevealPending.set(!hasCompletedHeroPortraitReveal());
-    this.starNetwork = new HeroStarNetwork(this.canvasRef.nativeElement);
+    // The relief portrait is a progressive enhancement: skipped entirely for reduced motion (the flat photo stays).
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      void import('./pages/home/hero/portrait/hero-portrait-3d').then(({ HeroPortrait3D }) => {
+        if (this.destroyed) return;
+        const portrait = new HeroPortrait3D(this.portrait3dCanvasRef.nativeElement, this.heroArtworkRef.nativeElement.src, () => this.portrait3dActive.set(true));
+        this.portrait3d = portrait;
+        portrait.load().then(() => { if (this.portraitRevealDone) portrait.show(); }, (error: unknown) => console.error('Unable to load the 3D portrait; keeping the flat photograph.', error));
+      }, (error: unknown) => console.error('Unable to load the 3D portrait module.', error));
+    }
     // Lazy chunk: the extruded headline (outlines, SVGLoader, environment map) is not needed for first paint.
     void import('./pages/home/hero/typography/hero-typography-3d').then(({ HeroTypography3D }) => {
       if (this.destroyed) return;
@@ -165,7 +175,12 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.portraitReveal = new HeroPortraitReveal(
       this.heroArtworkRef.nativeElement,
       this.portraitTraceRef.nativeElement,
-      (progress) => this.starNetwork?.setPortraitRevealProgress(progress)
+      (progress) => {
+        if (progress >= 1 && !this.portraitRevealDone) {
+          this.portraitRevealDone = true;
+          this.portrait3d?.show();
+        }
+      }
     );
     if (!this.portraitRevealPending()) this.portraitReveal.showFinalState();
 
@@ -186,9 +201,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.opening.play(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-    void createHeroFlagHandoff(this.heroAnchorRef.nativeElement, (progress) => {
-      this.starNetwork?.setStarHandoff(progress);
-    }).then((cleanup) => {
+    void createHeroFlagHandoff(this.heroAnchorRef.nativeElement).then((cleanup) => {
       this.handoffCleanup = cleanup;
     }, (error: unknown) => console.error('Unable to initialize the hero-to-flag star handoff.', error));
   }
@@ -228,11 +241,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.heroTextTimeline?.kill();
     const eyebrow = this.heroEyebrowRef.nativeElement;
     const lines = this.heroHeadlineLineRefs.toArray().map((line) => line.nativeElement);
-    const highlights = Array.from(this.heroHeadlineRef.nativeElement.querySelectorAll<HTMLElement>('.hero-highlight'));
-    const animatedElements = [...(includeEyebrow ? [eyebrow] : []), ...lines, ...highlights];
+    const animatedElements = [...(includeEyebrow ? [eyebrow] : []), ...lines];
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      gsap.set(animatedElements, { clearProps: 'clipPath,transform,opacity,visibility,backgroundPosition' });
+      gsap.set(animatedElements, { clearProps: 'clipPath,transform,opacity,visibility' });
       return;
     }
 
@@ -261,15 +273,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         stagger: 0.11,
         ease: 'power3.out'
       }, includeEyebrow ? 0.14 : 0);
-    }
-    if (highlights.length) {
-      timeline.fromTo(highlights, {
-        backgroundPosition: '0% 50%'
-      }, {
-        backgroundPosition: '100% 50%',
-        duration: 0.85,
-        ease: 'sine.inOut'
-      }, includeEyebrow ? 0.84 : 0.68);
     }
     this.heroTextTimeline = timeline;
   }
@@ -328,7 +331,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.opening?.destroy();
     this.portraitReveal?.destroy();
     this.handoffCleanup?.();
-    this.starNetwork?.destroy();
     this.headline3d?.destroy();
+    this.portrait3d?.destroy();
   }
 }

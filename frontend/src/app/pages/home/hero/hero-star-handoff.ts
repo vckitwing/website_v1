@@ -2,10 +2,7 @@ import { gsap } from 'gsap';
 import { FLAG_STAR_ARRIVAL_VIEWPORT_RATIO, getFlagStarArrivalScroll, getFlagStarBounds } from '@shared/story/flag-star-geometry';
 import { getStarJourneyElements } from '@shared/story/star-journey';
 
-export async function createHeroFlagHandoff(
-  heroAnchor: HTMLElement,
-  onStarProgress: (progress: number) => void
-): Promise<() => void> {
+export async function createHeroFlagHandoff(heroAnchor: HTMLElement): Promise<() => void> {
   const { ScrollTrigger } = await import('gsap/ScrollTrigger');
   gsap.registerPlugin(ScrollTrigger);
 
@@ -50,7 +47,6 @@ export async function createHeroFlagHandoff(
         ? { x: 0, y: 0, scale: 1, rotation: 0, autoAlpha: 1 }
         : { x: 30, y: -16, scale: 0, rotation: -32, autoAlpha: 0 });
     }
-    onStarProgress(Math.min(1, progress / 0.08));
   };
 
   const getScrollBounds = () => {
@@ -64,7 +60,6 @@ export async function createHeroFlagHandoff(
 
   gsap.set(journey.overlay, { autoAlpha: 0 });
   gsap.set(journey.star, { xPercent: -50, yPercent: -50, autoAlpha: 0 });
-  onStarProgress(0);
 
   const trigger = ScrollTrigger.create({
     trigger: heroAnchor,
@@ -79,8 +74,7 @@ export async function createHeroFlagHandoff(
       gsap.set(journey.star, { autoAlpha: 0 });
       flagSection.classList.remove('hero-star-covered');
       if (desktop) gsap.set(flagStar, { x: 30, y: -16, scale: 0, rotation: -32, autoAlpha: 0 });
-      onStarProgress(0);
-    }
+        }
   });
 
   return () => {
@@ -89,6 +83,5 @@ export async function createHeroFlagHandoff(
     gsap.set(journey.star, { autoAlpha: 0 });
     flagSection.classList.remove('hero-star-covered');
     if (desktop) gsap.set(flagStar, { x: 30, y: -16, scale: 0, rotation: -32, autoAlpha: 0 });
-    onStarProgress(0);
-  };
+    };
 }

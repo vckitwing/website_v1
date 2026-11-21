@@ -66,14 +66,6 @@
   text-align: center;
 }
 
-.flag-eyebrow {
-  margin: 0 0 14px;
-  color: #94b5d8;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .22em;
-}
-
 .flag-heading h2 {
   margin: 0;
   color: #f5f7fb;
@@ -88,10 +80,6 @@
   color: #aab8c9;
   font-size: clamp(13px, 1.2vw, 16px);
   line-height: 1.7;
-}
-
-.flag-section[lang='ta'] .flag-eyebrow {
-  letter-spacing: .08em;
 }
 
 .flag-section[lang='ta'] .flag-heading h2,
@@ -344,10 +332,6 @@
 
 :host-context(.light-theme) .flag-heading h2 {
   color: #14243c;
-}
-
-:host-context(.light-theme) .flag-eyebrow {
-  color: #315d83;
 }
 
 :host-context(.light-theme) .flag-intro,

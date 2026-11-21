@@ -35,16 +35,14 @@
 .hero-headline-line {
   display: block;
   overflow: hidden;
+  // Room for descenders / Tamil marks inside the reveal clip, offset so spacing is unchanged.
+  padding-block: 0.08em;
+  margin-block: -0.08em;
 }
 
+// Solid, high-contrast accent (no gradient / colour animation) so the word never fades into the crowd.
 .hero-highlight {
-  color: transparent;
-  background-image: linear-gradient(90deg, #2785df 0%, #ed2a40 100%);
-  background-position: 0% 50%;
-  background-size: 200% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #ff5a6c;
 }
 
 .hero-shell.light-theme {
@@ -53,7 +51,7 @@
   }
 
   .hero-highlight {
-    background-image: linear-gradient(90deg, #176bb8 0%, #c51c35 100%);
+    color: #c51c35;
   }
 }
 
@@ -62,8 +60,12 @@
 .hero-headline-3d {
   position: absolute;
   z-index: 1;
-  inset: 0;
-  width: 100%;
+  top: 0;
+  bottom: 0;
+  // Full-bleed: run past the hero's side padding so the type is cropped by the screen edge, not by the canvas.
+  // (A canvas is a replaced element, so an explicit width is needed — left/right alone would not stretch it.)
+  left: calc(-1 * clamp(24px, 6.2vw, 96px));
+  width: calc(100% + 2 * clamp(24px, 6.2vw, 96px));
   height: 100%;
   pointer-events: none;
   opacity: 0;
@@ -74,7 +76,33 @@
   }
 }
 
+// The hero fills the first screen (the next section starts below the fold).
+.hero {
+  min-height: calc(100svh - 92px);
+}
+
 // The 3D headline owns the upper hero; the rotating slogan sits below it, over the crowd.
+.hero-copy {
+  // Soft dark scrim keeps the copy readable over the crowd photo and 3D type.
+  &::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -28px -48px -20px -80px;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 30% 55%, rgba(3, 9, 22, 0.82) 0%, rgba(3, 9, 22, 0.55) 45%, transparent 75%);
+  }
+
+  .eyebrow {
+    color: #e6efff;
+    text-shadow: 0 1px 12px rgba(2, 8, 20, 0.9);
+  }
+
+  .slogan .slogan-text {
+    text-shadow: 0 2px 14px rgba(2, 8, 20, 0.9);
+  }
+}
+
 @media (min-width: 761px) {
   .hero-copy {
     align-self: end;
@@ -86,38 +114,38 @@
     }
 
     .slogan .slogan-text {
-      font-size: clamp(26px, 3.1vw, 48px);
-      line-height: 1.08;
-      letter-spacing: -0.035em;
-      text-shadow: 0 2px 18px rgba(2, 8, 20, 0.85);
+      font-size: clamp(24px, 2.7vw, 42px);
+      font-weight: 700;
+      line-height: 1.18;
+      letter-spacing: -0.01em;
     }
 
     .slogan .slogan-text.slogan-long {
-      font-size: clamp(22px, 2.5vw, 38px);
+      font-size: clamp(21px, 2.2vw, 34px);
     }
 
     .slogan .slogan-text[lang='ta'] {
-      font-size: clamp(24px, 2.9vw, 44px);
-      line-height: 1.2;
+      font-size: clamp(23px, 2.6vw, 40px);
+      line-height: 1.28;
       letter-spacing: 0;
     }
 
     .slogan .slogan-text[lang='ta'].slogan-long {
-      font-size: clamp(20px, 2.3vw, 34px);
+      font-size: clamp(20px, 2.1vw, 32px);
     }
 
     // The longest slogans (> 90 characters) get a smaller size so they never climb into the 3D headline.
     .slogan .slogan-text.slogan-xlong {
-      font-size: clamp(17px, 1.75vw, 27px);
-      line-height: 1.2;
+      font-size: clamp(18px, 1.8vw, 28px);
     }
 
     .slogan .slogan-text[lang='ta'].slogan-xlong {
-      font-size: clamp(16px, 1.65vw, 25px);
+      font-size: clamp(17px, 1.7vw, 26px);
     }
 
     .eyebrow {
       margin-bottom: 0;
+      letter-spacing: 0.14em;
     }
   }
 }
@@ -126,5 +154,73 @@
 @media (max-width: 760px) {
   .hero-copy {
     padding-top: clamp(150px, 42vw, 200px);
+  }
+}
+
+.hero-shell.light-theme .hero-copy {
+  &::before {
+    background: radial-gradient(ellipse at 30% 55%, rgba(242, 246, 252, 0.88) 0%, rgba(242, 246, 252, 0.6) 45%, transparent 75%);
+  }
+
+  .eyebrow,
+  .slogan .slogan-text {
+    text-shadow: none;
+  }
+}
+
+// Relief ("3D") portrait: shares the flat photo's box and mask (see .hero-artwork in app.component.scss).
+.hero-portrait-3d {
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.65s ease;
+
+  &.is-ready {
+    opacity: 1;
+  }
+}
+
+// Once the relief canvas has fully faded in, the identical flat photo underneath is hidden so semi-transparent
+// edges are not composited twice. !important: GSAP's reveal writes inline opacity on this element.
+.hero-artwork.portrait-3d-active {
+  opacity: 0 !important;
+}
+
+// Mobile: smaller slogan so even the longest slogans wrap inside the screen instead of running off the edge.
+@media (max-width: 760px) {
+  .hero-copy {
+    min-width: 0;
+
+    .slogan {
+      max-width: 100%;
+    }
+
+    .slogan .slogan-text {
+      font-size: clamp(24px, 7.4vw, 34px);
+      line-height: 1.12;
+      letter-spacing: -0.01em;
+      overflow-wrap: anywhere;
+    }
+
+    .slogan .slogan-text.slogan-long {
+      font-size: clamp(21px, 6.2vw, 29px);
+    }
+
+    .slogan .slogan-text.slogan-xlong {
+      font-size: clamp(18px, 5.2vw, 24px);
+    }
+
+    .slogan .slogan-text[lang='ta'] {
+      font-size: clamp(22px, 6.6vw, 30px);
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .slogan .slogan-text[lang='ta'].slogan-long {
+      font-size: clamp(19px, 5.6vw, 26px);
+    }
+
+    .slogan .slogan-text[lang='ta'].slogan-xlong {
+      font-size: clamp(17px, 4.8vw, 22px);
+    }
   }
 }

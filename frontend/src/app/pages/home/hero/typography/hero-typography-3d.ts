@@ -14,13 +14,13 @@ export const HERO_TYPOGRAPHY_CONFIG = {
   bevelThickness: 16,
   bevelSize: 11,
   /** Fraction of the viewport width the average headline line spans (>1 bleeds past the edges). */
-  coverage: { desktop: { en: .98, ta: .84 }, mobile: { en: 1.12, ta: 1 } },
+  coverage: { desktop: { en: .88, ta: .8 }, mobile: { en: 1, ta: .92 } },
   /** Vertical offset of the stack as a fraction of the visible height (positive = up). */
   verticalOffset: { desktop: 0.15 },
   /** Mobile: px between the top of the hero and the top of the headline. */
   mobileTopMargin: 14,
   /** Horizontal offset as a fraction of the visible width (negative = left, away from the portrait). */
-  horizontalOffset: { desktop: -0.1, mobile: 0 },
+  horizontalOffset: { desktop: -0.045, mobile: 0 },
   /** Distance between baselines. */
   lineAdvance: { en: 800, ta: 1180 },
   baseRotation: { x: 0.1, y: -0.2, z: 0.03 },
