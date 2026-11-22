@@ -14,6 +14,9 @@
   --star-focus: #74c4ff;
   --star-line: rgba(244, 247, 252, .9);
   position: relative;
+  // Overflow .hero-shell's side padding equally on both sides (full window width).
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
   height: 500vh;
   height: 500svh;
   color: #f5f7fb;

@@ -11,6 +11,9 @@
   --thinker-blue: #77bdff;
   --thinker-red: #ed6174;
   position: relative;
+  // Overflow .hero-shell's side padding equally on both sides (full window width).
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
   padding: clamp(72px, 10vh, 118px) clamp(18px, 5vw, 72px) 68px;
   overflow: visible;
   color: var(--thinker-ink);

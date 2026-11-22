@@ -13,6 +13,9 @@
   --history-card-edge: rgba(225, 238, 255, .1);
   --history-accent: #8bcaff;
   position: relative;
+  // Overflow .hero-shell's side padding equally on both sides (full window width).
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
   overflow: clip;
   padding: clamp(72px, 12vh, 132px) clamp(18px, 5vw, 72px) 100px;
   color: var(--history-ink);
