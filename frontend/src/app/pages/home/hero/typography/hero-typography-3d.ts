@@ -26,7 +26,7 @@ export const HERO_TYPOGRAPHY_CONFIG = {
   lineAdvance: { en: 980, ta: 1180 },
   baseRotation: { x: 0.13, y: -0.3, z: 0.05 },
   parallax: { rotateX: 0.12, rotateY: 0.2, shift: 0.035 },
-  maxPixelRatio: { desktop: 1.75, mobile: 1.5 }
+  maxPixelRatio: { desktop: 1.75, mobile: 2 }
 } as const;
 
 type Palette = { face: number; side: number; shadow: number; envIntensity: number; exposure: number };
@@ -108,7 +108,7 @@ export class HeroTypography3D {
       this.renderer = new THREE.WebGLRenderer({
         canvas,
         alpha: true,
-        antialias: !this.compactQuery.matches,
+        antialias: true,
         powerPreference: 'high-performance'
       });
     } catch (error) {
@@ -246,7 +246,7 @@ export class HeroTypography3D {
       this.frontRenderer = new THREE.WebGLRenderer({
         canvas: this.frontCanvas,
         alpha: true,
-        antialias: !this.compactQuery.matches,
+        antialias: true,
         powerPreference: 'high-performance'
       });
     } catch (error) {

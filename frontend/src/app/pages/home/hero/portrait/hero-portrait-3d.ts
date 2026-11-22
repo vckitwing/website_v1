@@ -12,7 +12,7 @@ export const HERO_PORTRAIT_3D_CONFIG = {
   rotateX: 0.035,
   depthMapWidth: 256,
   segments: { desktop: [120, 132], mobile: [72, 80] },
-  maxPixelRatio: { desktop: 1.75, mobile: 1.5 }
+  maxPixelRatio: { desktop: 1.75, mobile: 2 }
 } as const;
 
 const VERTEX_SHADER = /* glsl */ `
@@ -99,7 +99,7 @@ export class HeroPortrait3D {
     private readonly onShown: () => void
   ) {
     try {
-      this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: !this.compactQuery.matches, powerPreference: 'high-performance' });
+      this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
     } catch (error) {
       console.error('Unable to initialise the 3D portrait; the supplied photograph remains visible.', error);
       return;

@@ -6,6 +6,7 @@
 // This file is loaded last so these rules win over the desktop/default rules in the other hero stylesheets.
 $side: clamp(24px, 6.2vw, 96px); // the hero shell's side padding (see app.component.scss)
 $headline-height: clamp(210px, 60vw, 270px);
+$lift: 26px; // pulls the headline and portrait up toward the top bar
 $portrait-overlap: 64px; // how far the signature tucks up into the portrait's faded base
 
 @media (max-width: 760px) {
@@ -26,11 +27,12 @@ $portrait-overlap: 64px; // how far the signature tucks up into the portrait's f
     width: calc(100% + 2 * #{$side});
     height: $headline-height;
     margin-inline: calc(-1 * #{$side});
+    margin-top: -$lift;
   }
 
   // The front half of the ribbons covers the same block as the headline.
   .hero-ribbon-front {
-    top: 0;
+    top: -$lift;
     bottom: auto;
     height: $headline-height;
     left: calc(-1 * #{$side});
@@ -71,7 +73,7 @@ $portrait-overlap: 64px; // how far the signature tucks up into the portrait's f
   .hero-artwork,
   .hero-portrait-3d,
   .portrait-trace {
-    top: calc(#{$headline-height} - 48px);
+    top: calc(#{$headline-height} - 48px - #{$lift});
     bottom: auto;
   }
 
