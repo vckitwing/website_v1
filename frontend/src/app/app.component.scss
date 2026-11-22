@@ -57,7 +57,6 @@ $portrait-mask-mirrored: linear-gradient(to left,transparent 0%,rgba(0,0,0,.08) 
 .caption-dot { width:5px; height:5px; border-radius:50%; background:#d1a56c; box-shadow:0 0 8px #d1a56c; }.caption-role { margin-left:10px; padding-left:14px; border-left:1px solid rgba(228,223,210,.3); color:#a6a69a; font-size:8px; }
 .portrait-hint { position:absolute; z-index:2; top:52%; right:2%; writing-mode:vertical-rl; color:rgba(226,221,204,.5); font:500 8px/1 'Montserrat',sans-serif; letter-spacing:.16em; }.portrait-hint span { margin-top:8px; color:#d1a56c; font-size:12px; }
 .portrait-settled::before,.portrait-settled::after,.portrait-settled .portrait-halo,.portrait-settled .portrait-caption,.portrait-settled .portrait-hint { opacity:0; transition:opacity 1s ease; }
-.vertical-note { position:absolute; right:-3.6vw; top:50%; transform:translateY(-50%); writing-mode:vertical-rl; color:rgba(230,225,208,.34); font:500 8px/1 'Montserrat',sans-serif; letter-spacing:.22em; }
 .hero-footer { display:grid; grid-template-columns:1fr 1fr 1fr; align-items:center; height:62px; border-top:1px solid rgba(242,239,223,.12); flex-shrink:0; color:#9a9b90; font:500 8px/1 'Montserrat','Noto Sans Tamil',sans-serif; letter-spacing:.16em; }
 .footer-label { justify-self:start; }.scroll-cue { justify-self:center; display:flex; align-items:center; gap:10px; }.scroll-cue span { width:1px; height:23px; display:inline-block; background:linear-gradient(#d1a56c,transparent); animation:scroll-pulse 1.6s ease-in-out infinite; }
 @keyframes portrait-in { to { opacity:1; } }
@@ -97,7 +96,7 @@ $portrait-mask-mirrored: linear-gradient(to left,transparent 0%,rgba(0,0,0,.08) 
   .hero-artwork { object-fit:contain; object-position:center bottom; }
   .hero-artwork,.hero-portrait-3d { transform:translateX(-50%) scaleX(-1); }
   .portrait-stage { order:2; width:calc(100% + 48px); height:clamp(350px,58svh,540px); min-height:350px; margin:1vh -24px 0; }
-  .portrait-stage::before { width:min(76%,340px); }.portrait-stage::after { width:min(65%,290px); }.portrait-caption { bottom:3%; font-size:8px; }.portrait-hint { right:0; top:47%; font-size:7px; }.vertical-note { display:none; }
+  .portrait-stage::before { width:min(76%,340px); }.portrait-stage::after { width:min(65%,290px); }.portrait-caption { bottom:3%; font-size:8px; }.portrait-hint { right:0; top:47%; font-size:7px; }
   .hero-footer { height:49px; font-size:7px; letter-spacing:.1em; }.scroll-cue { gap:6px; }.scroll-cue span { height:18px; }
 }
 @media (max-width:370px) {

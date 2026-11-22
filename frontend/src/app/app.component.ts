@@ -27,6 +27,7 @@ type SloganLine = { parts: SloganPart[]; words: SloganWord[] };
 export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('portrait3dCanvas', { static: true }) private portrait3dCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('heroSignature', { static: true }) private heroSignatureRef!: HandwrittenSignatureComponent;
+  @ViewChild('ribbonFrontCanvas', { static: true }) private ribbonFrontCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('headlineCanvas', { static: true }) private headlineCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('themeToggleButton', { static: true }) private themeToggleButtonRef!: ElementRef<HTMLButtonElement>;
   @ViewChild('themeTransition', { static: true }) private themeTransitionRef!: ThemeSwitchTransitionComponent;
@@ -62,7 +63,11 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     { ta: 'போராட', en: 'fight' },
     { ta: 'சமத்துவ', en: 'equal' }
   ];
-  readonly activeSlogan = signal(Math.floor(Math.random() * this.slogans.length));
+  /** The four slogans shown in the hero (indices into `slogans`), cycled automatically and via the 01-04 index. */
+  private readonly sloganDeck = [0, 1, 4, 6] as const;
+  readonly slides = [0, 1, 2, 3] as const;
+  readonly activeSlide = signal(0);
+  readonly activeSlogan = computed(() => this.sloganDeck[this.activeSlide()] ?? 0);
   readonly language = signal<'en' | 'ta'>('en');
   readonly formattedSlogan = computed(() => this.slogans[this.activeSlogan()][this.language()].replace(/([!;])\s*/g, '$1\n'));
   readonly formattedSloganLines = computed<SloganLine[]>(() => {
@@ -164,16 +169,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     // Lazy chunk: the extruded headline (outlines, SVGLoader, environment map) is not needed for first paint.
     void import('./pages/home/hero/typography/hero-typography-3d').then(({ HeroTypography3D }) => {
       if (this.destroyed) return;
-      this.headline3d = new HeroTypography3D(this.headlineCanvasRef.nativeElement, this.language(), this.theme());
+      this.headline3d = new HeroTypography3D(this.headlineCanvasRef.nativeElement, this.ribbonFrontCanvasRef.nativeElement, this.language(), this.theme());
       if (!this.openingActive()) this.headline3d.reveal();
     }, (error: unknown) => console.error('Unable to load the 3D hero headline.', error));
-    this.sloganTimer = window.setInterval(() => {
-      this.activeSlogan.update((current) => {
-        const next = Math.floor(Math.random() * (this.slogans.length - 1));
-        return next >= current ? next + 1 : next;
-      });
-      this.animateSlogan();
-    }, 4600);
+    this.startSloganTimer();
   }
 
   ngAfterViewInit(): void {
@@ -236,6 +235,22 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     flush();
     return words;
+  }
+
+  /** Shows slogan `index` (0-3) now and restarts the auto-advance countdown. */
+  selectSlide(index: number): void {
+    if (index === this.activeSlide()) return;
+    this.activeSlide.set(index);
+    this.animateSlogan();
+    this.startSloganTimer();
+  }
+
+  private startSloganTimer(): void {
+    window.clearInterval(this.sloganTimer);
+    this.sloganTimer = window.setInterval(() => {
+      this.activeSlide.update((current) => (current + 1) % this.slides.length);
+      this.animateSlogan();
+    }, 5200);
   }
 
   private animateSlogan(): void {

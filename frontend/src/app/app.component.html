@@ -59,12 +59,13 @@
     <canvas #headlineCanvas class="hero-headline-3d" role="img" [attr.aria-label]="language() === 'ta' ? 'அமைப்பாய்த் திரள்வோம்' : 'Organize and unite'"></canvas>
     <img #heroArtwork class="hero-artwork" [class.portrait-reveal-pending]="portraitRevealPending()" [class.portrait-3d-active]="portrait3dActive()" src="assets/hero_section/thiruma.png" [attr.alt]="language() === 'ta' ? 'தோழர் திருமாவளவன்' : 'Thol. Thirumavalavan'" />
     <canvas #portrait3dCanvas class="hero-portrait-3d" aria-hidden="true"></canvas>
+    <canvas #ribbonFrontCanvas class="hero-ribbon-front" aria-hidden="true"></canvas>
     <canvas #portraitTrace class="portrait-trace" aria-hidden="true"></canvas>
     <div class="crowd-strip" aria-hidden="true">
       <img src="assets/hero_section/crowd.png" alt="" />
     </div>
     <div class="hero-copy">
-      <p #heroEyebrow class="eyebrow"><span class="eyebrow-line"></span> {{ language() === 'ta' ? 'மக்களிலிருந்து எழும் தலைவர்' : 'A LEADER RISES FROM THE PEOPLE' }}</p>
+      <p #heroEyebrow class="eyebrow"><span class="eyebrow-line"></span> {{ language() === 'ta' ? 'நிறுவப்பட்டது 1982 · விடுதலைச் சிறுத்தைகள் கட்சி' : 'EST. 1982 · VIDUTHALAI CHIRUTHAIGAL KATCHI' }}</p>
       <div class="slogan" aria-live="polite" aria-atomic="true">
         <p #heroHeadline class="slogan-text" [class.slogan-long]="formattedSlogan().length > 48" [class.slogan-xlong]="formattedSlogan().length > 90" [attr.lang]="language()">
           @for (line of formattedSloganLines(); track $index) {
@@ -76,7 +77,16 @@
           }
         </p>
       </div>
+      <span class="hero-pill">{{ language() === 'ta' ? 'இயக்கத்தை அறிக' : 'Explore the movement' }}<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" /></svg></span>
     </div>
+
+    <nav class="slide-index" [attr.aria-label]="language() === 'ta' ? 'முழக்கங்கள்' : 'Slogans'">
+      @for (slide of slides; track slide) {
+        <button type="button" class="slide-index-item" [class.is-active]="activeSlide() === slide" [attr.aria-current]="activeSlide() === slide ? 'true' : null" [attr.aria-label]="(language() === 'ta' ? 'முழக்கம் ' : 'Slogan ') + (slide + 1)" (click)="selectSlide(slide)">
+          <span class="slide-index-number">0{{ slide + 1 }}</span><span class="slide-index-bar"></span>
+        </button>
+      }
+    </nav>
 
     <div class="hero-signature">
       <vck-handwritten-signature #heroSignature trigger="manual" [replay]="true" [label]="language() === 'ta' ? 'தொல். திருமாவளவனின் கையொப்பம்' : 'Signature of Thol. Thirumavalavan'" />
@@ -86,8 +96,6 @@
       <div class="portrait-halo" aria-hidden="true"></div>
       <div class="portrait-caption"><span class="caption-dot"></span><span>{{ language() === 'ta' ? 'தொல். திருமாவளவன்' : 'THOL. THIRUMAVALAVAN' }}</span><span class="caption-role">{{ language() === 'ta' ? 'தலைவர், விசிக' : 'PRESIDENT, VCK' }}</span></div>
     </div>
-
-    <div class="vertical-note" aria-hidden="true">{{ language() === 'ta' ? 'மக்கள் · நீதி · விடுதலை' : 'PEOPLE · JUSTICE · LIBERATION' }}</div>
   </section>
 
   <vck-flag-section [language]="language()" />

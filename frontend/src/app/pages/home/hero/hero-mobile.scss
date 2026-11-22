@@ -28,6 +28,36 @@ $portrait-overlap: 64px; // how far the signature tucks up into the portrait's f
     margin-inline: calc(-1 * #{$side});
   }
 
+  // The front half of the ribbons covers the same block as the headline.
+  .hero-ribbon-front {
+    top: 0;
+    bottom: auto;
+    height: $headline-height;
+    left: calc(-1 * #{$side});
+    width: calc(100% + 2 * #{$side});
+  }
+
+  // Slogan index becomes a small row under the slogan.
+  .slide-index {
+    position: relative;
+    inset: auto;
+    order: 4;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+    align-self: flex-start;
+    width: max-content;
+    padding: 8px 16px;
+    border-radius: 999px;
+    margin: 0 2px 14px;
+    transform: none;
+  }
+
+  .hero-pill {
+    display: none;
+  }
+
   // 2 - portrait: the spacer reserves room, the (absolutely placed) portrait layers sit on top of it, starting just
   // under the headline.
   .portrait-stage {
@@ -80,6 +110,6 @@ $portrait-overlap: 64px; // how far the signature tucks up into the portrait's f
   }
 
   .hero-footer {
-    order: 4;
+    order: 5;
   }
 }

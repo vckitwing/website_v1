@@ -2,6 +2,7 @@ import { gsap } from 'gsap';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
+import { HeroRibbons } from './hero-ribbons';
 import { HERO_HEADLINE_OUTLINES, type HeadlineLanguage, type HeadlineLine } from './hero-headline-outlines';
 
 export type HeroTheme = 'dark' | 'light';
@@ -16,14 +17,14 @@ export const HERO_TYPOGRAPHY_CONFIG = {
   bevelThickness: 16,
   bevelSize: 11,
   /** Fraction of the viewport width the average headline line spans (>1 bleeds past the edges). */
-  coverage: { desktop: { en: .68, ta: .68 }, mobile: { en: .8, ta: .8 } },
+  coverage: { desktop: { en: .84, ta: .78 }, mobile: { en: .8, ta: .8 } },
   /** Vertical offset of the stack as a fraction of the visible height (positive = up). */
-  verticalOffset: { desktop: 0.15 },
+  verticalOffset: { desktop: 0.17 },
   /** Horizontal offset as a fraction of the visible width (negative = left, away from the portrait). */
-  horizontalOffset: { desktop: -0.1, mobile: 0 },
+  horizontalOffset: { desktop: -0.05, mobile: 0 },
   /** Distance between baselines. */
   lineAdvance: { en: 980, ta: 1180 },
-  baseRotation: { x: 0.1, y: -0.2, z: 0.03 },
+  baseRotation: { x: 0.13, y: -0.3, z: 0.05 },
   parallax: { rotateX: 0.12, rotateY: 0.2, shift: 0.035 },
   maxPixelRatio: { desktop: 1.75, mobile: 1.5 }
 } as const;
@@ -31,52 +32,17 @@ export const HERO_TYPOGRAPHY_CONFIG = {
 type Palette = { face: number; side: number; shadow: number; envIntensity: number; exposure: number };
 
 const PALETTES: Record<HeroTheme, Palette> = {
-  dark: { face: 0xf4f7fc, side: 0x9fb4d2, shadow: 0x02060f, envIntensity: 1, exposure: 1.05 },
-  light: { face: 0x2a4a78, side: 0x14294a, shadow: 0x4b6283, envIntensity: .7, exposure: 1 }
+  // Graphite chrome: neutral grey metal; the colour comes from the red / blue ribbon lights reflecting in it.
+  dark: { face: 0xc4cad4, side: 0x6a7482, shadow: 0x02060f, envIntensity: 1.15, exposure: 1.05 },
+  light: { face: 0x39414f, side: 0x1d232d, shadow: 0x4b6283, envIntensity: .8, exposure: 1 }
 };
-
-/** Shared uniforms for the flowing white -> blue -> red -> white colour gradient on the letters. */
-const GRADIENT = {
-  uTime: { value: 0 },
-  uSpan: { value: 60 },
-  uStrength: { value: 0.85 },
-  uWhite: { value: new THREE.Color(0xf4f7fc) },
-  uBlue: { value: new THREE.Color(0x2f8cf0) },
-  uRed: { value: new THREE.Color(0xed2a40) }
-};
-
-function applyFlowingGradient(material: THREE.MeshPhysicalMaterial): void {
-  material.onBeforeCompile = (shader) => {
-    Object.assign(shader.uniforms, GRADIENT);
-    shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', `#include <common>
-varying vec3 vFlowPos;`)
-      .replace('#include <begin_vertex>', `#include <begin_vertex>
-vFlowPos = (modelMatrix * vec4(transformed, 1.0)).xyz;`);
-    shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', `#include <common>
-varying vec3 vFlowPos;
-uniform float uTime;
-uniform float uSpan;
-uniform float uStrength;
-uniform vec3 uWhite;
-uniform vec3 uBlue;
-uniform vec3 uRed;`)
-      .replace('#include <color_fragment>', `#include <color_fragment>
-        float flow = fract(vFlowPos.x / uSpan * 0.8 + vFlowPos.y / uSpan * 0.25 - uTime * 0.07);
-        float seg = flow * 3.0;
-        float k = smoothstep(0.0, 1.0, fract(seg));
-        vec3 flowColor = seg < 1.0 ? mix(uWhite, uBlue, k) : (seg < 2.0 ? mix(uBlue, uRed, k) : mix(uRed, uWhite, k));
-        diffuseColor.rgb = mix(diffuseColor.rgb, flowColor, uStrength);`);
-  };
-  material.customProgramCacheKey = () => 'vck-flow-gradient';
-}
 
 type BuiltLine = { mesh: THREE.Mesh; bounds: HeadlineLine['bounds']; baseline: number };
 
 /**
- * Monumental extruded metallic headline rendered with real 3D geometry.
- * Outlines are pre-shaped (HarfBuzz) so Tamil renders correctly; see tools/generate-typography-outlines.py.
+ * Monumental extruded graphite-chrome headline rendered with real 3D geometry, with red / blue ribbons weaving through
+ * it and the portrait (see HeroRibbons).
+ * Outlines are pre-shaped (HarfBuzz) so Tamil renders correctly; see tools/generate-typography-outlines.mjs.
  */
 export class HeroTypography3D {
   private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -103,6 +69,17 @@ export class HeroTypography3D {
   private redLight = new THREE.PointLight(0xed2a40, 0, 0, 2);
   private blueLight = new THREE.PointLight(0x2785df, 0, 0, 2);
   private shadowPlane?: THREE.Mesh;
+  // Ribbons: the back group lives in the main scene (with the letters); the front group has its own renderer/canvas drawn
+  // above the portrait. Both share one set of animated geometry.
+  private ribbons?: HeroRibbons;
+  private ribbonBack?: THREE.Group;
+  private ribbonFront?: THREE.Group;
+  private frontRenderer?: THREE.WebGLRenderer;
+  private frontScene = new THREE.Scene();
+  private frontEnvironment?: THREE.Texture;
+  private frontLights: { key: THREE.DirectionalLight; red: THREE.PointLight; blue: THREE.PointLight } | undefined;
+  private readonly backClip = new THREE.Plane(new THREE.Vector3(0, 0, -1), 8);
+  private readonly frontClip = new THREE.Plane(new THREE.Vector3(0, 0, 1), -8);
   private environment?: THREE.Texture;
   private active?: { group: THREE.Group; lines: BuiltLine[] };
   private language: HeadlineLanguage;
@@ -118,7 +95,12 @@ export class HeroTypography3D {
   private swapping = false;
   private tween?: gsap.core.Tween | gsap.core.Timeline;
 
-  constructor(private readonly canvas: HTMLCanvasElement, initialLanguage: HeadlineLanguage, theme: HeroTheme) {
+  constructor(
+    private readonly canvas: HTMLCanvasElement,
+    private readonly frontCanvas: HTMLCanvasElement | null,
+    initialLanguage: HeadlineLanguage,
+    theme: HeroTheme
+  ) {
     this.language = initialLanguage;
     this.theme = theme;
 
@@ -138,6 +120,7 @@ export class HeroTypography3D {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.setClearColor(0x000000, 0);
+    renderer.localClippingEnabled = true;
     renderer.shadowMap.enabled = this.shadowsEnabled();
     // VSM is the shadow type whose blur radius actually works (PCFSoft ignores it), giving a very soft, blurry shadow.
     renderer.shadowMap.type = THREE.VSMShadowMap;
@@ -165,8 +148,7 @@ export class HeroTypography3D {
     this.shadowPlane = plane;
     this.scene.add(plane);
 
-    applyFlowingGradient(this.faceMaterial);
-    applyFlowingGradient(this.sideMaterial);
+    this.setUpRibbons();
     this.applyPalette();
     this.mount(this.language);
     this.resizeObserver.observe(canvas);
@@ -188,6 +170,7 @@ export class HeroTypography3D {
     if (!this.ready || this.revealed) return;
     this.revealed = true;
     this.canvas.classList.add('is-ready');
+    this.frontCanvas?.classList.add('is-ready');
     this.tween?.kill();
     if (this.reducedMotion.matches) {
       this.intro.progress = 1;
@@ -246,6 +229,46 @@ export class HeroTypography3D {
     this.environment?.dispose();
     this.renderer?.dispose();
     this.renderer = undefined;
+    this.ribbons?.dispose();
+    this.frontEnvironment?.dispose();
+    this.frontRenderer?.dispose();
+    this.frontRenderer = undefined;
+  }
+
+  private setUpRibbons(): void {
+    if (!this.renderer) return;
+    this.ribbons = new HeroRibbons(this.compactQuery.matches);
+    this.ribbonBack = this.ribbons.createGroup(this.backClip);
+    this.scene.add(this.ribbonBack);
+
+    if (!this.frontCanvas) return;
+    try {
+      this.frontRenderer = new THREE.WebGLRenderer({
+        canvas: this.frontCanvas,
+        alpha: true,
+        antialias: !this.compactQuery.matches,
+        powerPreference: 'high-performance'
+      });
+    } catch (error) {
+      console.error('Unable to initialise the front ribbon layer; the ribbons stay behind the portrait.', error);
+      return;
+    }
+    const front = this.frontRenderer;
+    front.outputColorSpace = THREE.SRGBColorSpace;
+    front.toneMapping = THREE.ACESFilmicToneMapping;
+    front.setClearColor(0x000000, 0);
+    front.localClippingEnabled = true;
+    // Textures are per-renderer, so the front layer builds its own studio environment.
+    const pmrem = new THREE.PMREMGenerator(front);
+    this.frontEnvironment = pmrem.fromScene(new RoomEnvironment(), .04).texture;
+    pmrem.dispose();
+    this.frontScene.environment = this.frontEnvironment;
+    const key = new THREE.DirectionalLight(0xdfeaff, 2.6);
+    const red = new THREE.PointLight(0xed2a40, 0, 0, 2);
+    const blue = new THREE.PointLight(0x2785df, 0, 0, 2);
+    this.frontLights = { key, red, blue };
+    this.ribbonFront = this.ribbons.createGroup(this.frontClip);
+    this.frontScene.add(this.ribbonFront, key, red, blue);
   }
 
   private shadowsEnabled(): boolean {
@@ -255,8 +278,6 @@ export class HeroTypography3D {
   private applyPalette(): void {
     const palette = PALETTES[this.theme];
     this.faceMaterial.color.setHex(palette.face);
-    GRADIENT.uWhite.value.setHex(palette.face);
-    GRADIENT.uStrength.value = this.theme === 'dark' ? 0.82 : 0.7;
     this.sideMaterial.color.setHex(palette.side);
     this.faceMaterial.envMapIntensity = palette.envIntensity;
     this.sideMaterial.envMapIntensity = palette.envIntensity * .85;
@@ -328,6 +349,8 @@ export class HeroTypography3D {
     const limits = HERO_TYPOGRAPHY_CONFIG.maxPixelRatio;
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, compact ? limits.mobile : limits.desktop));
     this.renderer.setSize(width, height, false);
+    this.frontRenderer?.setPixelRatio(Math.min(window.devicePixelRatio || 1, compact ? limits.mobile : limits.desktop));
+    this.frontRenderer?.setSize(width, height, false);
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.layout();
@@ -361,7 +384,6 @@ export class HeroTypography3D {
     const targetCenter = mobile ? 0 : visibleHeight * config.verticalOffset.desktop;
     this.stage.userData['centerY'] = targetCenter - centerLocal;
     this.stage.userData['visibleWidth'] = visibleWidth;
-    GRADIENT.uSpan.value = visibleWidth;
     this.stage.userData['centerX'] = visibleWidth * (mobile ? config.horizontalOffset.mobile : config.horizontalOffset.desktop);
 
     const depth = config.extrudeDepth * scale;
@@ -378,6 +400,13 @@ export class HeroTypography3D {
     shadowCamera.updateProjectionMatrix();
     this.redLight.position.set(visibleWidth * .46, -visibleHeight * .3, 28);
     this.blueLight.position.set(-visibleWidth * .5, visibleHeight * .25, 34);
+    this.stage.userData['visibleHeight'] = visibleHeight;
+
+    // Ribbon parts behind this plane are drawn with the letters (behind the portrait); parts in front of it are drawn in
+    // the front layer, above the portrait. It sits just in front of the letters.
+    const clipZ = depth + 3.5;
+    this.backClip.constant = clipZ;
+    this.frontClip.constant = -clipZ;
 
     if (this.shadowPlane) {
       this.shadowPlane.position.set(0, 0, -depth * 1.4 - 1.5);
@@ -404,7 +433,6 @@ export class HeroTypography3D {
     const config = HERO_TYPOGRAPHY_CONFIG;
     const animated = !this.reducedMotion.matches;
     const visibleWidth = (this.stage.userData['visibleWidth'] as number | undefined) ?? 1;
-    GRADIENT.uTime.value = animated ? time : 0;
     const centerY = (this.stage.userData['centerY'] as number | undefined) ?? 0;
     const centerX = (this.stage.userData['centerX'] as number | undefined) ?? 0;
     const entrance = 1 - this.intro.progress;
@@ -429,6 +457,32 @@ export class HeroTypography3D {
     this.blueLight.position.x += ((-visibleWidth * (.5 - px * .08)) - this.blueLight.position.x) * .1;
 
     this.renderer.render(this.scene, this.camera);
+    this.drawRibbons(animated ? time : 0, px, py, visibleWidth);
+  }
+
+  private drawRibbons(time: number, px: number, py: number, visibleWidth: number): void {
+    if (!this.ribbons || !this.ribbonBack) return;
+    const visibleHeight = (this.stage.userData['visibleHeight'] as number | undefined) ?? 53.6;
+    const mobile = this.mobileLayout.matches;
+    this.ribbons.update(time, visibleWidth, visibleHeight);
+    // The ribbons move a little more than the letters with the pointer, which adds depth.
+    const groups = [this.ribbonBack, this.ribbonFront].filter((group): group is THREE.Group => !!group);
+    for (const group of groups) {
+      group.rotation.set(-py * 0.1, px * 0.16, 0);
+      group.position.set(px * visibleWidth * (mobile ? 0.02 : 0.05), -py * visibleHeight * 0.02, 0);
+    }
+    if (this.frontRenderer && this.frontLights) {
+      const { key, red, blue } = this.frontLights;
+      const dark = this.theme === 'dark';
+      key.position.copy(this.keyLight.position);
+      key.intensity = dark ? 2.6 : 2.1;
+      red.position.copy(this.redLight.position);
+      red.intensity = this.redLight.intensity;
+      blue.position.copy(this.blueLight.position);
+      blue.intensity = this.blueLight.intensity;
+      this.frontRenderer.toneMappingExposure = this.renderer?.toneMappingExposure ?? 1;
+      this.frontRenderer.render(this.frontScene, this.camera);
+    }
   }
 
   private updateLoop = (): void => {
