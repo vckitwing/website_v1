@@ -21,7 +21,7 @@ export const HERO_TYPOGRAPHY_CONFIG = {
   /** Vertical offset of the stack as a fraction of the visible height (positive = up). */
   verticalOffset: { desktop: 0.17 },
   /** Horizontal offset as a fraction of the visible width (negative = left, away from the portrait). */
-  horizontalOffset: { desktop: -0.05, mobile: 0 },
+  horizontalOffset: { desktop: -0.09, mobile: 0 },
   /** Distance between baselines. */
   lineAdvance: { en: 980, ta: 1180 },
   baseRotation: { x: 0.13, y: -0.3, z: 0.05 },
