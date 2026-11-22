@@ -105,8 +105,6 @@ export class OpeningAnimation {
     gsap.set(screen, { autoAlpha: 1 });
     gsap.set(star, { scale: 0.18, autoAlpha: 0, x: startOffsetX, y: 0 });
     gsap.set([vck, name], { autoAlpha: 0, x: 0, y: 0, scale: 1, transformOrigin: '0 0' });
-    const vertices = Array.from(star.querySelectorAll<SVGCircleElement>('.opening-star-vertex'));
-    gsap.set(vertices, { scale: 0.2, autoAlpha: 0, transformOrigin: '50% 50%' });
     const shell = brandVck.closest('.hero-shell');
 
     this.timeline = gsap.timeline({
@@ -187,15 +185,6 @@ export class OpeningAnimation {
       .to(state, { progress: 1.2, duration: 0.7, ease: 'power1.in', onUpdate: () => this.draw(state.progress, state.glow) }, 3.65)
       .to(screen, { autoAlpha: 0, duration: 0.42, ease: 'power1.out' }, 4.25)
       .add(() => shell?.classList.remove('opening-brand-ready'), 4.7);
-    vertices.forEach((vertex, index) => {
-      const time = 0.52 + index * 0.085;
-      this.timeline?.fromTo(vertex, { scale: 0.2, autoAlpha: 0 }, {
-        scale: 1.8,
-        autoAlpha: 1,
-        duration: 0.2,
-        ease: 'back.out(2)'
-      }, time).to(vertex, { scale: 1, duration: 0.25, ease: 'power2.out' }, time + 0.2);
-    });
   }
 
   destroy(): void {

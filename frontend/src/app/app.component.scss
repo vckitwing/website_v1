@@ -7,9 +7,6 @@
 .hero-shell.opening-active.opening-brand-ready .brand-copy { visibility:visible; }
 .opening-particles { position:absolute; inset:0; display:block; pointer-events:none; }
 .opening-star { position:relative; flex:0 0 auto; display:block; width:clamp(52px,10vw,144px); height:clamp(52px,10vw,144px); overflow:visible; fill:#f4f7fc; filter:drop-shadow(0 0 7px rgba(100,190,255,.92)) drop-shadow(0 0 22px rgba(237,42,64,.55)); transform-origin:50% 50%; }
-.opening-star-vertex { transform-box:fill-box; transform-origin:center; }
-.opening-star-vertex-blue { fill:#73c7ff; filter:drop-shadow(0 0 5px #2785df); }
-.opening-star-vertex-red { fill:#ff687b; filter:drop-shadow(0 0 5px #ed2a40); }
 .opening-identity { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:clamp(18px,3vw,46px); padding:24px; }
 .opening-copy { position:relative; flex:0 0 auto; width:max-content; min-width:0; text-align:right; }
 .opening-vck { display:block; color:#f4f7fc; background:linear-gradient(100deg,#2785df 5%,#8bcaff 48%,#ed2a40 95%); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; font:700 clamp(52px,10vw,144px)/.9 'Montserrat','Noto Sans Tamil',sans-serif; letter-spacing:.06em; white-space:nowrap; }
