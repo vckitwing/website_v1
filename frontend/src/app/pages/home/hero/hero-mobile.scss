@@ -60,6 +60,17 @@ $portrait-overlap: 64px; // how far the signature tucks up into the portrait's f
     display: none;
   }
 
+  // Thumb-sized targets for the 01-04 index.
+  .slide-index {
+    padding: 0 10px;
+    gap: 6px;
+  }
+
+  .slide-index-item {
+    min-height: 44px;
+    padding: 0 8px;
+  }
+
   // 2 - portrait: the spacer reserves room, the (absolutely placed) portrait layers sit on top of it, starting just
   // under the headline.
   .portrait-stage {

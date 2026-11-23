@@ -47,6 +47,11 @@ type BuiltLine = { mesh: THREE.Mesh; bounds: HeadlineLine['bounds']; baseline: n
 export class HeroTypography3D {
   private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   private readonly mobileLayout = window.matchMedia('(max-width: 760px)');
+  /** Data-saver or a low-memory device: no ribbons, no shadows, lower pixel ratio. */
+  private readonly lite = ((): boolean => {
+    const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
+    return nav.connection?.saveData === true || (nav.deviceMemory ?? 8) <= 2;
+  })();
   private readonly compactQuery = window.matchMedia('(max-width: 760px), (pointer: coarse)');
   private readonly clock = new THREE.Clock();
   private readonly pointer = { x: 0, y: 0, smoothX: 0, smoothY: 0 };
@@ -155,6 +160,11 @@ export class HeroTypography3D {
     this.visibilityObserver.observe(canvas);
     window.addEventListener('pointermove', this.onPointerMove, { passive: true });
     window.addEventListener('pointerleave', this.onPointerLeave, { passive: true });
+    // Touch: parallax follows the finger even while the page scrolls (pointer events are cancelled once a pan starts).
+    window.addEventListener('touchstart', this.onTouchMove, { passive: true });
+    window.addEventListener('touchmove', this.onTouchMove, { passive: true });
+    window.addEventListener('touchend', this.onPointerLeave, { passive: true });
+    window.addEventListener('touchcancel', this.onPointerLeave, { passive: true });
     document.addEventListener('visibilitychange', this.onVisibility);
     canvas.addEventListener('webglcontextlost', this.onContextLost);
     this.reducedMotion.addEventListener('change', this.updateLoop);
@@ -217,6 +227,10 @@ export class HeroTypography3D {
     this.visibilityObserver.disconnect();
     window.removeEventListener('pointermove', this.onPointerMove);
     window.removeEventListener('pointerleave', this.onPointerLeave);
+    window.removeEventListener('touchstart', this.onTouchMove);
+    window.removeEventListener('touchmove', this.onTouchMove);
+    window.removeEventListener('touchend', this.onPointerLeave);
+    window.removeEventListener('touchcancel', this.onPointerLeave);
     document.removeEventListener('visibilitychange', this.onVisibility);
     this.canvas.removeEventListener('webglcontextlost', this.onContextLost);
     this.reducedMotion.removeEventListener('change', this.updateLoop);
@@ -236,12 +250,13 @@ export class HeroTypography3D {
   }
 
   private setUpRibbons(): void {
-    if (!this.renderer) return;
+    if (!this.renderer || this.lite) return;
     this.ribbons = new HeroRibbons(this.compactQuery.matches);
     this.ribbonBack = this.ribbons.createGroup(this.backClip);
     this.scene.add(this.ribbonBack);
 
-    if (!this.frontCanvas) return;
+    // On phones the headline block never overlaps the portrait, so one layer is enough (saves a WebGL context and a render pass).
+    if (!this.frontCanvas || this.mobileLayout.matches) return;
     try {
       this.frontRenderer = new THREE.WebGLRenderer({
         canvas: this.frontCanvas,
@@ -272,6 +287,7 @@ export class HeroTypography3D {
   }
 
   private shadowsEnabled(): boolean {
+    if (this.lite) return false;
     return !this.compactQuery.matches || (navigator.hardwareConcurrency ?? 4) > 4;
   }
 
@@ -347,7 +363,7 @@ export class HeroTypography3D {
     this.height = height;
     const compact = this.compactQuery.matches;
     const limits = HERO_TYPOGRAPHY_CONFIG.maxPixelRatio;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, compact ? limits.mobile : limits.desktop));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.lite ? 1.25 : compact ? limits.mobile : limits.desktop));
     this.renderer.setSize(width, height, false);
     this.frontRenderer?.setPixelRatio(Math.min(window.devicePixelRatio || 1, compact ? limits.mobile : limits.desktop));
     this.frontRenderer?.setSize(width, height, false);
@@ -404,7 +420,8 @@ export class HeroTypography3D {
 
     // Ribbon parts behind this plane are drawn with the letters (behind the portrait); parts in front of it are drawn in
     // the front layer, above the portrait. It sits just in front of the letters.
-    const clipZ = depth + 3.5;
+    // Without a front layer the whole ribbon is drawn in the main scene (the clip plane is moved out of the way).
+    const clipZ = this.frontRenderer ? depth + 3.5 : 1e4;
     this.backClip.constant = clipZ;
     this.frontClip.constant = -clipZ;
 
@@ -505,6 +522,13 @@ export class HeroTypography3D {
   private onPointerMove = (event: PointerEvent): void => {
     this.pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
     this.pointer.y = (event.clientY / window.innerHeight) * 2 - 1;
+  };
+
+  private readonly onTouchMove = (event: TouchEvent): void => {
+    const touch = event.touches[0];
+    if (!touch) return;
+    this.pointer.x = (touch.clientX / window.innerWidth) * 2 - 1;
+    this.pointer.y = (touch.clientY / window.innerHeight) * 2 - 1;
   };
 
   private onPointerLeave = (): void => {

@@ -320,6 +320,25 @@
 
 .slide-index-item.is-active .slide-index-bar {
   width: 22px;
+  transform-origin: left center;
+  // Fills over the auto-advance interval (5.2 s, see AppComponent.startSloganTimer), so the countdown is visible.
+  animation: slide-progress 5.2s linear forwards;
+}
+
+@keyframes slide-progress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide-index-item.is-active .slide-index-bar {
+    animation: none;
+  }
 }
 
 .hero-shell.light-theme .slide-index-item {

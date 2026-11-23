@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "generate:headline": "node tools/generate-typography-outlines.mjs",
-    "trace:signature": "node tools/trace-signature.mjs"
+    "trace:signature": "node tools/trace-signature.mjs",
+    "optimize:images": "node tools/optimize-hero-images.mjs"
   },
   "dependencies": {
     "@angular/animations": "^22.2.0",
@@ -30,6 +31,7 @@
     "@types/three": "^0.180.0",
     "fontkit": "^3.0.0",
     "pngjs": "^7.0.0",
+    "sharp": "^0.35.5",
     "typescript": "~6.0.0"
   }
 }

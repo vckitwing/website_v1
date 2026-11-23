@@ -40,6 +40,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('brandVck', { static: true }) private brandVckRef!: ElementRef<HTMLElement>;
   @ViewChild('brandName', { static: true }) private brandNameRef!: ElementRef<HTMLElement>;
   @ViewChild('heroAnchor', { static: true }) private heroAnchorRef!: ElementRef<HTMLElement>;
+  @ViewChild('heroSection', { static: true }) private heroSectionRef!: ElementRef<HTMLElement>;
   @ViewChild('heroArtwork', { static: true }) private heroArtworkRef!: ElementRef<HTMLImageElement>;
   @ViewChild('portraitTrace', { static: true }) private portraitTraceRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('heroEyebrow', { static: true }) private heroEyebrowRef!: ElementRef<HTMLElement>;
@@ -168,14 +169,41 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     // Lazy chunk: the extruded headline (outlines, SVGLoader, environment map) is not needed for first paint.
     void import('./pages/home/hero/typography/hero-typography-3d').then(({ HeroTypography3D }) => {
-      if (this.destroyed) return;
-      this.headline3d = new HeroTypography3D(this.headlineCanvasRef.nativeElement, this.ribbonFrontCanvasRef.nativeElement, this.language(), this.theme());
-      if (!this.openingActive()) this.headline3d.reveal();
+      // Built when the browser is idle so the opening animation and first paint are not competing with WebGL start-up.
+      const start = (): void => {
+        if (this.destroyed || this.headline3d) return;
+        this.headline3d = new HeroTypography3D(this.headlineCanvasRef.nativeElement, this.ribbonFrontCanvasRef.nativeElement, this.language(), this.theme());
+        if (!this.openingActive()) this.headline3d.reveal();
+      };
+      const idle = (window as Window & { requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number }).requestIdleCallback;
+      if (idle) idle.call(window, start, { timeout: 1500 });
+      else window.setTimeout(start, 200);
     }, (error: unknown) => console.error('Unable to load the 3D hero headline.', error));
     this.startSloganTimer();
   }
 
+  private swipeStart?: { x: number; y: number; time: number };
+  private readonly onSwipeStart = (event: TouchEvent): void => {
+    const touch = event.touches[0];
+    this.swipeStart = touch ? { x: touch.clientX, y: touch.clientY, time: performance.now() } : undefined;
+  };
+  /** A quick, mostly horizontal swipe on the hero changes the slogan (the page still scrolls vertically as usual). */
+  private readonly onSwipeEnd = (event: TouchEvent): void => {
+    const start = this.swipeStart;
+    const touch = event.changedTouches[0];
+    this.swipeStart = undefined;
+    if (!start || !touch) return;
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.6 || performance.now() - start.time > 700) return;
+    const count = this.slides.length;
+    this.selectSlide((this.activeSlide() + (dx < 0 ? 1 : -1) + count) % count);
+  };
+
   ngAfterViewInit(): void {
+    const hero = this.heroSectionRef.nativeElement;
+    hero.addEventListener('touchstart', this.onSwipeStart, { passive: true });
+    hero.addEventListener('touchend', this.onSwipeEnd, { passive: true });
     this.portraitReveal = new HeroPortraitReveal(
       this.heroArtworkRef.nativeElement,
       this.portraitTraceRef.nativeElement,
@@ -366,6 +394,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.heroSectionRef.nativeElement.removeEventListener('touchstart', this.onSwipeStart);
+    this.heroSectionRef.nativeElement.removeEventListener('touchend', this.onSwipeEnd);
     this.destroyed = true;
     window.clearInterval(this.sloganTimer);
     window.clearTimeout(this.signatureTimer);

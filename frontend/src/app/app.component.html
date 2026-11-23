@@ -50,14 +50,14 @@
     }
   </nav>
 
-  <section class="hero" id="home" [attr.aria-label]="language() === 'ta' ? 'விசிக முன்னணிப் பகுதி' : 'VCK hero'">
+  <section #heroSection class="hero" id="home" [attr.aria-label]="language() === 'ta' ? 'விசிக முன்னணிப் பகுதி' : 'VCK hero'">
     <canvas #headlineCanvas class="hero-headline-3d" role="img" [attr.aria-label]="language() === 'ta' ? 'அமைப்பாய்த் திரள்வோம்' : 'Organize and unite'"></canvas>
-    <img #heroArtwork class="hero-artwork" [class.portrait-reveal-pending]="portraitRevealPending()" [class.portrait-3d-active]="portrait3dActive()" src="assets/hero_section/thiruma.png" [attr.alt]="language() === 'ta' ? 'தோழர் திருமாவளவன்' : 'Thol. Thirumavalavan'" />
+    <img #heroArtwork class="hero-artwork" [class.portrait-reveal-pending]="portraitRevealPending()" [class.portrait-3d-active]="portrait3dActive()" src="assets/hero_section/thiruma.webp" [attr.alt]="language() === 'ta' ? 'தோழர் திருமாவளவன்' : 'Thol. Thirumavalavan'" />
     <canvas #portrait3dCanvas class="hero-portrait-3d" aria-hidden="true"></canvas>
     <canvas #ribbonFrontCanvas class="hero-ribbon-front" aria-hidden="true"></canvas>
     <canvas #portraitTrace class="portrait-trace" aria-hidden="true"></canvas>
     <div class="crowd-strip" aria-hidden="true">
-      <img src="assets/hero_section/crowd.png" alt="" />
+      <img src="assets/hero_section/crowd.webp" alt="" />
     </div>
     <div class="hero-copy">
       <p #heroEyebrow class="eyebrow"><span class="eyebrow-line"></span> {{ language() === 'ta' ? 'நிறுவப்பட்டது 1982 · விடுதலைச் சிறுத்தைகள் கட்சி' : 'EST. 1982 · VIDUTHALAI CHIRUTHAIGAL KATCHI' }}</p>
@@ -102,6 +102,7 @@
     <span class="footer-label">{{ language() === 'ta' ? 'நமது இயக்கம், நமது எதிர்காலம்' : 'OUR MOVEMENT, OUR FUTURE' }}</span>
     <span class="scroll-cue"><span></span> {{ language() === 'ta' ? 'தொடர்ந்து பார்க்க கீழே நகர்த்தவும்' : 'SCROLL TO EXPLORE' }}</span>
   </footer>
+
 </main>
 <div class="story-star-journey" aria-hidden="true">
   <svg class="story-star-journey-thread" viewBox="0 0 100 100" preserveAspectRatio="none">
