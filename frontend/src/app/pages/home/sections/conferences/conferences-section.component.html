@@ -1,0 +1,37 @@
+<section #sectionRoot class="conf-section" [attr.lang]="language" [attr.aria-label]="language === 'ta' ? 'விசிக மாநாடுகள், 2003 முதல் 2026 வரை' : 'VCK conferences, 2003 to 2026'">
+  <header class="conf-intro">
+    <p class="conf-eyebrow">2003 – 2026</p>
+    <h2>{{ language === 'ta' ? 'மாநாடுகள்' : 'Conferences' }}</h2>
+    <p class="conf-lede">{{ language === 'ta' ? 'இயக்கத்தின் பாதையை வகுத்த இருபத்தைந்து மாநாடுகள்.' : 'Twenty-five conferences that set the movement’s course.' }}</p>
+    <button type="button" class="conf-motion" [attr.aria-pressed]="paused()" (click)="toggleMotion()">
+      <span class="conf-motion-icon" aria-hidden="true">{{ paused() ? '▶' : '❚❚' }}</span>
+      {{ paused() ? (language === 'ta' ? 'இயக்கத்தைத் தொடங்கு' : 'Play motion') : (language === 'ta' ? 'இயக்கத்தை நிறுத்து' : 'Pause motion') }}
+    </button>
+  </header>
+
+  <!-- The animated rows are decorative; the same conferences are listed once, in order, for assistive technology. -->
+  <ol class="visually-hidden">
+    @for (conference of conferences; track $index) {
+      <li>{{ conference.year }}: {{ conference.name[language] }}</li>
+    }
+  </ol>
+
+  <div class="conf-stage" aria-hidden="true">
+    @for (row of rows; track $index) {
+      <div class="conf-row">
+        <div class="conf-track">
+          @for (copy of copies; track copy) {
+            <div class="conf-copy">
+              @for (item of row; track item.conference.name.en) {
+                <article class="conf-tile" [class.tone-0]="item.tone === 0" [class.tone-1]="item.tone === 1" [class.tone-2]="item.tone === 2">
+                  <span class="conf-year">{{ item.conference.year }}</span>
+                  <h3 class="conf-name">{{ item.conference.name[language] }}</h3>
+                </article>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</section>
