@@ -7,6 +7,7 @@ import type { HeroPortrait3D } from './pages/home/hero/portrait/hero-portrait-3d
 import type { HeroTypography3D } from './pages/home/hero/typography/hero-typography-3d';
 import { FlagSectionComponent } from './pages/home/sections/flag/flag-section.component';
 import { ConferencesSectionComponent } from './pages/home/sections/conferences/conferences-section.component';
+import { SocialSectionComponent } from './pages/home/sections/social/social-section.component';
 import { HistorySectionComponent } from './pages/home/sections/history/history-section.component';
 import { IdeologySectionComponent } from './pages/home/sections/ideology/ideology-section.component';
 import { HandwrittenSignatureComponent } from '@shared/handwritten-signature/handwritten-signature.component';
@@ -20,7 +21,7 @@ type SloganLine = { parts: SloganPart[]; words: SloganWord[] };
 @Component({
   selector: 'vck-root',
   standalone: true,
-  imports: [FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ConferencesSectionComponent, HandwrittenSignatureComponent, ThemeSwitchTransitionComponent],
+  imports: [FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ConferencesSectionComponent, SocialSectionComponent, HandwrittenSignatureComponent, ThemeSwitchTransitionComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss', './pages/home/hero/hero-typography.scss', './pages/home/hero/hero-signature.scss', './pages/home/hero/hero-mobile.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

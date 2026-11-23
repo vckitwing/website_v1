@@ -1,320 +1,208 @@
 import { gsap } from 'gsap';
 import { registerStarLeg, svgStarBox } from '@shared/story/star-journey-controller';
 
-type ThinkerFanConditions = {
-  isDesktop: boolean;
-  isTablet: boolean;
+type ThinkersConditions = {
   isMobile: boolean;
-  reduceMotion: boolean;
+  reduce: boolean;
 };
 
-type CardPosition = {
-  x: number;
-  y: number;
-  z: number;
-  rotationY: number;
-  rotationZ: number;
-  zIndex: number;
+type Chapter = {
+  root: HTMLElement;
+  frame: HTMLElement;
+  image: HTMLElement;
+  ring: HTMLElement;
+  monogram: HTMLElement;
+  numeral: HTMLElement;
+  words: HTMLElement[];
+  rest: HTMLElement[];
+  rule: HTMLElement;
 };
 
-export type ThinkerFanAnimation = {
-  open: (index: number) => void;
-  close: (index: number, onComplete: () => void) => void;
-  destroy: () => void;
-};
-
-export async function createThinkerFanAnimation(root: HTMLElement): Promise<ThinkerFanAnimation> {
+/**
+ * The thinkers section: a pinned stage that shows one thinker at a time. The first thinker wipes in as the section
+ * arrives; scrolling then hands over to the next one (the portrait wipes away upward while the next wipes in from below,
+ * names rise out of their masks, the accent colour moves on). The journey star lands on the progress rail beside the stage
+ * and becomes its marker. With reduced motion the three thinkers simply follow one another.
+ */
+export async function createThinkersAnimation(root: HTMLElement): Promise<() => void> {
   const { ScrollTrigger } = await import('gsap/ScrollTrigger');
   gsap.registerPlugin(ScrollTrigger);
 
-  const stage = root.querySelector<HTMLElement>('.thinker-stage');
-  const cards = Array.from(root.querySelectorAll<HTMLElement>('.thinker-card'));
-  const historyHost = root.closest('vck-thinkers-section')?.previousElementSibling;
-  const historyTrack = historyHost?.querySelector<HTMLElement>('.history-track');
+  const stage = root.querySelector<HTMLElement>('.th-stage');
+  const chapterRoots = Array.from(root.querySelectorAll<HTMLElement>('.th-chapter'));
+  const rail = root.querySelector<HTMLElement>('.th-rail');
+  const ticks = Array.from(root.querySelectorAll<HTMLElement>('.th-tick'));
+  const railStar = root.querySelector<SVGSVGElement>('.th-rail-star');
+  const railFill = root.querySelector<HTMLElement>('.th-rail-fill');
+  const glowBlue = root.querySelector<HTMLElement>('.th-glow-blue');
+  const glowRed = root.querySelector<HTMLElement>('.th-glow-red');
+  const historyHost = root.closest('vck-root')?.querySelector('vck-history-section');
   const historyMarker = historyHost?.querySelector<HTMLElement>('.history-star-marker');
 
-  if (!stage || cards.length !== 3 || !historyHost || !historyTrack || !historyMarker) {
-    throw new Error('The thinker section requires its three cards and the preceding history timeline.');
+  if (!stage || chapterRoots.length !== 3 || !rail || ticks.length !== 3 || !railStar || !railFill || !glowBlue || !glowRed) {
+    throw new Error('The thinkers section requires its stage, three chapters and its progress rail.');
   }
 
+  const q = <T extends HTMLElement>(parent: HTMLElement, selector: string): T => {
+    const element = parent.querySelector<T>(selector);
+    if (!element) throw new Error(`The thinkers section is missing ${selector}.`);
+    return element;
+  };
+  const chapters: Chapter[] = chapterRoots.map((chapterRoot) => ({
+    root: chapterRoot,
+    frame: q(chapterRoot, '.th-frame'),
+    image: q(chapterRoot, '.th-image'),
+    ring: q(chapterRoot, '.th-ring'),
+    monogram: q(chapterRoot, '.th-monogram'),
+    numeral: q(chapterRoot, '.th-numeral'),
+    words: Array.from(chapterRoot.querySelectorAll<HTMLElement>('.th-word > span')),
+    rest: [q(chapterRoot, '.th-count'), q(chapterRoot, '.th-alt'), q(chapterRoot, '.th-desc')],
+    rule: q(chapterRoot, '.th-rule')
+  }));
+
   const media = gsap.matchMedia(root);
-  let positions: CardPosition[] = [];
-  let isReducedMotion = false;
-  let activeIndex: number | null = null;
-  let activeTimeline: gsap.core.Timeline | undefined;
-  let fanTimeline: gsap.core.Timeline | undefined;
-  let removeArrival: (() => void) | undefined;
-  let arrivalPending = false;
-  let startArrival: () => void = () => {};
-  const stopArrival = (): void => {
-    removeArrival?.();
-    removeArrival = undefined;
-  };
-  let pendingClose: (() => void) | undefined;
-  let isDestroying = false;
-
-  const restoreFan = (): void => {
-    cards.forEach((card, index) => {
-      const position = positions[index];
-      gsap.set(card, {
-        xPercent: -50,
-        yPercent: -50,
-        x: position.x,
-        y: position.y,
-        z: position.z,
-        rotationX: 0,
-        rotationY: position.rotationY,
-        rotationZ: position.rotationZ,
-        scale: 1,
-        autoAlpha: 1,
-        zIndex: position.zIndex,
-        transformOrigin: '50% 50%',
-        transformStyle: 'preserve-3d'
-      });
-    });
-  };
-
-  const setOpenState = (index: number): void => {
-    cards.forEach((card, cardIndex) => {
-      if (cardIndex === index) {
-        gsap.set(card, {
-          x: 0,
-          y: -4,
-          z: isReducedMotion ? 0 : 90,
-          rotationX: 0,
-          rotationY: 180,
-          rotationZ: 0,
-          scale: 1,
-          autoAlpha: 1,
-          zIndex: 20
-        });
-      } else {
-        gsap.set(card, {
-          y: positions[cardIndex].y + 18,
-          z: positions[cardIndex].z - 75,
-          scale: .86,
-          autoAlpha: .2
-        });
-      }
-    });
-  };
-
-  media.add({
-    isDesktop: '(min-width: 1025px)',
-    isTablet: '(min-width: 601px) and (max-width: 1024px)',
-    isMobile: '(max-width: 600px)',
-    reduceMotion: '(prefers-reduced-motion: reduce)'
-  }, (context) => {
-    const { isDesktop, isTablet, isMobile, reduceMotion } = context.conditions as ThinkerFanConditions;
-    isReducedMotion = reduceMotion;
-
-    const updatePositions = (): void => {
-      const stageWidth = stage.clientWidth;
-      const cardWidth = cards[0].offsetWidth;
-      const spacing = isMobile
-        ? Math.min(cardWidth * .4, stageWidth * .25)
-        : isTablet
-          ? Math.min(185, stageWidth * .24)
-          : Math.min(215, stageWidth * .225);
-      const sideY = isMobile ? -8 : -10;
-      const sideRotation = isMobile ? 8 : 10;
-
-      positions = [
-        { x: 0, y: 0, z: 8, rotationY: 0, rotationZ: 0, zIndex: 3 },
-        { x: -spacing, y: sideY, z: -42, rotationY: sideRotation, rotationZ: -sideRotation * .72, zIndex: 1 },
-        { x: spacing, y: sideY, z: -42, rotationY: -sideRotation, rotationZ: sideRotation * .72, zIndex: 2 }
-      ];
-    };
-
-    updatePositions();
-
-    if (reduceMotion) {
-      restoreFan();
-      gsap.set(historyMarker, { autoAlpha: 1 });
-    } else {
-      cards.forEach((card, index) => {
-        const position = positions[index];
-        gsap.set(card, {
-          xPercent: -50,
-          yPercent: -50,
-          x: position.x * .12,
-          y: position.y * .12,
-          z: position.z * .12,
-          rotationY: position.rotationY * .12,
-          rotationZ: position.rotationZ * .12,
-          scale: .94,
-          autoAlpha: 1,
-          zIndex: position.zIndex,
-          transformOrigin: '50% 50%',
-          transformStyle: 'preserve-3d'
-        });
-      });
-
-      fanTimeline = gsap.timeline({
-        scrollTrigger: {
-          trigger: stage,
-          start: 'top 88%',
-          end: 'top 32%',
-          scrub: .45,
-          invalidateOnRefresh: true
-        }
-      });
-      cards.forEach((card, index) => {
-        fanTimeline?.to(card, {
-          x: () => positions[index].x,
-          y: () => positions[index].y,
-          z: () => positions[index].z,
-          rotationY: () => positions[index].rotationY,
-          rotationZ: () => positions[index].rotationZ,
-          scale: 1,
-          duration: 1,
-          ease: 'power2.out'
-        }, index * .045);
-      });
-
-      // Last leg of the page's star journey: the history timeline's star travels on to the thinkers.
-      startArrival = (): void => {
-        if (removeArrival || arrivalPending || isDestroying) return;
-        arrivalPending = true;
-        void registerStarLeg(root, {
-          id: 'history-to-thinkers',
-          start: () => historyHost.getBoundingClientRect().bottom + window.scrollY - window.innerHeight,
-          end: () => {
-            const bounds = stage.getBoundingClientRect();
-            return bounds.top + window.scrollY + bounds.height / 2 - window.innerHeight / 2;
-          },
-          from: () => svgStarBox(historyMarker.querySelector('svg') ?? historyMarker),
-          to: () => {
-            const bounds = stage.getBoundingClientRect();
-            const size = Math.min(56, Math.max(42, bounds.width * .055));
-            return { x: bounds.left + bounds.width / 2, y: window.innerHeight / 2, width: size * .92, height: size * .88 };
-          },
-          source: historyMarker
-        }).then((remove) => {
-          arrivalPending = false;
-          if (isDestroying || removeArrival) remove();
-          else removeArrival = remove;
-        });
-      };
-      startArrival();
+  media.add({ isDesktop: '(min-width: 761px)', isMobile: '(max-width: 760px)', reduce: '(prefers-reduced-motion: reduce)' }, (context) => {
+    const { isMobile, reduce } = context.conditions as ThinkersConditions;
+    if (reduce) {
+      root.classList.add('is-static');
+      return () => root.classList.remove('is-static');
     }
 
-    const onResize = (): void => {
-      updatePositions();
-      ScrollTrigger.refresh();
-    };
-    window.addEventListener('resize', onResize);
+    const radius = Number.parseFloat(getComputedStyle(chapters[0]!.frame).borderTopLeftRadius) || 28;
+    const HIDDEN = `inset(100% 0% 0% 0% round ${radius}px)`;
+    const SHOWN = `inset(0% 0% 0% 0% round ${radius}px)`;
+    const GONE = `inset(0% 0% 100% 0% round ${radius}px)`;
+    const RING_OPACITY = 0.7;
+    const MONOGRAM_OPACITY = 0.5;
 
-    if (activeIndex !== null) setOpenState(activeIndex);
+    // Every chapter starts "before its entrance"; the first one's container is on screen, the others are hidden.
+    chapters.forEach((chapter, index) => {
+      gsap.set(chapter.root, { autoAlpha: index === 0 ? 1 : 0 });
+      gsap.set(chapter.frame, { clipPath: HIDDEN });
+      gsap.set(chapter.image, { scale: 1.35, yPercent: 8 });
+      gsap.set(chapter.ring, { autoAlpha: 0, x: -30, y: 30 });
+      gsap.set(chapter.monogram, { autoAlpha: 0, xPercent: 14 });
+      gsap.set(chapter.numeral, { autoAlpha: 0, yPercent: 12 });
+      gsap.set(chapter.words, { yPercent: 118 });
+      gsap.set(chapter.rest, { autoAlpha: 0, y: 26 });
+      gsap.set(chapter.rule, { scaleX: 0, transformOrigin: 'left center' });
+    });
+    gsap.set(railFill, isMobile ? { scaleX: 0 } : { scaleY: 0 });
+    gsap.set(glowRed, { opacity: 0.4 });
+    gsap.set(glowBlue, { opacity: 1 });
+
+    // fromTo that never renders its "from" at creation (the chapters' starting states are set above).
+    const move = (timeline: gsap.core.Timeline, target: gsap.TweenTarget, from: gsap.TweenVars, to: gsap.TweenVars, at: number): void => {
+      timeline.fromTo(target, from, { ...to, immediateRender: false }, at);
+    };
+
+    const enter = (timeline: gsap.core.Timeline, c: Chapter, at: number): void => {
+      move(timeline, c.frame, { clipPath: HIDDEN }, { clipPath: SHOWN, duration: 0.6, ease: 'power3.out' }, at);
+      move(timeline, c.image, { scale: 1.35, yPercent: 8 }, { scale: 1, yPercent: 0, duration: 0.9, ease: 'power2.out' }, at);
+      move(timeline, c.ring, { autoAlpha: 0, x: -30, y: 30 }, { autoAlpha: RING_OPACITY, x: 0, y: 0, duration: 0.7, ease: 'power3.out' }, at + 0.12);
+      move(timeline, c.monogram, { autoAlpha: 0, xPercent: 14 }, { autoAlpha: MONOGRAM_OPACITY, xPercent: 0, duration: 0.8, ease: 'power3.out' }, at + 0.05);
+      move(timeline, c.numeral, { autoAlpha: 0, yPercent: 12 }, { autoAlpha: 1, yPercent: 0, duration: 0.9, ease: 'power2.out' }, at);
+      move(timeline, c.words, { yPercent: 118 }, { yPercent: 0, duration: 0.65, ease: 'power3.out', stagger: 0.07 }, at + 0.12);
+      move(timeline, c.rest, { autoAlpha: 0, y: 26 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out', stagger: 0.09 }, at + 0.28);
+      move(timeline, c.rule, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: 'power3.out' }, at + 0.3);
+    };
+
+    const exit = (timeline: gsap.core.Timeline, c: Chapter, at: number): void => {
+      move(timeline, c.frame, { clipPath: SHOWN }, { clipPath: GONE, duration: 0.5, ease: 'power3.in' }, at);
+      move(timeline, c.image, { scale: 1, yPercent: 0 }, { scale: 1.12, yPercent: -6, duration: 0.5, ease: 'power2.in' }, at);
+      move(timeline, c.ring, { autoAlpha: RING_OPACITY, x: 0, y: 0 }, { autoAlpha: 0, x: 30, y: -30, duration: 0.4, ease: 'power2.in' }, at);
+      move(timeline, c.monogram, { autoAlpha: MONOGRAM_OPACITY, xPercent: 0 }, { autoAlpha: 0, xPercent: -14, duration: 0.45, ease: 'power2.in' }, at);
+      move(timeline, c.numeral, { autoAlpha: 1, yPercent: 0 }, { autoAlpha: 0, yPercent: -12, duration: 0.5, ease: 'power2.in' }, at);
+      move(timeline, c.words, { yPercent: 0 }, { yPercent: -118, duration: 0.4, ease: 'power3.in', stagger: 0.04 }, at);
+      move(timeline, c.rest, { autoAlpha: 1, y: 0 }, { autoAlpha: 0, y: -22, duration: 0.3, ease: 'power2.in', stagger: 0.04 }, at);
+      move(timeline, c.rule, { scaleX: 1 }, { scaleX: 0, duration: 0.3, ease: 'power2.in' }, at);
+      timeline.set(c.root, { autoAlpha: 0 }, at + 0.55);
+    };
+
+    // 1) The first thinker arrives with the section (time based, once), so the stage is already composed when it pins.
+    const intro = gsap.timeline({ paused: true });
+    enter(intro, chapters[0]!, 0);
+    const introTrigger = ScrollTrigger.create({ trigger: stage, start: 'top 85%', once: true, onEnter: () => intro.play() });
+
+    // 2) While pinned, the scroll hands over from thinker to thinker.
+    const railPosition = (index: number): { x: number; y: number } => {
+      const railBounds = rail.getBoundingClientRect();
+      const tick = ticks[index]!.getBoundingClientRect();
+      const starHalf = railStar.getBoundingClientRect().width / 2;
+      return {
+        x: tick.left - railBounds.left + tick.width / 2 - starHalf,
+        y: tick.top - railBounds.top + tick.height / 2 - starHalf
+      };
+    };
+
+    const scrub = gsap.timeline({ defaults: { ease: 'none' } });
+    const fillAxis = isMobile ? 'scaleX' : 'scaleY';
+
+    // thinker 1 -> thinker 2
+    scrub.set(chapters[1]!.root, { autoAlpha: 1 }, 0.62);
+    exit(scrub, chapters[0]!, 0.45);
+    enter(scrub, chapters[1]!, 0.62);
+    scrub.fromTo(railStar, { x: () => railPosition(0).x, y: () => railPosition(0).y }, { x: () => railPosition(1).x, y: () => railPosition(1).y, duration: 0.7, ease: 'power2.inOut' }, 0.5);
+    scrub.to(railFill, { [fillAxis]: 0.5, duration: 0.7, ease: 'power2.inOut' }, 0.5);
+    scrub.to(glowRed, { opacity: 0.9, duration: 0.8, ease: 'power2.inOut' }, 0.5);
+    scrub.to(glowBlue, { opacity: 0.45, duration: 0.8, ease: 'power2.inOut' }, 0.5);
+
+    // thinker 2 -> thinker 3
+    scrub.set(chapters[2]!.root, { autoAlpha: 1 }, 1.82);
+    exit(scrub, chapters[1]!, 1.65);
+    enter(scrub, chapters[2]!, 1.82);
+    scrub.fromTo(railStar, { x: () => railPosition(1).x, y: () => railPosition(1).y }, { x: () => railPosition(2).x, y: () => railPosition(2).y, duration: 0.7, ease: 'power2.inOut', immediateRender: false }, 1.7);
+    scrub.to(railFill, { [fillAxis]: 1, duration: 0.7, ease: 'power2.inOut' }, 1.7);
+    scrub.to(glowBlue, { opacity: 1, duration: 0.8, ease: 'power2.inOut' }, 1.7);
+    scrub.to(glowRed, { opacity: 0.6, duration: 0.8, ease: 'power2.inOut' }, 1.7);
+
+    // a short hold on the last thinker before the page moves on
+    scrub.to({}, { duration: 0.6 }, 2.55);
+
+    const pin = ScrollTrigger.create({
+      trigger: stage,
+      start: 'top top',
+      end: () => `+=${Math.round(window.innerHeight * 3.4)}`,
+      pin: true,
+      anticipatePin: 1,
+      scrub: true,
+      animation: scrub,
+      invalidateOnRefresh: true
+    });
+
+    // The star flying in from the history timeline lands on the rail and becomes its marker.
+    let removeLeg: (() => void) | undefined;
+    let cancelled = false;
+    if (historyHost && historyMarker) {
+      void registerStarLeg(root, {
+        id: 'history-to-thinkers',
+        start: () => historyHost.getBoundingClientRect().bottom + window.scrollY - window.innerHeight,
+        end: () => pin.start,
+        from: () => svgStarBox(historyMarker.querySelector('svg') ?? historyMarker),
+        to: () => svgStarBox(railStar),
+        source: historyMarker,
+        target: railStar
+      }).then((remove) => {
+        if (cancelled) remove();
+        else removeLeg = remove;
+      });
+    } else {
+      gsap.set(railStar, { autoAlpha: 1 });
+    }
 
     return () => {
-      window.removeEventListener('resize', onResize);
-      fanTimeline?.scrollTrigger?.kill();
-      stopArrival();
-      activeTimeline?.kill();
-      activeTimeline = undefined;
-      if (!isDestroying && pendingClose) {
-        const completeClose = pendingClose;
-        pendingClose = undefined;
-        completeClose();
-      }
+      cancelled = true;
+      removeLeg?.();
+      introTrigger.kill();
+      intro.kill();
+      pin.kill();
+      scrub.kill();
+      gsap.set(
+        [stage, rail, railStar, railFill, glowBlue, glowRed, ...chapters.flatMap((c) => [c.root, c.frame, c.image, c.ring, c.monogram, c.numeral, c.rule, ...c.words, ...c.rest])],
+        { clearProps: 'all' }
+      );
     };
   });
 
-  return {
-    open(index: number): void {
-      if (index < 0 || index >= cards.length) return;
-
-      fanTimeline?.scrollTrigger?.disable(false);
-      stopArrival();
-      fanTimeline?.progress(1);
-      if (!isReducedMotion) gsap.set(historyMarker, { autoAlpha: 0 });
-      activeTimeline?.kill();
-      activeIndex = index;
-      const selected = cards[index];
-      const others = cards.filter((_, cardIndex) => cardIndex !== index);
-
-      if (isReducedMotion) {
-        setOpenState(index);
-        return;
-      }
-
-      const timeline = gsap.timeline({ defaults: { ease: 'power3.inOut' } });
-      activeTimeline = timeline;
-      timeline.to(others, {
-        y: '+=18',
-        z: '-=75',
-        scale: .86,
-        autoAlpha: .2,
-        duration: .48
-      }, 0);
-      timeline.to(selected, {
-        x: 0,
-        y: -4,
-        z: 90,
-        rotationX: 0,
-        rotationY: 0,
-        rotationZ: 0,
-        scale: 1.035,
-        zIndex: 20,
-        duration: .62
-      }, 0);
-      timeline.to(selected, {
-        rotationY: 180,
-        scale: 1,
-        duration: .72,
-        ease: 'power2.inOut'
-      }, .3);
-    },
-
-    close(index: number, onComplete: () => void): void {
-      if (activeIndex !== index) {
-        onComplete();
-        return;
-      }
-
-      activeIndex = null;
-      if (isReducedMotion) {
-        activeTimeline?.kill();
-        activeTimeline = undefined;
-        restoreFan();
-        fanTimeline?.scrollTrigger?.enable(false, false);
-        startArrival();
-        ScrollTrigger.update();
-        onComplete();
-        return;
-      }
-
-      if (activeTimeline) {
-        const timeline = activeTimeline;
-        pendingClose = onComplete;
-        timeline.eventCallback('onReverseComplete', () => {
-          if (activeTimeline === timeline) activeTimeline = undefined;
-          if (pendingClose === onComplete) {
-            pendingClose = undefined;
-            fanTimeline?.scrollTrigger?.enable(false, false);
-            startArrival();
-            ScrollTrigger.update();
-            onComplete();
-          }
-        });
-        timeline.reverse();
-        return;
-      }
-
-      restoreFan();
-      fanTimeline?.scrollTrigger?.enable(false, false);
-      startArrival();
-      ScrollTrigger.update();
-      onComplete();
-    },
-
-    destroy(): void {
-      isDestroying = true;
-      pendingClose = undefined;
-      activeTimeline?.kill();
-      media.revert();
-      activeTimeline = undefined;
-    }
-  };
+  return () => media.revert();
 }

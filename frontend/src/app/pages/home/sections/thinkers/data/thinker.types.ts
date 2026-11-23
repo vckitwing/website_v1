@@ -4,11 +4,11 @@ export type ThinkerName = {
 };
 
 export type Thinker = {
-  id: string;
+  id: 'ambedkar' | 'periyar' | 'marx';
   number: string;
   monogram: string;
   name: ThinkerName;
   description: ThinkerName;
-  imagePath: string | null;
+  imagePath: string;
   imageCredit: string | null;
 };
