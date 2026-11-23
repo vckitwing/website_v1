@@ -1,6 +1,10 @@
 <main class="hero-shell" [class.light-theme]="theme() === 'light'" [class.opening-active]="openingActive()" [attr.lang]="language()">
   <div #openingScreen class="opening-screen" aria-hidden="true">
     <canvas #openingCanvas class="opening-particles"></canvas>
+    <svg #openingFlag class="opening-flag" viewBox="0 0 900 600" aria-hidden="true">
+      <rect class="opening-flag-blue" x="0" y="0" width="900" height="300" />
+      <rect class="opening-flag-red" x="0" y="300" width="900" height="300" />
+    </svg>
     <div #openingIdentity class="opening-identity">
       <div class="opening-copy">
         <span #openingVck class="opening-vck">VCK</span>

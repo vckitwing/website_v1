@@ -6,6 +6,10 @@
 .hero-shell.opening-active .brand-copy { visibility:hidden; }
 .hero-shell.opening-active.opening-brand-ready .brand-copy { visibility:visible; }
 .opening-particles { position:absolute; inset:0; display:block; pointer-events:none; }
+/* The intro opens on the VCK flag (same colours as the flag section); the white star lifts off it. */
+.opening-flag { position:absolute; left:50%; top:50%; width:clamp(230px,44vw,460px); height:auto; aspect-ratio:3/2; overflow:visible; pointer-events:none; filter:drop-shadow(0 18px 40px rgba(0,0,0,.35)); }
+.opening-flag-blue { fill:#00aef0; }
+.opening-flag-red { fill:#ed1c24; }
 .opening-star { position:relative; flex:0 0 auto; display:block; width:clamp(52px,10vw,144px); height:clamp(52px,10vw,144px); overflow:visible; fill:#f4f7fc; filter:drop-shadow(0 0 7px rgba(100,190,255,.92)) drop-shadow(0 0 22px rgba(237,42,64,.55)); transform-origin:50% 50%; }
 .opening-identity { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:clamp(18px,3vw,46px); padding:24px; }
 .opening-copy { position:relative; flex:0 0 auto; width:max-content; min-width:0; text-align:right; }

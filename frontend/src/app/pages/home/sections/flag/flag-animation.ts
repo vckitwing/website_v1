@@ -39,7 +39,7 @@ export async function createFlagAnimation(root: HTMLElement): Promise<() => void
     const mobile = conditions.isMobile;
     const starBounds = star.getBBox();
     const separationAt = mobile ? 4 : 2.05;
-    const colourCardsAt = mobile ? 4.9 : 2.42;
+    const cardsTakeOverAt = separationAt + .8; // the panels have arrived at the cards
     const starMeaningAt = mobile ? 1.9 : 3.32;
     const starFlightAt = mobile ? 2.45 : 3.32;
     const starMergeAt = mobile ? 3.25 : 4.1;
@@ -67,12 +67,44 @@ export async function createFlagAnimation(root: HTMLElement): Promise<() => void
       };
     };
 
+    // The blue and red panels of the flag travel to the exact rectangles of the colour cards (so one turns into the
+    // other). Targets are measured against the figure at its final scale and re-measured whenever the layout refreshes.
+    const finalFigureScale = mobile ? 1.08 : 1.2;
+    type Panel = { x: number; y: number; w: number; h: number; rx: number };
+    const flagPanels: Panel[] = [{ x: 0, y: 0, w: 900, h: 300, rx: 0 }, { x: 0, y: 300, w: 900, h: 300, rx: 0 }];
+    const measureCardPanels = (): Panel[] => {
+      const figureBounds = figure.getBoundingClientRect();
+      const currentScale = Number(gsap.getProperty(figure, 'scale')) || 1;
+      const unit = (finalFigureScale * (figureBounds.width / currentScale)) / 900; // screen px per SVG unit at the final scale
+      const centerX = figureBounds.left + figureBounds.width / 2;
+      const centerY = figureBounds.top + figureBounds.height / 2;
+      return [blueCard, redCard].map((card) => {
+        const bounds = card.getBoundingClientRect();
+        const radius = Number.parseFloat(getComputedStyle(card).borderTopLeftRadius) || 0;
+        return { x: 450 + (bounds.left - centerX) / unit, y: 300 + (bounds.top - centerY) / unit, w: bounds.width / unit, h: bounds.height / unit, rx: radius / unit };
+      });
+    };
+    let cardPanels = measureCardPanels();
+    const morph = { p: 0 };
+    const applyMorph = (): void => {
+      [blue, red].forEach((rect, index) => {
+        const from = flagPanels[index]!;
+        const to = cardPanels[index]!;
+        const mix = (a: number, b: number) => a + (b - a) * morph.p;
+        rect.setAttribute('x', String(mix(from.x, to.x)));
+        rect.setAttribute('y', String(mix(from.y, to.y)));
+        rect.setAttribute('width', String(mix(from.w, to.w)));
+        rect.setAttribute('height', String(mix(from.h, to.h)));
+        rect.setAttribute('rx', String(mix(from.rx, to.rx)));
+      });
+    };
+
     gsap.set(blue, { scaleY: 0, transformOrigin: '50% 0%' });
     gsap.set(red, { scaleY: 0, transformOrigin: '50% 100%' });
     gsap.set(star, { x: mobile ? 0 : 30, y: mobile ? 0 : -16, scale: 0, rotation: -32, autoAlpha: 0, transformOrigin: '50% 50%' });
     gsap.set(aura, { scale: .35, autoAlpha: 0, transformOrigin: '50% 50%' });
-    gsap.set(blueCard, { x: mobile ? 0 : -48, y: 26, autoAlpha: 0 });
-    gsap.set(redCard, { x: mobile ? 0 : 48, y: 26, autoAlpha: 0 });
+    gsap.set(cards, { autoAlpha: 0 });
+    gsap.set(cards.flatMap((card) => Array.from(card.children)), { autoAlpha: 0, y: 10 });
     gsap.set(starFlight, { xPercent: -50, yPercent: -50, autoAlpha: 0 });
     gsap.set(starMeaning, { autoAlpha: 0 });
     gsap.set(starMeaningMark, { scale: .55, rotation: -40, autoAlpha: 0, transformOrigin: '50% 50%' });
@@ -84,7 +116,8 @@ export async function createFlagAnimation(root: HTMLElement): Promise<() => void
         start: conditions.isDesktop ? () => getFlagStarArrivalScroll(star) + 1 : 'top 82%',
         end: 'bottom bottom',
         scrub: mobile ? .35 : .65,
-        invalidateOnRefresh: true
+        invalidateOnRefresh: true,
+        onRefresh: () => { cardPanels = measureCardPanels(); applyMorph(); }
       }
     });
 
@@ -100,27 +133,17 @@ export async function createFlagAnimation(root: HTMLElement): Promise<() => void
       .to(figure, { scale: mobile ? 1.08 : 1.2, duration: .8 }, 1.15)
       .to(aura, { scale: 1.35, autoAlpha: .88, duration: .75 }, 1.2)
       .addLabel('separation', separationAt)
-      .to(blue, {
-        attr: mobile
-          ? { x: 0, y: -38, width: 900, height: 230 }
-          : { x: 35, y: 112, width: 330, height: 376 },
-        duration: .85
-      }, separationAt)
-      .to(red, {
-        attr: mobile
-          ? { x: 0, y: 408, width: 900, height: 230 }
-          : { x: 535, y: 112, width: 330, height: 376 },
-        duration: .85
-      }, separationAt)
-      .to([blue, red], { autoAlpha: 0, duration: .42 }, separationAt + .47)
+      .to(morph, { p: 1, duration: .85, ease: 'power2.inOut', onUpdate: applyMorph }, separationAt)
       .to(star, { scale: 1.08, duration: .55 }, separationAt + .11)
       .to(aura, { autoAlpha: 0, duration: .35 }, separationAt + .65)
       .to(star, { autoAlpha: 0, duration: .12 }, mobile ? starFlightAt : 3.4)
       .to(heading, { y: -16, autoAlpha: 0, duration: .45, ease: 'power2.out' }, separationAt + .07)
       .to(scrollHint, { autoAlpha: 0, duration: .35 }, separationAt + .07)
-      .addLabel('colourCards', colourCardsAt)
-      .to(blueCard, { x: 0, y: 0, autoAlpha: 1, duration: .72, ease: 'power2.out' }, colourCardsAt)
-      .to(redCard, { x: 0, y: 0, autoAlpha: 1, duration: .72, ease: 'power2.out' }, colourCardsAt + .14)
+      .addLabel('colourCards', cardsTakeOverAt)
+      // The cards are the same colour as the panels and sit exactly under them, so the hand-over is seamless.
+      .to(cards, { autoAlpha: 1, duration: .16, ease: 'none' }, cardsTakeOverAt)
+      .to([blue, red], { autoAlpha: 0, duration: .16, ease: 'none' }, cardsTakeOverAt + .06)
+      .to(cards.flatMap((card) => Array.from(card.children)), { autoAlpha: 1, y: 0, duration: .5, ease: 'power2.out', stagger: .06 }, cardsTakeOverAt + .12)
       .addLabel('starMeaning', starMeaningAt)
       .to(starMeaning, { autoAlpha: 1, duration: .65, ease: 'power2.out' }, starMeaningAt)
       .to(starMeaning, { y: 0, duration: .85, ease: 'power2.inOut' }, mobile ? separationAt : starMeaningAt)

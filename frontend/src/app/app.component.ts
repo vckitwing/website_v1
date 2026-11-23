@@ -33,6 +33,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('themeTransition', { static: true }) private themeTransitionRef!: ThemeSwitchTransitionComponent;
   @ViewChild('openingScreen', { static: true }) private openingScreenRef!: ElementRef<HTMLElement>;
   @ViewChild('openingCanvas', { static: true }) private openingCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('openingFlag', { static: true }) private openingFlagRef!: ElementRef<SVGSVGElement>;
   @ViewChild('openingStar', { static: true }) private openingStarRef!: ElementRef<SVGSVGElement>;
   @ViewChild('openingIdentity', { static: true }) private openingIdentityRef!: ElementRef<HTMLElement>;
   @ViewChild('openingVck', { static: true }) private openingVckRef!: ElementRef<HTMLElement>;
@@ -219,6 +220,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.opening = new OpeningAnimation({
       screen: this.openingScreenRef.nativeElement,
       canvas: this.openingCanvasRef.nativeElement,
+      flag: this.openingFlagRef.nativeElement,
       star: this.openingStarRef.nativeElement,
       identity: this.openingIdentityRef.nativeElement,
       vck: this.openingVckRef.nativeElement,
