@@ -17,90 +17,6 @@
   font-family: 'Montserrat', 'Noto Sans Tamil', sans-serif;
 }
 
-.star-flight {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 5;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-}
-
-.star-flight svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  filter: drop-shadow(0 1px 5px rgba(6, 18, 30, .24));
-}
-
-.star-flight polygon {
-  fill: #f4f7fc;
-}
-
-.flag-stage {
-  position: relative;
-  display: grid;
-  min-height: min(100svh, 900px);
-  overflow: visible;
-  place-items: center;
-  isolation: isolate;
-}
-
-.flag-stage::before {
-  position: absolute;
-  z-index: -1;
-  inset: 20% 8% 13%;
-  border: 1px solid rgba(244, 247, 252, .035);
-  border-radius: 50%;
-  content: '';
-  transform: scaleX(1.3);
-}
-
-.flag-heading {
-  position: absolute;
-  top: clamp(30px, 6vh, 66px);
-  z-index: 1;
-  width: min(90%, 720px);
-  text-align: center;
-}
-
-.flag-heading h2 {
-  margin: 0;
-  color: #f5f7fb;
-  font-size: clamp(24px, 3.2vw, 44px);
-  font-weight: 600;
-  letter-spacing: -.035em;
-  line-height: 1.28;
-}
-
-.flag-intro {
-  margin: 10px 0 0;
-  color: #aab8c9;
-  font-size: clamp(13px, 1.2vw, 16px);
-  line-height: 1.7;
-}
-
-.flag-section[lang='ta'] .flag-heading h2,
-.flag-section[lang='ta'] .flag-intro,
-.flag-section[lang='ta'] .meaning-card {
-  font-family: 'Montserrat', 'Noto Sans Tamil', sans-serif;
-  letter-spacing: 0;
-}
-
-.flag-figure {
-  display: grid;
-  position: relative;
-  z-index: 3;
-  width: min(52vw, 670px);
-  margin: 76px 0 0;
-  aspect-ratio: 3 / 2;
-  place-items: center;
-  transform-origin: 50% 50%;
-  filter: drop-shadow(0 28px 42px rgba(0, 0, 0, .28));
-}
-
 .flag-artwork {
   display: block;
   width: 100%;
@@ -126,11 +42,6 @@
   filter: drop-shadow(0 1px 5px rgba(6, 18, 30, .24));
   transform-box: fill-box;
   transform-origin: center;
-}
-
-.flag-section.hero-star-covered .flag-star,
-.flag-section.hero-star-covered .flag-star-aura {
-  visibility: hidden !important;
 }
 
 .flag-scroll-hint {

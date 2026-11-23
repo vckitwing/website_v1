@@ -1,5 +1,5 @@
 import { gsap } from 'gsap';
-import { getStarJourneyElements, updateStarThreadPath } from '@shared/story/star-journey';
+import { registerStarLeg, svgStarBox } from '@shared/story/star-journey-controller';
 
 type ThinkerFanConditions = {
   isDesktop: boolean;
@@ -37,14 +37,19 @@ export async function createThinkerFanAnimation(root: HTMLElement): Promise<Thin
     throw new Error('The thinker section requires its three cards and the preceding history timeline.');
   }
 
-  const journey = getStarJourneyElements(root);
   const media = gsap.matchMedia(root);
   let positions: CardPosition[] = [];
   let isReducedMotion = false;
   let activeIndex: number | null = null;
   let activeTimeline: gsap.core.Timeline | undefined;
   let fanTimeline: gsap.core.Timeline | undefined;
-  let arrivalTimeline: gsap.core.Timeline | undefined;
+  let removeArrival: (() => void) | undefined;
+  let arrivalPending = false;
+  let startArrival: () => void = () => {};
+  const stopArrival = (): void => {
+    removeArrival?.();
+    removeArrival = undefined;
+  };
   let pendingClose: (() => void) | undefined;
   let isDestroying = false;
 
@@ -122,9 +127,6 @@ export async function createThinkerFanAnimation(root: HTMLElement): Promise<Thin
     };
 
     updatePositions();
-    gsap.set(journey.overlay, { autoAlpha: 0 });
-    gsap.set(journey.star, { xPercent: -50, yPercent: -50, autoAlpha: 0 });
-    gsap.set(journey.thread, { strokeDasharray: 1, strokeDashoffset: 1, autoAlpha: 0 });
 
     if (reduceMotion) {
       restoreFan();
@@ -170,91 +172,31 @@ export async function createThinkerFanAnimation(root: HTMLElement): Promise<Thin
         }, index * .045);
       });
 
-      const getArrivalGeometry = () => {
-        const historyBounds = historyHost.getBoundingClientRect();
-        const startScroll = historyBounds.bottom + window.scrollY - window.innerHeight;
-        const trackBounds = historyTrack.getBoundingClientRect();
-        const stageBounds = stage.getBoundingClientRect();
-        const historyX = isMobile ? .07 : .5;
-        const fromPage = {
-          x: trackBounds.left + window.scrollX + historyTrack.clientWidth * historyX,
-          y: trackBounds.top + window.scrollY + historyTrack.clientHeight * .95
-        };
-        const targetPage = {
-          x: stageBounds.left + window.scrollX + stageBounds.width / 2,
-          y: stageBounds.top + window.scrollY + stageBounds.height / 2
-        };
-
-        return {
-          from: { x: fromPage.x - window.scrollX, y: fromPage.y - startScroll },
-          to: { x: targetPage.x - window.scrollX, y: window.innerHeight / 2 },
-          targetSize: Math.min(56, Math.max(42, stageBounds.width * .055))
-        };
+      // Last leg of the page's star journey: the history timeline's star travels on to the thinkers.
+      startArrival = (): void => {
+        if (removeArrival || arrivalPending || isDestroying) return;
+        arrivalPending = true;
+        void registerStarLeg(root, {
+          id: 'history-to-thinkers',
+          start: () => historyHost.getBoundingClientRect().bottom + window.scrollY - window.innerHeight,
+          end: () => {
+            const bounds = stage.getBoundingClientRect();
+            return bounds.top + window.scrollY + bounds.height / 2 - window.innerHeight / 2;
+          },
+          from: () => svgStarBox(historyMarker.querySelector('svg') ?? historyMarker),
+          to: () => {
+            const bounds = stage.getBoundingClientRect();
+            const size = Math.min(56, Math.max(42, bounds.width * .055));
+            return { x: bounds.left + bounds.width / 2, y: window.innerHeight / 2, width: size * .92, height: size * .88 };
+          },
+          source: historyMarker
+        }).then((remove) => {
+          arrivalPending = false;
+          if (isDestroying || removeArrival) remove();
+          else removeArrival = remove;
+        });
       };
-      const arrivalThreadPath = (): string => {
-        const points = getArrivalGeometry();
-        updateStarThreadPath(journey.threadSvg, journey.thread, points.from, points.to);
-        return journey.thread.getAttribute('d') ?? '';
-      };
-
-      arrivalTimeline = gsap.timeline({
-        scrollTrigger: {
-          trigger: historyHost,
-          start: 'bottom bottom',
-          endTrigger: stage,
-          end: 'center center',
-          scrub: .45,
-          invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            if (self.isActive) arrivalThreadPath();
-          }
-        }
-      });
-      arrivalTimeline
-        .set(journey.thread, {
-          strokeDasharray: 1,
-          strokeDashoffset: 1,
-          autoAlpha: 0,
-          immediateRender: false
-        }, 0)
-        .fromTo(journey.star, {
-          xPercent: -50,
-          yPercent: -50,
-          x: () => getArrivalGeometry().from.x,
-          y: () => getArrivalGeometry().from.y,
-          width: 52,
-          height: 52,
-          rotation: -18
-        }, {
-          x: () => getArrivalGeometry().to.x,
-          y: () => getArrivalGeometry().to.y,
-          width: () => getArrivalGeometry().targetSize,
-          height: () => getArrivalGeometry().targetSize,
-          rotation: 0,
-          duration: 1,
-          ease: 'none',
-          immediateRender: false
-        }, 0)
-        .fromTo(journey.star, { autoAlpha: 0 }, {
-          autoAlpha: 1,
-          duration: .16,
-          ease: 'none',
-          immediateRender: false
-        }, 0)
-        .fromTo(journey.thread, { strokeDashoffset: 1, autoAlpha: 0 }, {
-          strokeDashoffset: 0,
-          autoAlpha: .88,
-          duration: 1,
-          immediateRender: false
-        }, 0)
-        .to(journey.overlay, { autoAlpha: 1, duration: .01 }, 0)
-        .to(journey.overlay, { autoAlpha: 0, duration: .04 }, .96);
-
-      arrivalTimeline.eventCallback('onUpdate', () => {
-        if (arrivalTimeline?.scrollTrigger?.isActive) arrivalThreadPath();
-        const progress = arrivalTimeline?.progress() ?? 0;
-        gsap.set(historyMarker, { autoAlpha: Math.max(0, 1 - progress / .16) });
-      });
+      startArrival();
     }
 
     const onResize = (): void => {
@@ -268,7 +210,7 @@ export async function createThinkerFanAnimation(root: HTMLElement): Promise<Thin
     return () => {
       window.removeEventListener('resize', onResize);
       fanTimeline?.scrollTrigger?.kill();
-      arrivalTimeline?.scrollTrigger?.kill();
+      stopArrival();
       activeTimeline?.kill();
       activeTimeline = undefined;
       if (!isDestroying && pendingClose) {
@@ -276,7 +218,6 @@ export async function createThinkerFanAnimation(root: HTMLElement): Promise<Thin
         pendingClose = undefined;
         completeClose();
       }
-      gsap.set(journey.overlay, { autoAlpha: 0 });
     };
   });
 
@@ -285,9 +226,8 @@ export async function createThinkerFanAnimation(root: HTMLElement): Promise<Thin
       if (index < 0 || index >= cards.length) return;
 
       fanTimeline?.scrollTrigger?.disable(false);
-      arrivalTimeline?.scrollTrigger?.disable(false);
+      stopArrival();
       fanTimeline?.progress(1);
-      gsap.set(journey.overlay, { autoAlpha: 0 });
       if (!isReducedMotion) gsap.set(historyMarker, { autoAlpha: 0 });
       activeTimeline?.kill();
       activeIndex = index;
@@ -339,7 +279,7 @@ export async function createThinkerFanAnimation(root: HTMLElement): Promise<Thin
         activeTimeline = undefined;
         restoreFan();
         fanTimeline?.scrollTrigger?.enable(false, false);
-        arrivalTimeline?.scrollTrigger?.enable(false, false);
+        startArrival();
         ScrollTrigger.update();
         onComplete();
         return;
@@ -353,7 +293,7 @@ export async function createThinkerFanAnimation(root: HTMLElement): Promise<Thin
           if (pendingClose === onComplete) {
             pendingClose = undefined;
             fanTimeline?.scrollTrigger?.enable(false, false);
-            arrivalTimeline?.scrollTrigger?.enable(false, false);
+            startArrival();
             ScrollTrigger.update();
             onComplete();
           }
@@ -364,7 +304,7 @@ export async function createThinkerFanAnimation(root: HTMLElement): Promise<Thin
 
       restoreFan();
       fanTimeline?.scrollTrigger?.enable(false, false);
-      arrivalTimeline?.scrollTrigger?.enable(false, false);
+      startArrival();
       ScrollTrigger.update();
       onComplete();
     },

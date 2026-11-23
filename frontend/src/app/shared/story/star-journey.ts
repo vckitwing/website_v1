@@ -10,7 +10,7 @@ export type StarJourneyElements = {
   thread: SVGPathElement;
 };
 
-export function getStarJourneyElements(root: HTMLElement): StarJourneyElements {
+export function getStarJourneyElements(root: Element): StarJourneyElements {
   const app = root.closest('vck-root');
   const overlay = app?.querySelector<HTMLElement>('.story-star-journey');
   const star = overlay?.querySelector<SVGSVGElement>('.story-star-journey-shape');

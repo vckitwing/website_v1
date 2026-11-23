@@ -103,7 +103,7 @@ frontend/public/   Served at site root (portraits/, assets/Logo/)
 
 ## Deployment
 
-GitHub Actions (`.github/workflows/deployment.yml`) on push to `main`, with `working-directory: frontend`: `npm ci` → `ng build --configuration production --base-href /website_v1/` → copies `index.html` to `404.html` (SPA fallback) → GitHub Pages. Therefore:
+GitHub Actions (`.github/workflows/deployment.yml`) on push to `main` **and `feature/dev_landing_page`** (and manually via workflow_dispatch; the repo's `github-pages` environment must allow deployments from the feature branch under Settings > Environments, and Pages must use the "GitHub Actions" source), with `working-directory: frontend`: `npm ci` → `ng build --configuration production --base-href /website_v1/` → copies `index.html` to `404.html` (SPA fallback) → GitHub Pages. Therefore:
 
 - Use **relative** asset URLs (`assets/...`, no leading `/`) so the `/website_v1/` base href works. `index.html` has `<base href="/">` for local dev.
 - Hash-based/router links must account for the base href.
