@@ -176,12 +176,14 @@
 
 .hero-shell.light-theme .hero-copy {
   &::before {
-    background: radial-gradient(ellipse at 30% 55%, rgba(242, 246, 252, 0.88) 0%, rgba(242, 246, 252, 0.6) 45%, transparent 75%);
+    // Kept to the text block so the crowd shows around it.
+    background: radial-gradient(ellipse 66% 62% at 28% 52%, rgba(242, 246, 252, 0.86) 0%, rgba(242, 246, 252, 0.58) 50%, transparent 100%);
   }
 
+  // A pale halo keeps the dark text legible where it crosses the darker parts of the crowd.
   .eyebrow,
   .slogan .slogan-text {
-    text-shadow: none;
+    text-shadow: 0 0 12px rgba(242, 246, 252, 0.95), 0 0 3px rgba(242, 246, 252, 0.85);
   }
 }
 
@@ -339,6 +341,11 @@
   .slide-index-item.is-active .slide-index-bar {
     animation: none;
   }
+}
+
+.hero-shell.light-theme .slide-index {
+  border-color: rgba(20, 36, 60, 0.14);
+  background: rgba(244, 247, 252, 0.72);
 }
 
 .hero-shell.light-theme .slide-index-item {
