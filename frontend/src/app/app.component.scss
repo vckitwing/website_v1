@@ -216,8 +216,6 @@ $portrait-mask-mirrored: linear-gradient(to left,transparent 0%,rgba(0,0,0,.08) 
 @media (max-width:760px) { .top-actions { margin-left:auto; } }
 @media (max-width:760px) { .brand-mark { width:38px; height:38px; flex-basis:38px; } }
 .story-star-journey { position:fixed; z-index:90; inset:0; visibility:hidden; opacity:0; pointer-events:none; }
-.story-star-journey-thread { display:none; }
-.story-star-thread-path { fill:none; stroke:url(#story-star-thread-gradient); stroke-width:2; stroke-linecap:round; stroke-dasharray:1; filter:drop-shadow(0 0 7px rgba(113,190,255,.8)); opacity:0; }
 /* A fixed-size box: the controller moves and scales it with transforms only (see star-journey-controller.ts). */
 .story-star-journey-shape { position:absolute; top:0; left:0; display:block; width:160px; height:160px; overflow:visible; transform-origin:center; will-change:transform; }
 .story-star-journey-shape polygon { fill:#f4f7fc; filter:drop-shadow(0 0 11px rgba(244,247,252,.75)); }
@@ -227,3 +225,30 @@ $portrait-mask-mirrored: linear-gradient(to left,transparent 0%,rgba(0,0,0,.08) 
 /* Light theme: the dark theme's "screen" blend adds almost nothing on the pale page, so the crowd dissolved. Multiply keeps its silhouettes and the flags' colours. */
 .hero-shell.light-theme .crowd-strip { opacity:.92; }
 .hero-shell.light-theme .crowd-strip img { mix-blend-mode:multiply; filter:saturate(1.2) contrast(1.08); }
+
+/* Top navigation: plain text links. The hovered / focused / open item turns blue and a red underline draws in beneath it. */
+.hero-shell .nav-toggle { position:relative; height:auto; min-height:44px; padding:8px 2px; border:0; border-radius:0; background:none; box-shadow:none; filter:none; transform:none; outline:none; color:#f4f7fc; font:500 clamp(12.5px,1.05vw,15px)/1.25 'Outfit','Noto Sans Tamil',sans-serif; letter-spacing:.01em; transition:color 180ms cubic-bezier(.23,1,.32,1); }
+.hero-shell .nav-group:nth-child(n) .nav-toggle:not(.nav-placeholder) { border:0; background:none; box-shadow:none; }
+.hero-shell.light-theme .nav-toggle { color:#14243c; }
+.hero-shell .nav-toggle > span:first-child { position:relative; display:inline-block; overflow:visible; padding-bottom:5px; line-height:1.25; }
+.hero-shell .nav-toggle > span:first-child::after { content:''; position:absolute; left:0; right:0; bottom:0; height:2px; border-radius:2px; background:#ed2a40; transform:scaleX(0); transform-origin:left center; transition:transform 180ms cubic-bezier(.23,1,.32,1); }
+.hero-shell .nav-toggle[aria-expanded="true"] { color:#2785df; transform:none; filter:none; box-shadow:none; outline:none; }
+.hero-shell.light-theme .nav-toggle[aria-expanded="true"] { color:#176bb8; }
+.hero-shell .nav-toggle[aria-expanded="true"] > span:first-child::after,
+.hero-shell .nav-toggle:focus-visible > span:first-child::after { transform:scaleX(1); }
+.hero-shell .nav-toggle:focus-visible { outline:2px solid #ed2a40; outline-offset:4px; border-radius:4px; }
+@media (hover:hover) and (pointer:fine) {
+  .hero-shell .nav-toggle:hover:not(.nav-placeholder) { color:#2785df; transform:none; filter:none; box-shadow:none; }
+  .hero-shell.light-theme .nav-toggle:hover:not(.nav-placeholder) { color:#176bb8; }
+  .hero-shell .nav-toggle:hover:not(.nav-placeholder) > span:first-child::after { transform:scaleX(1); }
+}
+@media (min-width:1051px) {
+  .hero-shell .site-nav { width:auto; max-width:calc(100% - 520px); gap:clamp(18px,2.1vw,36px); }
+  .hero-shell .nav-group { flex:0 1 auto; }
+  .hero-shell .nav-toggle { justify-content:center; text-align:center; }
+}
+@media (max-width:1050px) {
+  .hero-shell .site-nav.mobile-open { gap:2px; }
+  .hero-shell .nav-toggle { justify-content:flex-start; width:100%; padding:11px 6px; border-bottom:1px solid rgba(244,247,252,.1); font-size:15px; text-align:left; }
+  .hero-shell.light-theme .nav-toggle { border-bottom-color:rgba(20,36,60,.12); }
+}

@@ -134,7 +134,13 @@ export async function createFlagAnimation(root: HTMLElement): Promise<() => void
       const atTime = (time: number): number => scrollTrigger.start + (scrollTrigger.end - scrollTrigger.start) * (time / Math.max(timeline.duration(), 0.01));
       void registerStarLeg(root, {
         id: 'flag-to-star-meaning',
-        start: () => atTime(starFlightAt),
+        // The star leaves at the separation, or earlier if the flag's star would otherwise be about to scroll off the top
+        // (it leaves while its centre is still at least 30% of the way down the viewport).
+        start: () => {
+          const bounds = getFlagStarBounds(star);
+          const starY = bounds.top + bounds.height / 2 + window.scrollY;
+          return Math.min(atTime(starFlightAt), starY - window.innerHeight * 0.3);
+        },
         // The flight is given room to breathe (at least half a screen of scrolling) and ends while the card is comfortably
         // on screen (its star at 60% of the viewport height), which can be after the section's own timeline has finished.
         end: () => {
