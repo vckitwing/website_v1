@@ -217,9 +217,9 @@ $portrait-mask-mirrored: linear-gradient(to left,transparent 0%,rgba(0,0,0,.08) 
 @media (max-width:760px) { .brand-mark { width:38px; height:38px; flex-basis:38px; } }
 .story-star-journey { position:fixed; z-index:90; inset:0; visibility:hidden; opacity:0; pointer-events:none; }
 /* A fixed-size box: the controller moves and scales it with transforms only (see star-journey-controller.ts). */
-.story-star-journey-shape { position:absolute; top:0; left:0; display:block; width:160px; height:160px; overflow:visible; transform-origin:center; will-change:transform; }
-.story-star-journey-shape polygon { fill:#f4f7fc; filter:drop-shadow(0 0 11px rgba(244,247,252,.75)); }
-.hero-shell.light-theme + .story-star-journey .story-star-journey-shape polygon { stroke:#1e4f7d; stroke-width:2.5; stroke-linejoin:round; vector-effect:non-scaling-stroke; filter:drop-shadow(0 0 9px rgba(32,105,167,.52)); }
+.story-star-journey-shape { position:absolute; top:0; left:0; display:block; width:480px; height:480px; overflow:visible; transform-origin:center; will-change:transform; }
+.story-star-journey-shape polygon { fill:#f4f7fc; filter:drop-shadow(0 0 33px rgba(244,247,252,.75)); }
+.hero-shell.light-theme + .story-star-journey .story-star-journey-shape polygon { stroke:#1e4f7d; stroke-width:2.5; stroke-linejoin:round; vector-effect:non-scaling-stroke; filter:drop-shadow(0 0 27px rgba(32,105,167,.52)); }
 /* The tagline uses the golden-ratio scale: 9px × 1.618 on desktop, 8px × 1.618 on mobile. */
 
 /* Light theme: the dark theme's "screen" blend adds almost nothing on the pale page, so the crowd dissolved. Multiply keeps its silhouettes and the flags' colours. */

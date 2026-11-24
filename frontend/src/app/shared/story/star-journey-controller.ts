@@ -36,7 +36,7 @@ export type StarLeg = {
 };
 
 /** The overlay star is a fixed box; its polygon spans x 4..96 and y 4..92 of the 100-unit viewBox. */
-export const OVERLAY_BOX = 160;
+export const OVERLAY_BOX = 480; // drawn large and only ever scaled DOWN, so the star stays crisp (scaling a small bitmap up blurs it)
 const POLYGON_WIDTH = 0.92;
 const POLYGON_HEIGHT = 0.88;
 const POLYGON_CENTRE_OFFSET = 0.02; // the polygon's centre sits 2% of the box above the box's centre
