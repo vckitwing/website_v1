@@ -1,0 +1,20 @@
+<header class="bar">
+  <strong class="brand">VCK Admin</strong>
+  <nav aria-label="Sections">
+    <a routerLink="/conferences" routerLinkActive="active">Conferences</a>
+    <a routerLink="/history" routerLinkActive="active">History</a>
+    @if (auth.isSuperAdmin()) {
+      <a routerLink="/users" routerLinkActive="active">Users</a>
+      <a routerLink="/audit" routerLinkActive="active">Activity</a>
+    }
+  </nav>
+  <div class="who">
+    @if (auth.user(); as user) {
+      <a routerLink="/account" class="name" title="My account">{{ user.name }} · {{ roleLabels[user.role] }}</a>
+    }
+    <button class="btn small" type="button" (click)="auth.logout()">Sign out</button>
+  </div>
+</header>
+<main class="content">
+  <router-outlet />
+</main>

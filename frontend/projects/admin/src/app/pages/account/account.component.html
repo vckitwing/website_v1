@@ -1,0 +1,32 @@
+<div class="page-head">
+  <div>
+    <h1>My account</h1>
+    @if (auth.user(); as user) {
+      <p class="muted">{{ user.name }} · {{ user.email }} · {{ roleLabels[user.role] }}</p>
+    }
+  </div>
+</div>
+
+<form class="card account-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <h2>Change password</h2>
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+  @if (done()) {
+    <p class="alert ok" role="status">Your password was changed.</p>
+  }
+  <label>
+    Current password
+    <input type="password" formControlName="current" autocomplete="current-password" />
+  </label>
+  <label>
+    New password
+    <input type="password" formControlName="next" autocomplete="new-password" />
+    <small>At least 10 characters, with upper- and lower-case letters and a number.</small>
+  </label>
+  <label>
+    Repeat new password
+    <input type="password" formControlName="repeat" autocomplete="new-password" />
+  </label>
+  <button class="btn primary" type="submit" [disabled]="busy()">{{ busy() ? 'Saving…' : 'Change password' }}</button>
+</form>
