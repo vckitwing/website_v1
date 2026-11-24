@@ -1,5 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, signal, ViewChild } from '@angular/core';
-import { HISTORY_MILESTONES } from './data/history-milestones';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, inject, signal, ViewChild } from '@angular/core';
+import { SiteContentService } from '../../../../shared/content/site-content.service';
 import { createHistoryAnimation } from './history-animation';
 
 @Component({
@@ -13,7 +13,7 @@ export class HistorySectionComponent implements AfterViewInit, OnDestroy {
   @Input({ required: true }) language: 'en' | 'ta' = 'en';
   @ViewChild('sectionRoot', { static: true }) private sectionRoot!: ElementRef<HTMLElement>;
 
-  readonly milestones = HISTORY_MILESTONES;
+  readonly milestones = inject(SiteContentService).history;
   readonly activeIndex = signal(0);
 
   private disposeAnimation?: () => void;

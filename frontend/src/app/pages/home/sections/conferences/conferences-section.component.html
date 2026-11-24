@@ -1,12 +1,12 @@
-<section #sectionRoot class="conf-section" [attr.lang]="language" [attr.aria-label]="language === 'ta' ? 'விசிக மாநாடுகள், 2003 முதல் 2026 வரை' : 'VCK conferences, 2003 to 2026'">
+<section #sectionRoot class="conf-section" [attr.lang]="language" [attr.aria-label]="language === 'ta' ? 'விசிக மாநாடுகள், ' + firstYear + ' முதல் ' + lastYear + ' வரை' : 'VCK conferences, ' + firstYear + ' to ' + lastYear">
   <header class="conf-intro">
     <!-- The journey star stops here on its way from the thought leaders to the footer. -->
     <svg class="conf-star" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
       <polygon points="50,4 61,36 96,37 68,58 78,92 50,73 22,92 32,58 4,37 39,36" />
     </svg>
-    <p class="conf-eyebrow">2003 – 2026</p>
+    <p class="conf-eyebrow">{{ firstYear }} – {{ lastYear }}</p>
     <h2>{{ language === 'ta' ? 'மாநாடுகள்' : 'Conferences' }}</h2>
-    <p class="conf-lede">{{ language === 'ta' ? 'இயக்கத்தின் பாதையை வகுத்த இருபத்தைந்து மாநாடுகள்.' : 'Twenty-five conferences that set the movement’s course.' }}</p>
+    <p class="conf-lede">{{ language === 'ta' ? 'இயக்கத்தின் பாதையை வகுத்த ' + conferences.length + ' மாநாடுகள்.' : conferences.length + ' conferences that set the movement’s course.' }}</p>
     <button type="button" class="conf-motion" [attr.aria-pressed]="paused()" (click)="toggleMotion()">
       <span class="conf-motion-icon" aria-hidden="true">{{ paused() ? '▶' : '❚❚' }}</span>
       {{ paused() ? (language === 'ta' ? 'இயக்கத்தைத் தொடங்கு' : 'Play motion') : (language === 'ta' ? 'இயக்கத்தை நிறுத்து' : 'Pause motion') }}
