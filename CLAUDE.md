@@ -35,8 +35,8 @@ Monorepo:
 
 ```
 frontend/        Angular app (all npm commands run here)
-backend/         Python API — planned, README placeholder only
-docs/            Project docs (empty for now)
+backend/         Python API (FastAPI) — phase 1: auth, roles, History + Conferences
+docs/            Project docs (hosting-plan.md)
 .github/         CI/CD (deploys frontend)
 CLAUDE.md
 ```
@@ -140,9 +140,9 @@ GitHub Actions (`.github/workflows/deployment.yml`) on push to `main` **and `fea
 
 The `navigation` array in `app.component.ts` is an earlier draft and **does not yet match this site map** — align it when working on the nav. Menu items stay non-linked placeholders until their pages exist.
 
-## Backend (planned)
+## Backend (phase 1 built; admin app and public-site switch still to do)
 
-A **Python backend** will be developed later in `backend/` (same repo; framework not chosen yet, likely FastAPI or Django). Only a README placeholder exists and nothing in the frontend calls an API today. Expected consumers: elections/results data, MLAs/MPs and secretaries lists, gallery, donations, contact form. Until then keep content in typed `data/` files shaped like future API responses, so swapping to HTTP (`HttpClient` + a service per domain) is easy. Decide API base URL config and CORS when it starts; update this section then. Note the frontend is deployed to static GitHub Pages, so the backend will need separate hosting.
+`backend/` is a **FastAPI + SQLAlchemy** API (Python venv in `backend/.venv`, `requirements.txt`; see `backend/README.md` for run/test commands and the API list). SQLite locally, PostgreSQL in production via `DATABASE_URL`. Plan and decisions (user-confirmed): several admins with permissions; **roles** `super_admin` (also users + audit log), `editor` (create/edit/delete/publish), `contributor` (drafts only, an editor publishes); content items are `draft` / `published`, both English and Tamil are required, every change is audit-logged; the admin will be a **second Angular app in the same workspace** (`projects/admin`, shares the typed models) served on `admin.<domain>`, not routes in the public app; start with a **VPS** (see `docs/hosting-plan.md`), free tiers only for development. Managed so far: **History milestones and Conferences** (seeded from the site's data files by `python -m app.cli seed`, which reads `backend/seed/*.json` exported from `history-milestones.ts` / `conferences.ts`). `GET /api/public/content` (and `<PUBLISH_DIR>/content.json`, rewritten on every change) returns published content in the same shape as the website's data files, so the public site can load it and keep the built-in data as the fallback. **Not done yet:** the admin Angular app; the public site still reads its built-in data (`HISTORY_MILESTONES`, `CONFERENCES`) and must be switched to `content.json` with fallback; the history timeline SCSS is sized from a fixed `$history-node-count` and the conferences animation assumes ~25 items, so both need to handle a changing count first; photo uploads (for the Movement pages, later); Docker/Caddy deployment files and nightly backups. Tests: `cd backend && .venv/Scripts/python -m pytest`. The site itself stays on static GitHub Pages; the API is hosted separately.
 
 ## Status / roadmap
 

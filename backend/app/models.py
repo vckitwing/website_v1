@@ -1,0 +1,84 @@
+from datetime import datetime, timezone
+from enum import StrEnum
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
+
+from .db import Base
+
+
+def now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+class Role(StrEnum):
+    super_admin = "super_admin"  # everything, including managing users
+    editor = "editor"            # create / edit / delete / publish content
+    contributor = "contributor"  # create and edit drafts only; an editor publishes
+
+
+class Status(StrEnum):
+    draft = "draft"
+    published = "published"
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(254), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    password_hash: Mapped[str] = mapped_column(String(255))
+    role: Mapped[str] = mapped_column(String(20), default=Role.contributor.value)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    last_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class _Content:
+    """Columns every managed content item shares."""
+
+    status: Mapped[str] = mapped_column(String(10), default=Status.draft.value, index=True)
+    position: Mapped[int] = mapped_column(Integer, default=0)  # tie-break inside one year
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    updated_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, onupdate=now)
+
+
+class Conference(_Content, Base):
+    __tablename__ = "conferences"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    year: Mapped[int] = mapped_column(Integer, index=True)
+    name_en: Mapped[str] = mapped_column(String(300))
+    name_ta: Mapped[str] = mapped_column(String(300))
+
+
+class HistoryMilestone(_Content, Base):
+    __tablename__ = "history_milestones"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    year: Mapped[str] = mapped_column(String(4), index=True)
+    title_en: Mapped[str] = mapped_column(String(200))
+    title_ta: Mapped[str] = mapped_column(String(200))
+    description_en: Mapped[str] = mapped_column(Text)
+    description_ta: Mapped[str] = mapped_column(Text)
+    source_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    source_label_en: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    source_label_ta: Mapped[str | None] = mapped_column(String(200), nullable=True)
+
+
+class AuditLog(Base):
+    """Who changed what, and when. Rows are only ever added."""
+
+    __tablename__ = "audit_log"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, index=True)
+    user_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    user_email: Mapped[str] = mapped_column(String(254))
+    action: Mapped[str] = mapped_column(String(30))
+    entity: Mapped[str] = mapped_column(String(30))
+    entity_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    summary: Mapped[str] = mapped_column(String(500))
