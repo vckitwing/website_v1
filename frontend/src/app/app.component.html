@@ -104,10 +104,7 @@
   <vck-thinkers-section [language]="language()" />
   <vck-conferences-section [language]="language()" />
 
-  <footer class="hero-footer" id="story">
-    <span class="footer-label">{{ language() === 'ta' ? 'நமது இயக்கம், நமது எதிர்காலம்' : 'OUR MOVEMENT, OUR FUTURE' }}</span>
-    <span class="scroll-cue"><span></span> {{ language() === 'ta' ? 'தொடர்ந்து பார்க்க கீழே நகர்த்தவும்' : 'SCROLL TO EXPLORE' }}</span>
-  </footer>
+  <vck-footer-section [language]="language()" />
 
 </main>
 <div class="story-star-journey" aria-hidden="true">
