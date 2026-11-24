@@ -36,8 +36,7 @@ export async function createThinkersAnimation(root: HTMLElement): Promise<() => 
   const railFill = root.querySelector<HTMLElement>('.th-rail-fill');
   const glowBlue = root.querySelector<HTMLElement>('.th-glow-blue');
   const glowRed = root.querySelector<HTMLElement>('.th-glow-red');
-  const historyHost = root.closest('vck-root')?.querySelector('vck-history-section');
-  const historyMarker = historyHost?.querySelector<HTMLElement>('.history-star-marker');
+  const socialStar = root.closest('vck-root')?.querySelector<SVGSVGElement>('vck-social-section .soc-star');
 
   if (!stage || chapterRoots.length !== 3 || !rail || ticks.length !== 3 || !railStar || !railFill || !glowBlue || !glowRed) {
     throw new Error('The thinkers section requires its stage, three chapters and its progress rail.');
@@ -170,17 +169,18 @@ export async function createThinkersAnimation(root: HTMLElement): Promise<() => 
       invalidateOnRefresh: true
     });
 
-    // The star flying in from the history timeline lands on the rail and becomes its marker.
+    // The star leaves the social section's star (where it landed), flies on and lands on the rail, becoming its marker.
     let removeLeg: (() => void) | undefined;
     let cancelled = false;
-    if (historyHost && historyMarker) {
+    if (socialStar) {
       void registerStarLeg(root, {
-        id: 'history-to-thinkers',
-        start: () => historyHost.getBoundingClientRect().bottom + window.scrollY - window.innerHeight,
+        id: 'social-to-thinkers',
+        // a moment after it has landed in the social section (its star ~38% down the screen) until the stage pins
+        start: () => svgStarBox(socialStar).y + window.scrollY - window.innerHeight * 0.38,
         end: () => pin.start,
-        from: () => svgStarBox(historyMarker.querySelector('svg') ?? historyMarker),
+        from: () => svgStarBox(socialStar),
         to: () => svgStarBox(railStar),
-        source: historyMarker,
+        source: socialStar,
         target: railStar
       }).then((remove) => {
         if (cancelled) remove();

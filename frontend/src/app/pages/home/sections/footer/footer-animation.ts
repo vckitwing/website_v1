@@ -1,12 +1,11 @@
 import { gsap } from 'gsap';
-import { registerStarLeg, svgStarBox } from '@shared/story/star-journey-controller';
 
 /**
- * The footer. Its star is where the page's one journey star ends (flying in from the thinkers' progress rail). When the
+ * The footer. Its star is where the page's one journey star ends (the conferences section flies it in; see conferences-animation.ts). When the
  * footer arrives the cheetah's line is revealed from the tail to the snarling head, led by a bright blue glint, and the text
  * and social icons rise. Afterwards the cheetah is alive: it breathes slowly, the glint sweeps along its outline every few
  * seconds, and on a fine pointer it leans a little towards the pointer. The idle motion pauses off screen. With reduced
- * motion the footer is simply shown complete (no glint, no breathing, no lean) and the journey star is not flown.
+ * motion the footer is simply shown complete (no glint, no breathing, no lean).
  */
 export async function createFooterAnimation(root: HTMLElement): Promise<() => void> {
   const { ScrollTrigger } = await import('gsap/ScrollTrigger');
@@ -94,40 +93,7 @@ export async function createFooterAnimation(root: HTMLElement): Promise<() => vo
     };
   });
 
-  // The journey star's last leg: from the thinkers' rail star, past the conferences, into the footer.
-  let removeLeg: (() => void) | undefined;
-  let cancelled = false;
-  const app = root.closest('vck-root');
-  const thinkers = app?.querySelector<HTMLElement>('vck-thinkers-section');
-  const railStar = thinkers?.querySelector<SVGSVGElement>('.th-rail-star');
-  media.add('(prefers-reduced-motion: no-preference)', () => {
-    if (!thinkers || !railStar) return undefined;
-    void registerStarLeg(root, {
-      id: 'thinkers-to-footer',
-      // The thinkers stage is unpinned at (section bottom - one viewport).
-      start: () => thinkers.getBoundingClientRect().bottom + window.scrollY - window.innerHeight,
-      end: () => {
-        const target = footerStar.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.55;
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight - 4;
-        return Math.min(target, maxScroll);
-      },
-      from: () => svgStarBox(railStar),
-      to: () => svgStarBox(footerStar),
-      source: railStar,
-      target: footerStar
-    }).then((remove) => {
-      if (cancelled) remove();
-      else removeLeg = remove;
-    });
-    return () => {
-      removeLeg?.();
-      removeLeg = undefined;
-    };
-  });
-
   return () => {
-    cancelled = true;
-    removeLeg?.();
     media.revert();
   };
 }

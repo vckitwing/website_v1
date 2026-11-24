@@ -1,4 +1,5 @@
 import { gsap } from 'gsap';
+import { registerStarLeg, svgStarBox } from '@shared/story/star-journey-controller';
 
 export interface ConferencesAnimation {
   /** The user's pause switch. */
@@ -142,12 +143,63 @@ export async function createConferencesAnimation(root: HTMLElement): Promise<Con
     };
   });
 
+  // The journey star stops here: thought leaders (rail star) -> this section's star -> the footer's star.
+  const confStar = root.querySelector<SVGSVGElement>('.conf-star');
+  const app = root.closest('vck-root');
+  const thinkers = app?.querySelector<HTMLElement>('vck-thinkers-section');
+  const railStar = thinkers?.querySelector<SVGSVGElement>('.th-rail-star');
+  const footerStar = app?.querySelector<SVGSVGElement>('vck-footer-section .ft-star');
+  const removeLegs: Array<() => void> = [];
+  let legsCancelled = false;
+  media.add('(prefers-reduced-motion: no-preference)', () => {
+    if (!confStar || !thinkers || !railStar || !footerStar) return undefined;
+    const confCentre = (): number => svgStarBox(confStar).y + window.scrollY;
+    const keep = (promise: Promise<() => void>): void => {
+      void promise.then((remove) => {
+        if (legsCancelled) remove();
+        else removeLegs.push(remove);
+      });
+    };
+    keep(
+      registerStarLeg(root, {
+        id: 'thinkers-to-conferences',
+        // from when the thinkers stage unpins (section bottom - one viewport) until this star is half way up the screen
+        start: () => thinkers.getBoundingClientRect().bottom + window.scrollY - window.innerHeight,
+        end: () => confCentre() - window.innerHeight * 0.5,
+        from: () => svgStarBox(railStar),
+        to: () => svgStarBox(confStar),
+        source: railStar,
+        target: confStar
+      })
+    );
+    keep(
+      registerStarLeg(root, {
+        id: 'conferences-to-footer',
+        // leaves a moment after it has landed, and arrives when the footer's star is ~55% down the screen
+        start: () => confCentre() - window.innerHeight * 0.38,
+        end: () => {
+          const target = footerStar.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.55;
+          return Math.min(target, document.documentElement.scrollHeight - window.innerHeight - 4);
+        },
+        from: () => svgStarBox(confStar),
+        to: () => svgStarBox(footerStar),
+        source: confStar,
+        target: footerStar
+      })
+    );
+    return () => {
+      removeLegs.splice(0).forEach((remove) => remove());
+    };
+  });
+
   return {
     setPaused(paused: boolean): void {
       userPaused = paused;
       applyPause();
     },
     dispose(): void {
+      legsCancelled = true;
+      removeLegs.splice(0).forEach((remove) => remove());
       media.revert();
     }
   };

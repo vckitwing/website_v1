@@ -27,6 +27,27 @@
   text-align: center;
 }
 
+.conf-star {
+  display: block;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 18px;
+  overflow: visible;
+  filter: drop-shadow(0 0 12px rgba(244, 247, 252, 0.45));
+
+  polygon {
+    fill: #f4f7fc;
+  }
+}
+
+:host-context(.light-theme) .conf-star {
+  filter: none;
+
+  polygon {
+    fill: #14243c;
+  }
+}
+
 .conf-eyebrow {
   margin: 0;
   color: var(--conf-muted);
