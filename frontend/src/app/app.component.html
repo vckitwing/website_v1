@@ -1,4 +1,4 @@
-<main class="hero-shell" [class.light-theme]="theme() === 'light'" [class.opening-active]="openingActive()" [attr.lang]="language()">
+<main class="hero-shell" [class.light-theme]="theme() === 'light'" [class.opening-active]="openingActive()" [class.subpage-open]="page() !== 'home'" [attr.lang]="language()">
   <div #openingScreen class="opening-screen" aria-hidden="true">
     <canvas #openingCanvas class="opening-particles"></canvas>
     <svg #openingFlag class="opening-flag" viewBox="0 0 900 600" aria-hidden="true">
@@ -16,7 +16,7 @@
     </div>
   </div>
   <header class="topbar">
-    <a class="brand" href="#home" [attr.aria-label]="language() === 'ta' ? 'விசிக முகப்பு' : 'VCK home'">
+    <a class="brand" [href]="hrefFor({ page: 'home', hash: 'home' })" (click)="onNavigate($event, { page: 'home', hash: 'home' })" [attr.aria-label]="language() === 'ta' ? 'விசிக முகப்பு' : 'VCK home'">
       <img class="brand-mark" src="assets/Logo/vck_logo.jpg" alt="" />
       <span class="brand-copy"><strong #brandVck>VCK</strong><small #brandName>VIDUTHALAI CHIRUTHAIGAL KATCHI</small></span>
     </a>
@@ -28,31 +28,48 @@
         <span aria-hidden="true">{{ theme() === 'dark' ? '☼' : '☾' }}</span>
       </button>
     </div>
-    <button class="mobile-menu-toggle" type="button" (click)="toggleMobileNavigation(); $event.stopPropagation()" [class.menu-open]="mobileNavigationOpen()" [attr.aria-expanded]="mobileNavigationOpen()" aria-controls="main-navigation" [attr.aria-label]="language() === 'ta' ? (mobileNavigationOpen() ? 'வழிசெலுத்தல் பட்டியை மூடவும்' : 'வழிசெலுத்தல் பட்டியைத் திறக்கவும்') : (mobileNavigationOpen() ? 'Close navigation menu' : 'Open navigation menu')">
+    <button class="sn-burger" type="button" (click)="toggleMobileNavigation(); $event.stopPropagation()" [class.menu-open]="mobileNavigationOpen()" [attr.aria-expanded]="mobileNavigationOpen()" aria-controls="main-navigation" [attr.aria-label]="language() === 'ta' ? (mobileNavigationOpen() ? 'வழிசெலுத்தல் பட்டியை மூடவும்' : 'வழிசெலுத்தல் பட்டியைத் திறக்கவும்') : (mobileNavigationOpen() ? 'Close navigation menu' : 'Open navigation menu')">
       <span></span><span></span><span></span>
     </button>
   </header>
 
-  <nav id="main-navigation" class="site-nav" [class.mobile-open]="mobileNavigationOpen()" [attr.aria-label]="language() === 'ta' ? 'முதன்மை வழிசெலுத்தல்' : 'Main navigation'" (click)="$event.stopPropagation()">
-    @for (section of navigation; track section.id) {
-      <div class="nav-group" (mouseenter)="openNavigationMenu(section.id)" (mouseleave)="closeNavigationMenu(section.id)" (focusin)="openNavigationMenu(section.id)">
-        @if (section.items.length) {
-          <button class="nav-toggle" type="button" (click)="activateNavigation(section.id)" aria-haspopup="true" [attr.aria-expanded]="openNavigation() === section.id" [attr.aria-controls]="'nav-menu-' + section.id">
-            <span>{{ language() === 'ta' ? section.ta : section.en }}</span>
-          </button>
-          @if (openNavigation() === section.id) {
-            <ul class="nav-menu" [id]="'nav-menu-' + section.id">
-              @for (item of section.items; track item.en) {
-                <li>{{ language() === 'ta' ? item.ta : item.en }}</li>
-              }
-            </ul>
+  <nav id="main-navigation" class="sn" [class.sn-open]="mobileNavigationOpen()" [attr.aria-label]="language() === 'ta' ? 'முதன்மை வழிசெலுத்தல்' : 'Main navigation'" (click)="$event.stopPropagation()">
+    <ul class="sn-list">
+      @for (section of navigation; track section.id) {
+        <li class="sn-group" [class.is-open]="openNavigation() === section.id" (mouseenter)="openNavigationMenu(section.id)" (mouseleave)="closeNavigationMenu(section.id)" (focusout)="onGroupFocusOut($event, section.id)" (keydown)="onGroupKey($event, section.id)">
+          @if (section.items.length) {
+            <button class="sn-link" type="button" [class.is-current]="isCurrent(section)" [attr.aria-current]="isCurrent(section) ? 'page' : null" (click)="toggleSection(section.id)" aria-haspopup="true" [attr.aria-expanded]="openNavigation() === section.id" [attr.aria-controls]="'nav-menu-' + section.id">
+              <span>{{ language() === 'ta' ? section.ta : section.en }}</span>
+              <svg class="sn-chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.5 4.5 6 8l3.5-3.5" /></svg>
+            </button>
+            @if (openNavigation() === section.id) {
+              <ul class="sn-menu" [id]="'nav-menu-' + section.id">
+                @for (item of section.items; track item.en) {
+                  <li>
+                    @if (item.go; as target) {
+                      <a class="sn-item" [href]="hrefFor(target)" (click)="onNavigate($event, target)"><span>{{ language() === 'ta' ? item.ta : item.en }}</span><svg class="sn-arrow" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8h9M8.5 4l4 4-4 4" /></svg></a>
+                    } @else {
+                      <span class="sn-item is-soon" aria-disabled="true"><span>{{ language() === 'ta' ? item.ta : item.en }}</span><em class="sn-soon">{{ language() === 'ta' ? 'விரைவில்' : 'Soon' }}</em></span>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+          } @else if (section.go; as target) {
+            <a class="sn-link" [class.sn-cta]="section.id === 'donate'" [class.is-current]="isCurrent(section)" [attr.aria-current]="isCurrent(section) ? 'page' : null" [href]="hrefFor(target)" (click)="onNavigate($event, target)"><span>{{ language() === 'ta' ? section.ta : section.en }}</span></a>
+          } @else {
+            <span class="sn-link is-soon"><span>{{ language() === 'ta' ? section.ta : section.en }}</span></span>
           }
-        } @else {
-          <span class="nav-toggle nav-placeholder">{{ language() === 'ta' ? section.ta : section.en }}</span>
-        }
-      </div>
-    }
+        </li>
+      }
+    </ul>
   </nav>
+
+  @if (page() === 'contact') {
+    <vck-contact-page [language]="language()" />
+  } @else if (page() === 'donate') {
+    <vck-donate-page [language]="language()" />
+  }
 
   <section #heroSection class="hero" id="home" [attr.aria-label]="language() === 'ta' ? 'விசிக முன்னணிப் பகுதி' : 'VCK hero'">
     <canvas #headlineCanvas class="hero-headline-3d" role="img" [attr.aria-label]="language() === 'ta' ? 'அமைப்பாய்த் திரள்வோம்' : 'Organize and unite'"></canvas>
@@ -76,7 +93,7 @@
           }
         </p>
       </div>
-      <span class="hero-pill">{{ language() === 'ta' ? 'இயக்கத்தை அறிக' : 'Explore the movement' }}<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" /></svg></span>
+      <a class="hero-pill" [href]="hrefFor({ page: 'donate' })" (click)="onNavigate($event, { page: 'donate' })">{{ language() === 'ta' ? 'நன்கொடை' : 'Donate Us' }}<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" /></svg></a>
     </div>
 
     <nav class="slide-index" [attr.aria-label]="language() === 'ta' ? 'முழக்கங்கள்' : 'Slogans'">

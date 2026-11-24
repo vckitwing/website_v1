@@ -1,0 +1,97 @@
+<div #pageRoot class="ct-page dn-page" [attr.lang]="language">
+  <header class="ct-intro ct-reveal">
+    <p class="ct-eyebrow">{{ copy.eyebrow[language] }}</p>
+    <h1>{{ copy.title[language] }}</h1>
+    <p class="ct-lede">{{ copy.lede[language] }}</p>
+  </header>
+
+  @if (donation.isSample) {
+    <p class="dn-sample ct-reveal" role="note"><strong>{{ copy.sampleTitle[language] }}</strong> {{ copy.sampleText[language] }}</p>
+  }
+
+  <div class="ct-grid">
+    <section class="ct-card ct-reveal" id="upi" aria-labelledby="dn-upi-title">
+      <span class="ct-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5" /><path d="M10.5 18.5h3" /></svg>
+      </span>
+      <h2 id="dn-upi-title">{{ copy.upiTitle[language] }}</h2>
+      <p class="dn-lede">{{ copy.upiLede[language] }}</p>
+
+      <div class="dn-amounts" role="group" [attr.aria-label]="copy.amount[language]">
+        @for (value of amounts; track value) {
+          <button type="button" class="dn-chip" [class.is-active]="amount() === value" [attr.aria-pressed]="amount() === value" (click)="choose(value)">₹{{ value }}</button>
+        }
+      </div>
+      <label class="ct-field dn-custom">
+        <span>{{ copy.custom[language] }}</span>
+        <input type="number" inputmode="numeric" min="1" step="1" [value]="amount()" (input)="setCustom($any($event.target).value)" />
+      </label>
+
+      <div class="dn-row">
+        <div>
+          <span class="dn-label">{{ copy.upiId[language] }}</span>
+          <span class="dn-value">{{ donation.upi.id }}</span>
+        </div>
+        <button type="button" class="ct-button dn-copy" (click)="copyValue('upi', donation.upi.id)">{{ copiedKey() === 'upi' ? copy.copied[language] : copy.copy[language] }}</button>
+      </div>
+
+      <div class="ct-actions">
+        <a class="ct-button ct-button-primary" [href]="upiHref()">
+          {{ copy.payUpi[language] }} · ₹{{ amount() }}
+          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8h9M8.5 4l4 4-4 4" /></svg>
+        </a>
+      </div>
+
+      <figure class="dn-qr">
+        <!-- A placeholder drawing (finder squares + a scatter of modules); the real code image replaces it at launch. -->
+        <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+          <g class="dn-qr-finder"><rect x="6" y="6" width="26" height="26" rx="3" /><rect x="68" y="6" width="26" height="26" rx="3" /><rect x="6" y="68" width="26" height="26" rx="3" /></g>
+          <g class="dn-qr-hole"><rect x="12" y="12" width="14" height="14" /><rect x="74" y="12" width="14" height="14" /><rect x="12" y="74" width="14" height="14" /></g>
+          <g class="dn-qr-dots"><rect x="16" y="16" width="6" height="6" /><rect x="78" y="16" width="6" height="6" /><rect x="16" y="78" width="6" height="6" />
+            <rect x="40" y="8" width="6" height="6" /><rect x="52" y="14" width="6" height="6" /><rect x="40" y="26" width="6" height="6" /><rect x="8" y="40" width="6" height="6" /><rect x="22" y="46" width="6" height="6" />
+            <rect x="40" y="40" width="6" height="6" /><rect x="52" y="46" width="6" height="6" /><rect x="64" y="40" width="6" height="6" /><rect x="82" y="46" width="6" height="6" /><rect x="46" y="58" width="6" height="6" />
+            <rect x="58" y="64" width="6" height="6" /><rect x="70" y="58" width="6" height="6" /><rect x="40" y="76" width="6" height="6" /><rect x="52" y="82" width="6" height="6" /><rect x="64" y="76" width="6" height="6" />
+            <rect x="82" y="70" width="6" height="6" /><rect x="76" y="86" width="6" height="6" /><rect x="88" y="82" width="6" height="6" /></g>
+        </svg>
+        <figcaption>{{ copy.scan[language] }}<small>{{ copy.sampleQr[language] }}</small></figcaption>
+      </figure>
+    </section>
+
+    <div class="ct-cards">
+      <section class="ct-card ct-reveal" id="bank" aria-labelledby="dn-bank-title">
+        <span class="ct-icon ct-icon-red" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false"><path d="M3 9.5 12 4l9 5.5M5 10v8m4-8v8m6-8v8m4-8v8M3 20h18" /></svg>
+        </span>
+        <h2 id="dn-bank-title">{{ copy.bankTitle[language] }}</h2>
+        <dl class="dn-rows">
+          @for (row of bankRows; track row.key) {
+            <div class="dn-row">
+              <div>
+                <dt class="dn-label">{{ row.label[language] }}</dt>
+                <dd class="dn-value">{{ row.value }}</dd>
+              </div>
+              <button type="button" class="ct-button dn-copy" (click)="copyValue(row.key, row.value)">{{ copiedKey() === row.key ? copy.copied[language] : copy.copy[language] }}</button>
+            </div>
+          }
+        </dl>
+        <span class="visually-hidden" aria-live="polite">{{ copiedKey() ? copy.copied[language] : '' }}</span>
+      </section>
+
+      <section class="ct-card ct-reveal" id="cheque" aria-labelledby="dn-cheque-title">
+        <h2 id="dn-cheque-title">{{ copy.chequeTitle[language] }}</h2>
+        <p class="dn-lede">{{ copy.chequeText[language] }} <strong>{{ donation.payableTo }}</strong> {{ copy.chequePost[language] }}</p>
+        <p class="ct-office">{{ donation.officeLabel[language] }}</p>
+        <address class="ct-address">{{ donation.officeAddress[language] }}</address>
+      </section>
+    </div>
+  </div>
+
+  <section class="ct-card dn-notes ct-reveal" id="notes" aria-labelledby="dn-notes-title">
+    <h2 id="dn-notes-title">{{ copy.notesTitle[language] }}</h2>
+    <ul>
+      @for (note of copy.notes; track $index) {
+        <li>{{ note[language] }}</li>
+      }
+    </ul>
+  </section>
+</div>

@@ -5,6 +5,8 @@ import { createHeroFlagHandoff } from './pages/home/hero/hero-star-handoff';
 import { OpeningAnimation } from './pages/home/hero/opening-animation';
 import type { HeroPortrait3D } from './pages/home/hero/portrait/hero-portrait-3d';
 import type { HeroTypography3D } from './pages/home/hero/typography/hero-typography-3d';
+import { ContactPageComponent } from './pages/contact/contact-page.component';
+import { DonatePageComponent } from './pages/donate/donate-page.component';
 import { FlagSectionComponent } from './pages/home/sections/flag/flag-section.component';
 import { FooterSectionComponent } from './pages/home/sections/footer/footer-section.component';
 import { ConferencesSectionComponent } from './pages/home/sections/conferences/conferences-section.component';
@@ -15,6 +17,12 @@ import { HandwrittenSignatureComponent } from '@shared/handwritten-signature/han
 import { ThinkersSectionComponent } from './pages/home/sections/thinkers/thinkers-section.component';
 import { ThemeSwitchTransitionComponent } from './shared/theme-switch-transition/theme-switch-transition.component';
 
+type PageName = 'home' | 'contact' | 'donate';
+/** Where a menu item goes: another page, or somewhere on the home page (`hash` is an element id or a section name). */
+type NavTarget = { page: PageName; hash?: string };
+type NavItem = { ta: string; en: string; go?: NavTarget };
+type NavSection = { id: string; ta: string; en: string; go?: NavTarget; items: NavItem[] };
+
 type SloganPart = { text: string; highlighted: boolean };
 type SloganWord = { parts: SloganPart[] };
 type SloganLine = { parts: SloganPart[]; words: SloganWord[] };
@@ -22,9 +30,9 @@ type SloganLine = { parts: SloganPart[]; words: SloganWord[] };
 @Component({
   selector: 'vck-root',
   standalone: true,
-  imports: [FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ConferencesSectionComponent, FooterSectionComponent, SocialSectionComponent, HandwrittenSignatureComponent, ThemeSwitchTransitionComponent],
+  imports: [ContactPageComponent, DonatePageComponent, FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ConferencesSectionComponent, FooterSectionComponent, SocialSectionComponent, HandwrittenSignatureComponent, ThemeSwitchTransitionComponent],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss', './pages/home/hero/hero-typography.scss', './pages/home/hero/hero-signature.scss', './pages/home/hero/hero-mobile.scss'],
+  styleUrls: ['./app.component.scss', './site-nav.scss', './pages/home/hero/hero-typography.scss', './pages/home/hero/hero-signature.scss', './pages/home/hero/hero-mobile.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -105,16 +113,21 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly theme = signal<'dark' | 'light'>(this.readSavedTheme());
   readonly openNavigation = signal<string | null>(null);
   readonly mobileNavigationOpen = signal(false);
-  readonly navigation = [
+  /** Folder the app is served from (`/` locally, `/website_v1/` on GitHub Pages), always with a trailing slash. */
+  private readonly basePath = new URL(document.baseURI).pathname.replace(/\/?$/, '/');
+  private readonly homeTitle = document.title;
+  readonly page = signal<PageName>(this.readPage());
+  readonly navigation: NavSection[] = [
+    { id: 'home', ta: 'முகப்பு', en: 'Home', go: { page: 'home', hash: 'home' }, items: [] },
     {
       id: 'movement', ta: 'இயக்கம்', en: 'Movement', items: [
-        { ta: 'இயக்க வரலாறு', en: 'Movement history' },
+        { ta: 'இயக்க வரலாறு', en: 'Movement history', go: { page: 'home', hash: 'history' } },
         { ta: 'கொள்கைகள்', en: 'Policies' },
         { ta: 'மக்கள் பிரதிநிதிகள் (எம்.பி / எம்.எல்.ஏ)', en: 'Elected representatives (MPs / MLAs)' }
       ]
     },
     {
-      id: 'structure', ta: 'இயக்க கட்டமைப்பு', en: 'Organization structure', items: [
+      id: 'structure', ta: 'இயக்க கட்டமைப்பு', en: 'Org Structure', items: [
         { ta: 'தலைமை', en: 'Leadership' },
         { ta: 'மாநிலச் செயலாளர்கள்', en: 'State secretaries' },
         { ta: 'மாவட்டச் செயலாளர்கள்', en: 'District secretaries' },
@@ -124,7 +137,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     {
       id: 'field', ta: 'களத்தில் சிறுத்தைகள்', en: 'In the field', items: [
         { ta: 'தேர்தல்கள்', en: 'Elections' },
-        { ta: 'மாநாடுகள்', en: 'Conferences' },
+        { ta: 'மாநாடுகள்', en: 'Conferences', go: { page: 'home', hash: 'conferences' } },
         { ta: 'சாதனைகள்', en: 'Achievements' }
       ]
     },
@@ -136,14 +149,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         { ta: 'புகைப்படங்கள்', en: 'Photos' }
       ]
     },
-    { id: 'donate', ta: 'நன்கொடை', en: 'Donate Us', items: [] },
-    {
-      id: 'contact', ta: 'தொடர்புக்கு', en: 'Contact', items: [
-        { ta: 'முகவரி', en: 'Address' },
-        { ta: 'தொலைபேசி / மின்னஞ்சல்', en: 'Phone / email' },
-        { ta: 'தொடர்பு படிவம்', en: 'Contact form' }
-      ]
-    }
+    { id: 'contact', ta: 'தொடர்புக்கு', en: 'Contact', go: { page: 'contact' }, items: [] },
+    { id: 'donate', ta: 'நன்கொடை', en: 'Donate Us', go: { page: 'donate' }, items: [] }
   ];
   readonly openingActive = signal(true);
   readonly portraitRevealPending = signal(true);
@@ -161,6 +168,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private heroAnimationFrame?: number;
 
   ngOnInit(): void {
+    document.title = this.titleFor(this.page());
     this.portraitRevealPending.set(!hasCompletedHeroPortraitReveal());
     // The relief portrait is a progressive enhancement: skipped entirely for reduced motion (the flat photo stays).
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -238,7 +246,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       // The hero is now visible: let the president sign it (small beat after the intro settles).
       this.signatureTimer = window.setTimeout(() => this.heroSignatureRef.play(), 900);
     });
-    this.opening.play(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    // Opening the site straight on a sub-page skips the intro (its flight to the hero would have nothing to land on).
+    this.opening.play(window.matchMedia('(prefers-reduced-motion: reduce)').matches || this.page() !== 'home');
 
     void createHeroFlagHandoff(this.heroAnchorRef.nativeElement).then((cleanup) => {
       this.handoffCleanup = cleanup;
@@ -357,28 +366,158 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.openNavigation.set(null);
   }
 
-  activateNavigation(section: string): void {
-    this.openNavigation.set(section);
+  // ---- Pages (the History API; the Angular router is not used) ---------------------------------------------------------
+
+  private readPage(): PageName {
+    const path = location.pathname.startsWith(this.basePath) ? location.pathname.slice(this.basePath.length) : location.pathname.replace(/^\//, '');
+    const name = path.replace(/\/$/, '');
+    return name === 'contact' || name === 'donate' ? name : 'home';
   }
 
-  openNavigationMenu(section: string): void {
-    if (window.matchMedia('(hover: hover)').matches || this.mobileNavigationOpen()) this.openNavigation.set(section);
+  /** Real address of a target, so links open in a new tab, copy and bookmark properly. */
+  hrefFor(target: NavTarget): string {
+    return this.basePath + (target.page === 'home' ? '' : target.page) + (target.hash ? `#${target.hash}` : '');
   }
 
-  closeNavigationMenu(section: string): void {
-    if (window.matchMedia('(hover: hover)').matches && !this.mobileNavigationOpen() && this.openNavigation() === section) {
+  /** Click handler for the menu links: plain clicks navigate inside the app, modified clicks keep the browser's behaviour. */
+  onNavigate(event: MouseEvent, target: NavTarget): void {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    this.closeNavigation();
+    this.go(target);
+  }
+
+  go(target: NavTarget): void {
+    const url = this.hrefFor(target);
+    if (location.pathname + location.hash !== url) history.pushState(null, '', url);
+    this.applyLocation();
+  }
+
+  private titleFor(page: PageName): string {
+    const ta = this.language() === 'ta';
+    if (page === 'contact') return ta ? 'தொடர்புக்கு — விசிக' : 'Contact — VCK';
+    if (page === 'donate') return ta ? 'நன்கொடை — விசிக' : 'Donate — VCK';
+    return this.homeTitle;
+  }
+
+  @HostListener('window:popstate')
+  applyLocation(): void {
+    const next = this.readPage();
+    const changed = next !== this.page();
+    this.page.set(next);
+    document.title = this.titleFor(next);
+    // Give the view a moment to swap, then re-measure everything that was hidden (scroll triggers, 3D canvases) and scroll.
+    window.setTimeout(() => void this.settleAfterNavigation(changed), 80);
+  }
+
+  private async settleAfterNavigation(changed: boolean): Promise<void> {
+    if (this.destroyed) return;
+    if (changed) {
+      window.dispatchEvent(new Event('resize'));
+      const { ScrollTrigger } = await import('gsap/ScrollTrigger');
+      ScrollTrigger.refresh();
+    }
+    const id = decodeURIComponent(location.hash.slice(1));
+    const target = id ? (document.getElementById(id) ?? document.querySelector<HTMLElement>(`vck-${id}-section`)) : null;
+    if (target) target.scrollIntoView({ block: 'start' });
+    else if (changed) window.scrollTo(0, 0);
+  }
+
+  // ---- Header menu ------------------------------------------------------------------------------------------------------
+  /** The menu that was opened by a click (it then stays open until the visitor chooses, clicks away or presses Escape). */
+  private pinnedSection: string | null = null;
+  private hoverCloseTimer?: number;
+
+  /** Burger layout: narrow screens, and Tamil below 1520px (its labels are longer). Keep in step with site-nav.scss. */
+  private compactNav(): boolean {
+    return window.matchMedia('(max-width: 1270px)').matches || (this.language() === 'ta' && window.matchMedia('(max-width: 1520px)').matches);
+  }
+
+  private canHover(): boolean {
+    return window.matchMedia('(hover: hover)').matches && !this.compactNav();
+  }
+
+  /** Whether the section is the page you are on (shows the red mark and `aria-current`). */
+  isCurrent(section: NavSection): boolean {
+    return !!section.go && section.go.page === this.page();
+  }
+
+  /** Click / tap / Enter on a top-level item that has a menu. */
+  toggleSection(id: string): void {
+    const open = this.openNavigation() === id;
+    // opened by hovering: the first click pins it; a click on one that is already pinned (or on touch) closes it
+    if (open && (this.pinnedSection === id || !this.canHover())) {
       this.openNavigation.set(null);
+      this.pinnedSection = null;
+      return;
+    }
+    this.openNavigation.set(id);
+    this.pinnedSection = id;
+  }
+
+  openNavigationMenu(id: string): void {
+    window.clearTimeout(this.hoverCloseTimer);
+    if (!this.canHover()) return;
+    if (this.pinnedSection && this.pinnedSection !== id) this.pinnedSection = null;
+    this.openNavigation.set(id);
+  }
+
+  closeNavigationMenu(id: string): void {
+    if (!this.canHover() || this.pinnedSection === id) return;
+    window.clearTimeout(this.hoverCloseTimer);
+    // a short grace period, so a pointer that wobbles off the pill on its way to the panel does not lose the menu
+    this.hoverCloseTimer = window.setTimeout(() => {
+      if (this.openNavigation() === id && this.pinnedSection !== id) this.openNavigation.set(null);
+    }, 160);
+  }
+
+  /** Keyboard: Arrow Down opens the menu and moves through its links, Arrow Up goes back, Escape closes and returns to the item. */
+  onGroupKey(event: KeyboardEvent, id: string): void {
+    const group = event.currentTarget as HTMLElement;
+    const toggle = group.querySelector<HTMLElement>('button.sn-link');
+    if (!toggle) return;
+    if (event.key === 'Escape' && this.openNavigation() === id) {
+      this.openNavigation.set(null);
+      this.pinnedSection = null;
+      toggle.focus();
+      event.stopPropagation();
+      return;
+    }
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    event.preventDefault();
+    const links = (): HTMLElement[] => Array.from(group.querySelectorAll<HTMLElement>('a.sn-item'));
+    if (this.openNavigation() !== id) {
+      this.openNavigation.set(id);
+      this.pinnedSection = id;
+      window.setTimeout(() => links()[0]?.focus());
+      return;
+    }
+    const list = links();
+    if (!list.length) return;
+    const index = list.indexOf(document.activeElement as HTMLElement);
+    const next = event.key === 'ArrowDown' ? (index + 1) % list.length : index <= 0 ? list.length - 1 : index - 1;
+    list[next]?.focus();
+  }
+
+  /** Tabbing out of the group closes its menu. */
+  onGroupFocusOut(event: FocusEvent, id: string): void {
+    const group = event.currentTarget as HTMLElement;
+    if (this.openNavigation() === id && !group.contains(event.relatedTarget as Node | null)) {
+      this.openNavigation.set(null);
+      this.pinnedSection = null;
     }
   }
 
   @HostListener('document:click')
   closeNavigation(): void {
+    this.pinnedSection = null;
     this.openNavigation.set(null);
     this.mobileNavigationOpen.set(false);
   }
 
   @HostListener('document:keydown.escape')
   closeNavigationOnEscape(): void {
+    this.pinnedSection = null;
     this.openNavigation.set(null);
     this.mobileNavigationOpen.set(false);
   }

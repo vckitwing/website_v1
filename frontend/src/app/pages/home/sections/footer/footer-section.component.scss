@@ -335,3 +335,9 @@
     transition: none;
   }
 }
+
+/* On the sub-pages (contact, donate) the journey star is not flown in (the home sections are hidden), so its landing spot is simply shown. */
+:host-context(.subpage-open) .ft-star {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
