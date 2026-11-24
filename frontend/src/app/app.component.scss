@@ -146,7 +146,8 @@ $portrait-mask-mirrored: linear-gradient(to left,transparent 0%,rgba(0,0,0,.08) 
   .topbar { height:72px; gap:9px; }
   .brand { gap:8px; margin-right:0; min-width:0; }
   .brand-copy { min-width:0; }
-  .brand-copy small { display:block; width:110px; font-size:clamp(6px,1.9vw,7.25px); letter-spacing:.02em; line-height:1.12; white-space:normal; }
+  /* The full name stays on ONE line: it shrinks with the screen so it fits between the logo and the buttons. */
+  .brand-copy small { display:block; width:auto; font-size:clamp(5.5px,1.6vw,6.8px); letter-spacing:.01em; line-height:1.12; white-space:nowrap; }
   .brand-copy strong { font-size:15px; }
   .top-actions { gap:4px; margin-left:auto; }
 }

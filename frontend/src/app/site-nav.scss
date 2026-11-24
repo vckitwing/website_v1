@@ -434,6 +434,15 @@ $compact-width-ta: 1520px;
 }
 
 @media (max-width: 760px) {
+  // tighter header so the brand name fits on one line beside the buttons
+  .hero-shell .topbar {
+    gap: 8px;
+  }
+
+  .hero-shell .language {
+    padding: 0 10px;
+  }
+
   .hero-shell .sn {
     top: 80px;
     left: 18px;
