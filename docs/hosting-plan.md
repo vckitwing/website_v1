@@ -104,7 +104,7 @@ The public site is static files on Cloudflare's network, so visitor spikes (an e
 
 ## What I will build next
 
-1. **Storage layer in the API:** local folder or R2 by setting; `content.json` written to it on publish; image resizing; upload endpoint; admin screen for photos.
+1. **Storage layer in the API:** ~~local folder; `content.json` written to it on publish; image resizing; upload endpoint; admin screen for photos~~ (done and tested locally, folder `Object_Storage_Data/`). Still to do: the R2 implementation of the same interface.
 2. `docker-compose.yml` (API, PostgreSQL, Caddy), Caddyfile, a server `.env.example`.
 3. Backup script (encrypted `pg_dump` to R2), restore script, cron entry.
 4. Deploy scripts for the two Pages projects and for the VPS, plus a server setup guide (firewall, SSH keys, updates).

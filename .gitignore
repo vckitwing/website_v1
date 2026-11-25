@@ -3,3 +3,6 @@ dist/
 .angular/
 *.log
 .DS_Store
+
+# Local object storage (books, photos, backups). Never committed: production uses Cloudflare R2.
+Object_Storage_Data/

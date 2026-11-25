@@ -6,6 +6,8 @@ import {
   AuditEntry,
   Conference,
   ConferenceInput,
+  MediaAsset,
+  MediaUpdate,
   Milestone,
   MilestoneInput,
   Status,
@@ -73,6 +75,19 @@ export class ApiService {
   }
   audit(): Promise<AuditEntry[]> {
     return firstValueFrom(this.http.get<AuditEntry[]>(`${this.base}/users/audit/log`));
+  }
+
+  media(): Promise<MediaAsset[]> {
+    return firstValueFrom(this.http.get<MediaAsset[]>(`${this.base}/media`));
+  }
+  uploadMedia(body: FormData): Promise<MediaAsset> {
+    return firstValueFrom(this.http.post<MediaAsset>(`${this.base}/media`, body));
+  }
+  updateMedia(id: number, body: MediaUpdate): Promise<MediaAsset> {
+    return firstValueFrom(this.http.patch<MediaAsset>(`${this.base}/media/${id}`, body));
+  }
+  deleteMedia(id: number): Promise<void> {
+    return firstValueFrom(this.http.delete<void>(`${this.base}/media/${id}`));
   }
 
   changePassword(current_password: string, new_password: string): Promise<void> {

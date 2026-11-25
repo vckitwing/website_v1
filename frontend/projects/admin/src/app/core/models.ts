@@ -74,3 +74,28 @@ export interface AuditEntry {
   entity_id: number | null;
   summary: string;
 }
+
+export interface MediaVariant {
+  width: number;
+  url: string;
+}
+
+export interface MediaAsset {
+  id: number;
+  filename: string;
+  width: number;
+  height: number;
+  alt_en: string;
+  alt_ta: string;
+  caption_en: string | null;
+  caption_ta: string | null;
+  variants: MediaVariant[]; // smallest first
+  created_at: string;
+}
+
+export interface MediaUpdate {
+  alt_en?: string;
+  alt_ta?: string;
+  caption_en?: string | null;
+  caption_ta?: string | null;
+}

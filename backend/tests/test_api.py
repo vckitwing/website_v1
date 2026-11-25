@@ -1,10 +1,15 @@
 import os
+import shutil
+import tempfile
 
 # The tests drop and recreate every table, so they must NEVER point at the real database.
 # Default: a throwaway SQLite file. To test on PostgreSQL set TEST_DATABASE_URL to a separate database (e.g. .../vck_test).
 os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL", "sqlite:///./test.db")
-os.environ["PUBLISH_DIR"] = "./test_published"
+# Files go to a throwaway folder, never to the real Object_Storage_Data.
+TEST_STORAGE = tempfile.mkdtemp(prefix="vck-test-storage-")
+os.environ["STORAGE_DIR"] = TEST_STORAGE
 
+import io  # noqa: E402
 import json  # noqa: E402
 from pathlib import Path  # noqa: E402
 
@@ -15,6 +20,7 @@ from app.db import Base, SessionLocal, _engine  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models import Role, User  # noqa: E402
 from app.security import hash_password, login_throttle  # noqa: E402
+from PIL import Image  # noqa: E402
 
 PASSWORD = "Str0ngPassword1"
 
@@ -23,6 +29,7 @@ PASSWORD = "Str0ngPassword1"
 def client():
     Base.metadata.drop_all(_engine)
     Base.metadata.create_all(_engine)
+    shutil.rmtree(Path(TEST_STORAGE) / "images", ignore_errors=True)  # every test starts with empty storage
     login_throttle._failures.clear()
     with SessionLocal() as db:
         for email, role in [("root@x.org", Role.super_admin), ("ed@x.org", Role.editor), ("co@x.org", Role.contributor)]:
@@ -59,7 +66,7 @@ def test_public_content_has_only_published(client):
     data = client.get("/api/public/content").json()
     assert [c["name"]["en"] for c in data["conferences"]] == ["Test Conference"]
     assert data["conferences"][0]["name"]["ta"] == "சோதனை மாநாடு"
-    snapshot = json.loads((Path("test_published") / "content.json").read_text(encoding="utf-8"))
+    snapshot = json.loads((Path(TEST_STORAGE) / "content.json").read_text(encoding="utf-8"))
     assert snapshot == data
 
 
@@ -129,3 +136,79 @@ def test_audit_log_records_changes(client):
     log = client.get("/api/users/audit/log", headers=root).json()
     assert log[0]["user_email"] == "ed@x.org" and log[0]["action"] == "create"
     assert client.get("/api/users/audit/log", headers=ed).status_code == 403
+
+
+# ---- Media -----------------------------------------------------------------------------------------------------------
+def picture(width=1200, height=800, fmt="PNG", color=(200, 30, 60)) -> bytes:
+    buffer = io.BytesIO()
+    Image.new("RGB", (width, height), color).save(buffer, format=fmt)
+    return buffer.getvalue()
+
+
+def upload(client, headers, data, name="photo.png", content_type="image/png", **fields):
+    form = {"alt_en": "A red square", "alt_ta": "சிவப்பு சதுரம்", **fields}
+    return client.post("/api/media", headers=headers, files={"file": (name, data, content_type)}, data=form)
+
+
+def test_upload_makes_web_sized_copies(client):
+    co = auth(client, "co@x.org")  # a contributor may upload
+    r = upload(client, co, picture(1200, 800))
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert [v["width"] for v in body["variants"]] == [400, 800, 1200]  # never larger than the original
+    for variant in body["variants"]:
+        assert client.get(variant["url"].replace("http://localhost:8000", "")).status_code == 200  # served at /media/...
+    key_dirs = list((Path(TEST_STORAGE) / "images").iterdir())
+    assert len(key_dirs) == 1 and sorted(p.name for p in key_dirs[0].iterdir()) == ["1200.webp", "400.webp", "800.webp"]
+    with Image.open(key_dirs[0] / "800.webp") as copy:
+        assert copy.format == "WEBP" and copy.size == (800, 533)
+
+
+def test_small_picture_is_not_enlarged(client):
+    ed = auth(client, "ed@x.org")
+    r = upload(client, ed, picture(300, 200))
+    assert [v["width"] for v in r.json()["variants"]] == [300]
+
+
+def test_upload_rejects_bad_files(client):
+    ed = auth(client, "ed@x.org")
+    assert upload(client, ed, b"this is not a picture", name="x.jpg", content_type="image/jpeg").status_code == 415
+    assert upload(client, ed, b"<svg xmlns='http://www.w3.org/2000/svg'><script>alert(1)</script></svg>", name="x.svg", content_type="image/svg+xml").status_code == 415
+    assert upload(client, ed, picture(fmt="GIF"), name="x.gif", content_type="image/gif").status_code == 415
+    assert upload(client, ed, picture(fmt="BMP"), name="x.bmp", content_type="image/bmp").status_code == 415
+    assert upload(client, ed, picture(), alt_ta="   ").status_code == 422  # both descriptions are required
+    assert client.post("/api/media", headers=ed, data={"alt_en": "a", "alt_ta": "b"}).status_code == 422  # no file
+    assert not (Path(TEST_STORAGE) / "images").exists() or not list((Path(TEST_STORAGE) / "images").iterdir())
+
+
+def test_upload_size_limits(client, monkeypatch):
+    from app.config import get_settings
+
+    ed = auth(client, "ed@x.org")
+    monkeypatch.setattr(get_settings(), "max_upload_bytes", 2000)
+    assert upload(client, ed, picture(800, 800)).status_code == 413
+    monkeypatch.setattr(get_settings(), "max_upload_bytes", 10 * 1024 * 1024)
+    monkeypatch.setattr(get_settings(), "max_image_pixels", 10_000)
+    assert upload(client, ed, picture(800, 800)).status_code == 415  # too many pixels
+
+
+def test_media_needs_sign_in_and_permissions(client):
+    assert client.get("/api/media").status_code == 401
+    assert client.post("/api/media", files={"file": ("a.png", picture(), "image/png")}, data={"alt_en": "a", "alt_ta": "b"}).status_code == 401
+    co, ed = auth(client, "co@x.org"), auth(client, "ed@x.org")
+    asset = upload(client, co, picture()).json()
+    assert client.patch(f"/api/media/{asset['id']}", json={"alt_en": "x"}, headers=co).status_code == 403
+    assert client.delete(f"/api/media/{asset['id']}", headers=co).status_code == 403
+    assert client.patch(f"/api/media/{asset['id']}", json={"caption_en": " A caption ", "alt_ta": "புதிய"}, headers=ed).json()["caption_en"] == "A caption"
+    assert client.delete(f"/api/media/{asset['id']}", headers=ed).status_code == 204
+    assert client.get("/api/media", headers=ed).json() == []
+    assert not list((Path(TEST_STORAGE) / "images").iterdir())  # the files are gone too
+
+
+def test_storage_refuses_keys_outside_its_folder():
+    from app.storage import get_storage
+
+    storage = get_storage()
+    for bad in ["../outside.txt", "images/../../outside.txt", "/etc/passwd", "", "."]:
+        with pytest.raises(ValueError):
+            storage.put(bad, b"x", "text/plain")

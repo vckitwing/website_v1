@@ -1,13 +1,12 @@
 import json
-import os
-import tempfile
-from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .config import get_settings
 from .models import AuditLog, Conference, HistoryMilestone, Status, User
+from .storage import get_storage
+
+CONTENT_KEY = "content.json"
 
 
 def record(db: Session, user: User, action: str, entity: str, entity_id: int | None, summary: str) -> None:
@@ -38,15 +37,9 @@ def build_snapshot(db: Session) -> dict:
 
 
 def publish_snapshot(db: Session) -> None:
-    """Rewrites `<publish_dir>/content.json` so the public site can read static JSON (no API needed to view the site)."""
-    directory = get_settings().publish_dir
-    if not directory:
-        return
-    target = Path(directory)
-    target.mkdir(parents=True, exist_ok=True)
-    data = json.dumps(build_snapshot(db), ensure_ascii=False, indent=2)
-    # write to a temp file first so a visitor never reads a half-written file
-    fd, temp = tempfile.mkstemp(dir=target, suffix=".tmp")
-    with os.fdopen(fd, "w", encoding="utf-8") as handle:
-        handle.write(data)
-    os.replace(temp, target / "content.json")
+    """Writes the published content as `content.json` into object storage, where the public site reads it.
+
+    (Locally that is Object_Storage_Data/content.json, served at /media/content.json; in production, the R2 media bucket.)
+    """
+    data = json.dumps(build_snapshot(db), ensure_ascii=False, indent=2).encode("utf-8")
+    get_storage().put(CONTENT_KEY, data, "application/json")

@@ -45,8 +45,9 @@ Contributors can only save drafts; an editor publishes them. Super admins also s
 
 ## Notes
 
-- The public site asks the API for `GET /api/public/content` (`frontend/src/environments/environment.ts`). It waits at most
+- Files live in `Object_Storage_Data/` at the repo root (git-ignored; your books, uploaded pictures under `images/`, and `content.json`). The API serves it at http://localhost:8000/media while you develop. Never commit that folder.
+- The public site reads `http://localhost:8000/media/content.json` (`frontend/src/environments/environment.ts`), which the API rewrites whenever content is published. It waits at most
   2.5 s; if the API is down, slow or returns something unusable, it uses the built-in content. In production the address
-  is `content.json` next to the site (`environment.production.ts`); nothing publishes that file yet.
-- The API caches the public content for 60 seconds, so a published change can take up to a minute to reach visitors.
+  is the R2 media bucket's `content.json` (`environment.production.ts`); not set up yet.
+- Pictures: sign in to the admin, open **Media**, upload a JPEG/PNG/WebP with a description in English and Tamil. It is saved in 3 web sizes under `Object_Storage_Data/images/`.
 - `backend/vck.db` is your local database (not committed). Delete it and run `seed` again to start over.

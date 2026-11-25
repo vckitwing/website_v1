@@ -146,3 +146,29 @@ class AuditOut(BaseModel):
     entity: str
     entity_id: int | None
     summary: str
+
+
+# ---- Media (uploaded pictures) ---------------------------------------------------------------------------------------
+class MediaVariant(BaseModel):
+    width: int
+    url: str
+
+
+class MediaOut(BaseModel):
+    id: int
+    filename: str
+    width: int
+    height: int
+    alt_en: str
+    alt_ta: str
+    caption_en: str | None
+    caption_ta: str | None
+    variants: list[MediaVariant]  # smallest first
+    created_at: datetime
+
+
+class MediaUpdate(BaseModel):
+    alt_en: Text | None = Field(default=None, max_length=300)
+    alt_ta: Text | None = Field(default=None, max_length=300)
+    caption_en: str | None = Field(default=None, max_length=500)
+    caption_ta: str | None = Field(default=None, max_length=500)

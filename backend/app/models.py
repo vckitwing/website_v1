@@ -69,6 +69,25 @@ class HistoryMilestone(_Content, Base):
     source_label_ta: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
 
+class MediaAsset(Base):
+    """An uploaded picture. The files themselves live in object storage under images/<key>/<width>.webp."""
+
+    __tablename__ = "media_assets"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    key: Mapped[str] = mapped_column(String(32), unique=True, index=True)
+    filename: Mapped[str] = mapped_column(String(255))  # the name it was uploaded with (display only)
+    width: Mapped[int] = mapped_column(Integer)
+    height: Mapped[int] = mapped_column(Integer)
+    widths: Mapped[str] = mapped_column(String(40))  # the copies that exist, e.g. "400,800,1600"
+    alt_en: Mapped[str] = mapped_column(String(300))
+    alt_ta: Mapped[str] = mapped_column(String(300))
+    caption_en: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    caption_ta: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, index=True)
+
+
 class AuditLog(Base):
     """Who changed what, and when. Rows are only ever added."""
 

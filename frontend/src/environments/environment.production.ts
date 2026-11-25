@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  // Relative to the site's base href. Until the backend publishes a content.json here, the request fails and the
-  // site uses its built-in content. Point this at the real published file or API when deploying.
+  // Production: the public address of the R2 media bucket, e.g. 'https://media.<domain>/content.json'.
+  // Until that exists this relative address 404s and the site uses its built-in content.
   contentUrl: 'content.json'
 };

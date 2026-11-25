@@ -34,7 +34,13 @@ Both English and Tamil are required for every text field.
 - `GET/POST /api/conferences`, `GET/PATCH/DELETE /api/conferences/{id}` (same shape for `/api/history`)
 - `GET/POST /api/users`, `PATCH /api/users/{id}`, `GET /api/users/audit/log` (super admin)
 - `GET /api/public/content` — all published content, no sign-in (same shape as the website's data files)
-- With `PUBLISH_DIR` set, every change also rewrites `<dir>/content.json`, so the public site can read static JSON.
+- `GET/POST /api/media`, `PATCH/DELETE /api/media/{id}` — picture library. Anyone signed in can upload; editing and deleting are for editors.
+  An upload (multipart: `file`, `alt_en`, `alt_ta`, optional captions) must be a real JPEG / PNG / WebP up to 10 MB and 60 megapixels;
+  it is re-encoded to WebP copies 400 / 800 / 1600 px wide (never larger than the original; camera data such as GPS is dropped) and stored as
+  `images/<id>/<width>.webp`. Both descriptions (English, Tamil) are required.
+- Object storage (`app/storage.py`): locally a folder (`STORAGE_DIR`, default `<repo>/Object_Storage_Data`, git-ignored) that the API also serves
+  read-only at `/media` in development. Every change to published content rewrites `content.json` in it, which is what the public site reads
+  (`http://localhost:8000/media/content.json` locally; the R2 media bucket in production). The same five methods (`put`, `delete`, `delete_prefix`, `exists`, `url`) will get an R2 implementation.
 
 ## Production
 

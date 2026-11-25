@@ -2,11 +2,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
 from .db import SessionLocal, init_db
 from .models import Conference, HistoryMilestone
-from .routers import auth, users
+from .routers import auth, media, users
 from .routers.content import make_content_router
 from .schemas import (
     ConferenceIn,
@@ -17,6 +18,7 @@ from .schemas import (
     MilestoneUpdate,
 )
 from .services import build_snapshot
+from .storage import get_storage
 
 
 @asynccontextmanager
@@ -44,6 +46,7 @@ app.add_middleware(
 api = APIRouter(prefix="/api")
 api.include_router(auth.router, prefix="/auth", tags=["auth"])
 api.include_router(users.router, prefix="/users", tags=["users"])
+api.include_router(media.router, prefix="/media", tags=["media"])
 api.include_router(
     make_content_router(
         entity="conference",
@@ -86,3 +89,8 @@ def health():
 
 
 app.include_router(api)
+
+# Local development only: serve the storage folder at /media (photos, content.json), the way the R2 media bucket
+# will be served in production. Read-only; directory listings are not offered.
+if settings.environment != "production":
+    app.mount("/media", StaticFiles(directory=get_storage().root), name="media")
