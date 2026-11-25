@@ -5,7 +5,6 @@ type Pair = { readonly en: string; readonly ta: string };
 
 export const BOOK_COPY = {
   eyebrow: { en: 'PUBLICATIONS', ta: 'வெளியீடுகள்' } as Pair,
-  homeEyebrow: { en: 'THE BOOK', ta: 'நூல்' } as Pair,
   fallbackTitle: { en: 'Amaippai Thiralvom', ta: 'அமைப்பாய்த் திரள்வோம்' } as Pair,
   by: { en: 'By', ta: 'ஆசிரியர்:' } as Pair,
   pages: { en: 'pages', ta: 'பக்கங்கள்' } as Pair,

@@ -3,13 +3,6 @@
   flex: 0 0 auto;
 }
 
-// on the home page the book is its own section, set apart from the one above it
-.bk-home {
-  padding-top: clamp(56px, 8vw, 104px);
-  padding-bottom: clamp(56px, 8vw, 104px);
-  border-top: 1px solid var(--ct-card-border);
-}
-
 .bk-title {
   margin: 0;
   font: 700 clamp(30px, 4.2vw, 54px) / 1.14 'Outfit', 'Noto Sans Tamil', sans-serif;

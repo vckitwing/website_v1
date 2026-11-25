@@ -9,7 +9,6 @@ import { ContactPageComponent } from './pages/contact/contact-page.component';
 import { DonatePageComponent } from './pages/donate/donate-page.component';
 import { TamilLandPageComponent } from './pages/tamil-land/tamil-land-page.component';
 import { AmaipaiThiralvomPageComponent } from './pages/amaipai-thiralvom/amaipai-thiralvom-page.component';
-import { FeaturedBookComponent } from './shared/featured-book/featured-book.component';
 import { FlagSectionComponent } from './pages/home/sections/flag/flag-section.component';
 import { FooterSectionComponent } from './pages/home/sections/footer/footer-section.component';
 import { ConferencesSectionComponent } from './pages/home/sections/conferences/conferences-section.component';
@@ -33,7 +32,7 @@ type SloganLine = { parts: SloganPart[]; words: SloganWord[] };
 @Component({
   selector: 'vck-root',
   standalone: true,
-  imports: [ContactPageComponent, DonatePageComponent, TamilLandPageComponent, AmaipaiThiralvomPageComponent, FeaturedBookComponent, FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ConferencesSectionComponent, FooterSectionComponent, SocialSectionComponent, HandwrittenSignatureComponent, ThemeSwitchTransitionComponent],
+  imports: [ContactPageComponent, DonatePageComponent, TamilLandPageComponent, AmaipaiThiralvomPageComponent, FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ConferencesSectionComponent, FooterSectionComponent, SocialSectionComponent, HandwrittenSignatureComponent, ThemeSwitchTransitionComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss', './site-nav.scss', './pages/home/hero/hero-typography.scss', './pages/home/hero/hero-signature.scss', './pages/home/hero/hero-mobile.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

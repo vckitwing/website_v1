@@ -1,13 +1,9 @@
 @if (publication && edition) {
-  <div #pageRoot class="ct-page bk-page" [class.bk-home]="placement === 'home'" [attr.lang]="language">
+  <div #pageRoot class="ct-page bk-page" [attr.lang]="language">
     <div class="bk-layout">
-      <header class="bk-info" [class.ct-reveal]="placement === 'page'">
-        <p class="ct-eyebrow">{{ placement === 'home' ? copy.homeEyebrow[language] : copy.eyebrow[language] }}</p>
-        @if (placement === 'home') {
-          <h2 class="bk-title">{{ publication.title[language] }}</h2>
-        } @else {
-          <h1 class="bk-title">{{ publication.title[language] }}</h1>
-        }
+      <header class="bk-info ct-reveal">
+        <p class="ct-eyebrow">{{ copy.eyebrow[language] }}</p>
+        <h1 class="bk-title">{{ publication.title[language] }}</h1>
         @if (publication.author) {
           <p class="bk-author">{{ copy.by[language] }} {{ publication.author[language] }}</p>
         }
@@ -23,7 +19,7 @@
         <p class="bk-note">{{ copy.note[language] }}</p>
       </header>
 
-      <div class="bk-stage" [class.ct-reveal]="placement === 'page'">
+      <div class="bk-stage ct-reveal">
         <div class="bk-glow" aria-hidden="true"></div>
         <canvas #bookCanvas class="bk-canvas" [class.is-ready]="mode() === '3d'" aria-hidden="true"></canvas>
         @if (mode() !== '3d') {
@@ -42,7 +38,7 @@
       }
     }
   </div>
-} @else if (placement === 'page') {
+} @else {
   <div #pageRoot class="ct-page bk-page" [attr.lang]="language">
     <section class="ct-card ct-reveal bk-empty">
       <h1>{{ copy.fallbackTitle[language] }}</h1>

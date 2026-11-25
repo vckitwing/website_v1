@@ -8,8 +8,7 @@ import { BOOK_COPY, BOOK_SLUG } from './featured-book.data';
 
 /**
  * The book (Amaipai Thiralvom) as a floating 3D object. Clicking it (or the Read button) opens the cover and then the
- * page reader. Without WebGL it is a flat cover that opens the same reader. Used on the home page (`placement="home"`,
- * absent until a book is published) and on its own page (`placement="page"`, with a "coming soon" message).
+ * page reader. Without WebGL it is a flat cover that opens the same reader. Shown on Publications > Amaipai Thiralvom.
  */
 @Component({
   selector: 'vck-featured-book',
@@ -21,7 +20,6 @@ import { BOOK_COPY, BOOK_SLUG } from './featured-book.data';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FeaturedBookComponent implements AfterViewInit, OnDestroy {
-  @Input() placement: 'home' | 'page' = 'page';
   @Input({ required: true }) language: 'en' | 'ta' = 'en';
   @ViewChild('pageRoot') private pageRoot?: ElementRef<HTMLElement>;
   @ViewChild('bookCanvas') private bookCanvas?: ElementRef<HTMLCanvasElement>;
@@ -48,16 +46,14 @@ export class FeaturedBookComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     const root = this.pageRoot?.nativeElement;
-    if (!root) return; // nothing to show: no published book on the home page
-    if (this.placement === 'page') {
-      void createContactAnimation(root).then(
-        (dispose) => {
-          if (this.destroyed) dispose();
-          else this.disposeAnimation = dispose;
-        },
-        (error: unknown) => console.error('Unable to initialize the book page animation.', error)
-      );
-    }
+    if (!root) return;
+    void createContactAnimation(root).then(
+      (dispose) => {
+        if (this.destroyed) dispose();
+        else this.disposeAnimation = dispose;
+      },
+      (error: unknown) => console.error('Unable to initialize the book page animation.', error)
+    );
     const canvas = this.bookCanvas?.nativeElement;
     if (!canvas) return;
     // The 3D book (and its picture) is only built when the visitor is about to reach it.
