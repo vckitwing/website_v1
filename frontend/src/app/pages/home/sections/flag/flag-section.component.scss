@@ -22,28 +22,6 @@
   font-family: 'Montserrat', 'Noto Sans Tamil', sans-serif;
 }
 
-.star-flight {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 5;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-}
-
-.star-flight svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  filter: drop-shadow(0 1px 5px rgba(6, 18, 30, .24));
-}
-
-.star-flight polygon {
-  fill: #f4f7fc;
-}
-
 .flag-stage {
   position: relative;
   display: grid;
@@ -138,11 +116,6 @@
   transform-origin: center;
 }
 
-.flag-section.hero-star-covered .flag-star,
-.flag-section.hero-star-covered .flag-star-aura {
-  visibility: hidden !important;
-}
-
 .flag-scroll-hint {
   position: absolute;
   z-index: 4;
@@ -210,12 +183,34 @@
   pointer-events: none;
 }
 
+// The cards are exactly the flag's colours (the flag's panels turn into them).
 .meaning-card-blue {
-  background: linear-gradient(140deg, #0879bd, #07518e);
+  border-color: transparent;
+  background: var(--flag-blue);
+  color: #06182b;
 }
 
 .meaning-card-red {
-  background: linear-gradient(140deg, #d92736, #901f30);
+  border-color: transparent;
+  background: var(--flag-red);
+}
+
+// Dark ink on the sky blue (white would only reach about 2.4:1 there); white stays on the red.
+.meaning-card-blue .meaning-eyebrow {
+  color: rgba(6, 24, 43, .78);
+}
+
+.meaning-card-blue h3,
+.meaning-card-blue .meaning-qualities {
+  color: #06182b;
+}
+
+.meaning-card-blue .meaning-description {
+  color: rgba(6, 24, 43, .9);
+}
+
+.meaning-card-blue::after {
+  border-color: rgba(6, 24, 43, .2);
 }
 
 .meaning-eyebrow {
@@ -307,6 +302,12 @@
 @media (min-width: 1101px) {
   .flag-stage {
     min-height: clamp(620px, 45vw, 900px);
+  }
+
+  // A smaller flag on desktop (it was 52vw / 670px); it still expands when the colours part.
+  .flag-figure {
+    width: min(36vw, 480px);
+    margin-top: 64px;
   }
 
   .meaning-card {

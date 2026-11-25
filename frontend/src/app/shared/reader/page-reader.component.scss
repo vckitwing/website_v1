@@ -1,0 +1,417 @@
+// The reader is a full-screen layer above everything. Page shape comes from --page-ratio (height / width), set on the host.
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: block;
+  font-family: 'Montserrat', 'Noto Sans Tamil', sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// Printing the page would print the pictures: print nothing.
+@media print {
+  :host {
+    display: none !important;
+  }
+}
+
+.reader {
+  --bar-height: 56px;
+  --reader-ink: #f4f7fc;
+  --reader-muted: rgba(244, 247, 252, 0.7);
+  --reader-line: rgba(244, 247, 252, 0.18);
+  position: absolute;
+  inset: 0;
+  color: var(--reader-ink);
+  background: radial-gradient(ellipse at 50% 30%, #12263f, #060d18 70%);
+}
+
+// ---- Top and bottom bars ---------------------------------------------------------------------------------------------------
+.bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 clamp(12px, 2vw, 24px);
+  background: rgba(6, 13, 24, 0.72);
+  backdrop-filter: blur(8px);
+
+  &.top {
+    top: 0;
+    height: var(--bar-height);
+    border-bottom: 1px solid var(--reader-line);
+  }
+
+  &.bottom {
+    bottom: 0;
+    height: var(--bar-height);
+    border-top: 1px solid var(--reader-line);
+  }
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  .issue {
+    margin-left: 8px;
+    color: var(--reader-muted);
+    font-weight: 500;
+  }
+}
+
+.count {
+  margin: 0;
+  color: var(--reader-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.tools {
+  display: flex;
+  gap: 6px;
+}
+
+.tool,
+.side {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--reader-line);
+  border-radius: 12px;
+  color: var(--reader-ink);
+  background: rgba(244, 247, 252, 0.06);
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: rgba(127, 184, 240, 0.7);
+    background: rgba(127, 184, 240, 0.16);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  &:focus-visible,
+  .slider:focus-visible {
+    outline: 2px solid #ed2a40;
+    outline-offset: 2px;
+  }
+}
+
+// ---- Stage: the book fits the space between the bars --------------------------------------------------------------------------
+.stage {
+  position: absolute;
+  top: var(--bar-height);
+  bottom: var(--bar-height);
+  left: 0;
+  right: 0;
+  display: flex;
+  padding: clamp(10px, 2vw, 22px) clamp(54px, 6vw, 84px);
+  overflow: hidden;
+  container-type: size;
+  touch-action: pan-y;
+
+  &:not([data-zoom='0']) {
+    overflow: auto;
+    touch-action: auto;
+  }
+}
+
+// the largest book of this shape that fits the stage
+$fit-spread: min(100cqw, calc(100cqh * 2 / var(--page-ratio)));
+$fit-single: min(100cqw, calc(100cqh / var(--page-ratio)));
+
+.book {
+  position: relative;
+  flex: none;
+  margin: auto;
+  perspective: 2600px;
+  transition: transform 0.6s ease;
+
+  &.spread {
+    width: $fit-spread;
+    aspect-ratio: calc(2 / var(--page-ratio));
+
+    // a closed book sits in the middle; the cover alone on the right is moved left, an empty last right page moved right
+    &.at-start {
+      transform: translateX(-25%);
+    }
+
+    &.at-end {
+      transform: translateX(25%);
+    }
+  }
+
+  &.single {
+    width: $fit-single;
+    aspect-ratio: calc(1 / var(--page-ratio));
+  }
+}
+
+$zoom-factors: (1: 1.6, 2: 2.4);
+
+@each $zoom, $factor in $zoom-factors {
+  .stage[data-zoom='#{$zoom}'] .book.spread {
+    width: calc(#{$fit-spread} * #{$factor});
+    transform: none;
+  }
+
+  .stage[data-zoom='#{$zoom}'] .book.single {
+    width: calc(#{$fit-single} * #{$factor});
+  }
+}
+
+// ---- Two pages: leaves that turn like a book -----------------------------------------------------------------------------------
+.leaf {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  // z-index changes half-way through the turn (when the leaf is edge-on), so it never jumps under another leaf
+  transition: transform 0.8s cubic-bezier(0.45, 0.05, 0.25, 1), z-index 0s linear 0.4s;
+
+  &.flipped {
+    transform: rotateY(-180deg);
+  }
+
+  // stacking: turned leaves lie on the left above all unturned ones; nearest the spine is on top on each side
+  &[data-offset='-2'] {
+    z-index: 7;
+  }
+
+  &[data-offset='-1'] {
+    z-index: 8;
+  }
+
+  &[data-offset='0'] {
+    z-index: 5;
+  }
+
+  &[data-offset='1'] {
+    z-index: 4;
+  }
+
+  &[data-offset='2'] {
+    z-index: 3;
+  }
+}
+
+.book.instant .leaf,
+.book.instant {
+  transition: none;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #f4f7fc;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
+
+  &.back {
+    transform: rotateY(180deg);
+  }
+
+  // the fold in the middle of the book
+  &.front::after,
+  &.back::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 9%;
+    pointer-events: none;
+  }
+
+  &.front::after {
+    left: 0;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.28), transparent);
+  }
+
+  &.back::after {
+    right: 0;
+    background: linear-gradient(270deg, rgba(0, 0, 0, 0.28), transparent);
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none; // clicks and long-presses never reach the picture
+    -webkit-user-drag: none;
+  }
+}
+
+// ---- One page at a time (phones) ----------------------------------------------------------------------------------------------
+.sheet {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #f4f7fc;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+
+  &[data-state='current'] {
+    opacity: 1;
+    transform: none;
+  }
+
+  &[data-state='before'] {
+    opacity: 0;
+    transform: translateX(-8%);
+    pointer-events: none;
+  }
+
+  &[data-state='after'] {
+    opacity: 0;
+    transform: translateX(8%);
+    pointer-events: none;
+  }
+}
+
+.book.instant .sheet {
+  transition: none;
+}
+
+// ---- Side arrows and bottom controls ---------------------------------------------------------------------------------------------
+.side {
+  position: absolute;
+  top: 50%;
+  z-index: 6;
+  width: 48px;
+  height: 64px;
+  margin-top: -32px;
+  border-radius: 14px;
+
+  &.prev {
+    left: clamp(4px, 1vw, 14px);
+  }
+
+  &.next {
+    right: clamp(4px, 1vw, 14px);
+  }
+}
+
+.slider {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  accent-color: #4a9eeb;
+  cursor: pointer;
+}
+
+.goto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--reader-muted);
+  font-size: 13px;
+  white-space: nowrap;
+
+  input {
+    width: 64px;
+    min-height: 36px;
+    padding: 0 8px;
+    border: 1px solid var(--reader-line);
+    border-radius: 8px;
+    color: var(--reader-ink);
+    background: rgba(244, 247, 252, 0.08);
+    font: inherit;
+    text-align: center;
+    -webkit-user-select: text;
+    user-select: text;
+
+    &:focus-visible {
+      outline: 2px solid #ed2a40;
+      outline-offset: 2px;
+    }
+  }
+}
+
+.note {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--reader-muted);
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+
+@media (max-width: 899px) {
+  .count,
+  .note {
+    display: none;
+  }
+
+  .stage {
+    padding: 8px;
+  }
+
+  // on a phone the side arrows float over the page edges, small and see-through; swiping also turns pages
+  .side {
+    width: 40px;
+    height: 56px;
+    margin-top: -28px;
+    background: rgba(6, 13, 24, 0.55);
+  }
+
+  .bar {
+    gap: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaf,
+  .sheet,
+  .book {
+    transition: none;
+  }
+}

@@ -1,0 +1,137 @@
+<div class="page-head">
+  <div>
+    <h1>History</h1>
+    <p class="muted">
+      {{ counts().published }} published · {{ counts().draft }} draft. The timeline on the website shows published milestones in year order.
+      @if (!auth.canPublish()) {
+        You can save drafts; an editor publishes them.
+      }
+    </p>
+  </div>
+  <button class="btn primary" type="button" (click)="openForm(null)">Add milestone</button>
+</div>
+
+<div class="toolbar">
+  <select aria-label="Filter by status" (change)="onFilter($event)">
+    <option value="all">All</option>
+    <option value="published">Published</option>
+    <option value="draft">Drafts</option>
+  </select>
+</div>
+
+@if (error()) {
+  <p class="alert" role="alert">{{ error() }}</p>
+}
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Year</th>
+        <th>Title (English)</th>
+        <th>Title (தமிழ்)</th>
+        <th>Status</th>
+        <th>Updated</th>
+        <th><span class="sr-only">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of visible(); track item.id) {
+        <tr>
+          <td>{{ item.year }}</td>
+          <td>
+            <strong>{{ item.title_en }}</strong>
+            <div class="muted">{{ item.description_en }}</div>
+          </td>
+          <td class="ta" lang="ta">{{ item.title_ta }}</td>
+          <td><span class="badge" [class.published]="item.status === 'published'" [class.draft]="item.status === 'draft'">{{ item.status }}</span></td>
+          <td class="muted">{{ item.updated_at | date: 'mediumDate' }}</td>
+          <td class="actions">
+            @if (canChange(item)) {
+              <button class="btn small" type="button" (click)="openForm(item)">Edit</button>
+            }
+            @if (auth.canPublish()) {
+              @if (item.status === 'draft') {
+                <button class="btn small" type="button" (click)="setStatus(item, 'published')">Publish</button>
+              } @else {
+                <button class="btn small" type="button" (click)="setStatus(item, 'draft')">Unpublish</button>
+              }
+            }
+            @if (canChange(item)) {
+              <button class="btn small danger" type="button" (click)="remove(item)">Delete</button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="empty">{{ loading() ? 'Loading…' : 'No milestones match.' }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<dialog #dialog aria-labelledby="hist-dialog-title">
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <h2 id="hist-dialog-title">{{ editing() ? 'Edit milestone' : 'Add milestone' }}</h2>
+    @if (formError()) {
+      <p class="alert" role="alert">{{ formError() }}</p>
+    }
+    <div class="row">
+      <label>
+        Year
+        <input type="text" inputmode="numeric" maxlength="4" formControlName="year" placeholder="e.g. 1999" />
+      </label>
+      <label>
+        Order within the year
+        <input type="number" formControlName="position" />
+        <small>Lower numbers come first</small>
+      </label>
+    </div>
+    <label>
+      Title (English)
+      <input type="text" formControlName="title_en" />
+    </label>
+    <label>
+      Title (தமிழ்)
+      <input type="text" formControlName="title_ta" lang="ta" />
+    </label>
+    <label>
+      Description (English)
+      <textarea formControlName="description_en"></textarea>
+    </label>
+    <label>
+      Description (தமிழ்)
+      <textarea formControlName="description_ta" lang="ta"></textarea>
+    </label>
+    <label>
+      Source link <small>(optional, must start with https://)</small>
+      <input type="url" formControlName="source_url" placeholder="https://" />
+    </label>
+    <div class="row">
+      <label>
+        Source label (English)
+        <input type="text" formControlName="source_label_en" />
+      </label>
+      <label>
+        Source label (தமிழ்)
+        <input type="text" formControlName="source_label_ta" lang="ta" />
+      </label>
+    </div>
+    @if (auth.canPublish()) {
+      <label>
+        Status
+        <select formControlName="status">
+          <option value="draft">Draft (hidden from the website)</option>
+          <option value="published">Published (shown on the website)</option>
+        </select>
+      </label>
+    } @else {
+      <p class="muted">It will be saved as a draft. An editor can publish it.</p>
+    }
+    <div class="buttons">
+      <button class="btn" type="button" (click)="closeForm()">Cancel</button>
+      <button class="btn primary" type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save' }}</button>
+    </div>
+  </form>
+</dialog>

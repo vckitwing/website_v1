@@ -1,0 +1,343 @@
+:host {
+  display: block;
+  position: relative;
+  font-family: 'Montserrat', 'Noto Sans Tamil', sans-serif;
+}
+
+.ft-section {
+  --ft-line: #f4f7fc;
+  --ft-text: #f4f7fc;
+  --ft-muted: rgba(244, 247, 252, 0.68);
+  --ft-rule: rgba(244, 247, 252, 0.14);
+  --ft-star: #f4f7fc;
+  --ft-icon: rgba(244, 247, 252, 0.9);
+  --ft-icon-bg: rgba(244, 247, 252, 0.06);
+  --ft-icon-border: rgba(244, 247, 252, 0.2);
+  position: relative;
+  overflow: hidden;
+  padding: clamp(56px, 8vw, 104px) clamp(20px, 5vw, 72px) 0;
+  color: var(--ft-text);
+  background:
+    radial-gradient(60% 70% at 85% 100%, rgba(39, 133, 223, 0.22), transparent 70%),
+    radial-gradient(45% 60% at 8% 0%, rgba(237, 42, 64, 0.12), transparent 70%),
+    #050d18;
+}
+
+.ft-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.6fr);
+  align-items: end;
+  gap: clamp(24px, 4vw, 64px);
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+.ft-info {
+  align-self: center;
+  display: grid;
+  gap: 30px;
+  padding-bottom: clamp(24px, 4vw, 56px);
+}
+
+.ft-brand {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.ft-star {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  overflow: visible;
+  filter: drop-shadow(0 0 12px rgba(244, 247, 252, 0.45));
+
+  polygon {
+    fill: var(--ft-star);
+  }
+}
+
+.ft-brand-text {
+  display: grid;
+  gap: 6px;
+}
+
+.ft-vck {
+  font: 800 clamp(34px, 4vw, 52px) / 1 'Outfit', 'Montserrat', sans-serif;
+  letter-spacing: 0.12em;
+}
+
+.ft-name {
+  font: 600 12px / 1.3 'Montserrat', 'Noto Sans Tamil', sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ft-muted);
+}
+
+:host-context([lang='ta']) .ft-name,
+.ft-section[lang='ta'] .ft-name {
+  text-transform: none;
+  letter-spacing: 0.04em;
+  font-size: 14px;
+}
+
+.ft-tagline {
+  margin: 0;
+  font: 600 clamp(20px, 2.2vw, 28px) / 1.3 'Outfit', 'Noto Sans Tamil', sans-serif;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 56px;
+    height: 3px;
+    margin-top: 14px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #2785df 50%, #ed2a40 50%);
+  }
+}
+
+.ft-block {
+  display: grid;
+  gap: 10px;
+}
+
+.ft-label {
+  margin: 0;
+  font: 700 11px / 1.2 'Montserrat', 'Noto Sans Tamil', sans-serif;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #7fb8f0;
+}
+
+.ft-section[lang='ta'] .ft-label {
+  text-transform: none;
+  letter-spacing: 0.06em;
+  font-size: 13px;
+}
+
+.ft-address {
+  max-width: 34ch;
+  font-style: normal;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ft-muted);
+}
+
+.ft-social {
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ft-social-link {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--ft-icon-border);
+  border-radius: 50%;
+  color: var(--ft-icon);
+  background: var(--ft-icon-bg);
+  transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-3px);
+    color: #f4f7fc;
+    border-color: transparent;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #7fb8f0;
+    outline-offset: 3px;
+  }
+
+  &.ft-x:hover,
+  &.ft-x:focus-visible { background: #2b3544; }
+  &.ft-facebook:hover,
+  &.ft-facebook:focus-visible { background: #1877f2; }
+  &.ft-instagram:hover,
+  &.ft-instagram:focus-visible { background: linear-gradient(135deg, #f9a825, #d62976 55%, #4f5bd5); }
+  &.ft-youtube:hover,
+  &.ft-youtube:focus-visible { background: #e00000; }
+}
+
+.ft-glyph {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.ft-glyph-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+
+  .ft-dot {
+    fill: currentColor;
+    stroke: none;
+  }
+}
+
+/* The panther. */
+.ft-cheetah {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1385 / 824;
+  margin-bottom: 18px;
+}
+
+.ft-art {
+  position: absolute;
+  inset: 0;
+  /* the line is revealed left to right by the entrance (GSAP animates the clip) */
+  filter: drop-shadow(0 0 14px rgba(244, 247, 252, 0.35)) drop-shadow(0 0 38px rgba(127, 184, 240, 0.28));
+}
+
+.ft-art-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The glint: the same line, brighter and glowing blue, shown only inside a band whose centre (--glint) the animation moves. */
+.ft-glint {
+  --glint: -30%;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(100deg, transparent calc(var(--glint) - 14%), #000 var(--glint), transparent calc(var(--glint) + 14%));
+  mask-image: linear-gradient(100deg, transparent calc(var(--glint) - 14%), #000 var(--glint), transparent calc(var(--glint) + 14%));
+
+  .ft-art-img {
+    position: absolute;
+    inset: 0;
+    filter: brightness(1.25) drop-shadow(0 0 6px #7fb8f0) drop-shadow(0 0 16px #2785df);
+  }
+}
+
+.ft-cheetah,
+.ft-art {
+  will-change: transform;
+}
+
+.ft-art {
+  transform-origin: 50% 100%;
+}
+
+.ft-art-light {
+  display: none;
+}
+
+.ft-bar {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 18px 0 22px;
+  border-top: 1px solid var(--ft-rule);
+  font-size: 12px;
+  color: var(--ft-muted);
+}
+
+.ft-copy {
+  margin: 0;
+}
+
+.ft-top {
+  color: var(--ft-text);
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+
+  &:hover,
+  &:focus-visible {
+    color: #7fb8f0;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #7fb8f0;
+    outline-offset: 4px;
+  }
+}
+
+/* Light theme */
+:host-context(.light-theme) .ft-section {
+  --ft-line: #14243c;
+  --ft-text: #14243c;
+  --ft-muted: rgba(20, 36, 60, 0.74);
+  --ft-rule: rgba(20, 36, 60, 0.16);
+  --ft-star: #14243c;
+  --ft-icon: #14243c;
+  --ft-icon-bg: rgba(20, 36, 60, 0.05);
+  --ft-icon-border: rgba(20, 36, 60, 0.22);
+  background:
+    radial-gradient(60% 70% at 85% 100%, rgba(39, 133, 223, 0.18), transparent 70%),
+    radial-gradient(45% 60% at 8% 0%, rgba(237, 42, 64, 0.1), transparent 70%),
+    #e8eef8;
+}
+
+:host-context(.light-theme) .ft-star {
+  filter: none;
+}
+
+:host-context(.light-theme) .ft-art {
+  filter: drop-shadow(0 6px 14px rgba(39, 133, 223, 0.18));
+}
+
+:host-context(.light-theme) .ft-glint .ft-art-img {
+  filter: drop-shadow(0 0 5px #ed2a40) drop-shadow(0 0 12px rgba(237, 42, 64, 0.5));
+}
+
+:host-context(.light-theme) .ft-art-dark {
+  display: none;
+}
+
+:host-context(.light-theme) .ft-art-light {
+  display: block;
+}
+
+:host-context(.light-theme) .ft-label {
+  color: #176bb8;
+}
+
+:host-context(.light-theme) .ft-top:hover,
+:host-context(.light-theme) .ft-top:focus-visible {
+  color: #176bb8;
+}
+
+/* Phones: info first, the cheetah underneath. */
+@media (max-width: 860px) {
+  .ft-stage {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ft-info {
+    padding-bottom: 0;
+  }
+
+  .ft-cheetah {
+    width: 112%;
+    margin-left: -6%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ft-social-link {
+    transition: none;
+  }
+}
+
+/* On the sub-pages (contact, donate) the journey star is not flown in (the home sections are hidden), so its landing spot is simply shown. */
+:host-context(.subpage-open) .ft-star {
+  opacity: 1 !important;
+  visibility: visible !important;
+}

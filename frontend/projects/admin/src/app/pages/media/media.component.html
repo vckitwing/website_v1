@@ -1,0 +1,108 @@
+<div class="page-head">
+  <div>
+    <h1>Media</h1>
+    <p class="muted">
+      Upload pictures once; each is saved in web-friendly sizes (up to 1600 px wide) with its camera data removed.
+      JPEG, PNG or WebP, up to 10 MB. Every picture needs a short description in English and Tamil for screen readers.
+    </p>
+  </div>
+</div>
+
+<form class="card upload" [formGroup]="uploadForm" (ngSubmit)="upload()" novalidate>
+  <h2>Upload a picture</h2>
+  @if (uploadError()) {
+    <p class="alert" role="alert">{{ uploadError() }}</p>
+  }
+  @if (uploaded()) {
+    <p class="alert ok" role="status">{{ uploaded() }}</p>
+  }
+  <label>
+    Picture
+    <input #fileInput type="file" accept="image/jpeg,image/png,image/webp" (change)="onFile($event)" />
+  </label>
+  <div class="row">
+    <label>
+      Description (English)
+      <input type="text" formControlName="alt_en" placeholder="What the picture shows" />
+    </label>
+    <label>
+      Description (தமிழ்)
+      <input type="text" formControlName="alt_ta" lang="ta" />
+    </label>
+  </div>
+  <div class="row">
+    <label>
+      Caption (English) <small>optional</small>
+      <input type="text" formControlName="caption_en" />
+    </label>
+    <label>
+      Caption (தமிழ்) <small>optional</small>
+      <input type="text" formControlName="caption_ta" lang="ta" />
+    </label>
+  </div>
+  <div>
+    <button class="btn primary" type="submit" [disabled]="uploading()">{{ uploading() ? 'Uploading…' : 'Upload' }}</button>
+  </div>
+</form>
+
+@if (error()) {
+  <p class="alert" role="alert">{{ error() }}</p>
+}
+
+@if (items().length) {
+  <ul class="grid">
+    @for (item of items(); track item.id) {
+      <li class="tile card">
+        <a class="thumb" [href]="largest(item)" target="_blank" rel="noopener" [attr.aria-label]="'Open ' + item.filename + ' full size'">
+          <img [src]="thumb(item)" [alt]="item.alt_en" loading="lazy" />
+        </a>
+        <div class="meta">
+          <strong class="name">{{ item.filename }}</strong>
+          <span class="muted">{{ item.width }} × {{ item.height }} · {{ item.variants.length }} sizes · {{ item.created_at | date: 'mediumDate' }}</span>
+          <span>{{ item.alt_en }}</span>
+          <span class="ta" lang="ta">{{ item.alt_ta }}</span>
+          @if (item.caption_en || item.caption_ta) {
+            <span class="muted">{{ item.caption_en }}{{ item.caption_en && item.caption_ta ? ' / ' : '' }}{{ item.caption_ta }}</span>
+          }
+        </div>
+        @if (auth.canPublish()) {
+          <div class="actions">
+            <button class="btn small" type="button" (click)="openEdit(item)">Edit</button>
+            <button class="btn small danger" type="button" (click)="remove(item)">Delete</button>
+          </div>
+        }
+      </li>
+    }
+  </ul>
+} @else {
+  <p class="empty card">{{ loading() ? 'Loading…' : 'No pictures yet. Upload the first one above.' }}</p>
+}
+
+<dialog #dialog aria-labelledby="media-dialog-title">
+  <form [formGroup]="editForm" (ngSubmit)="saveEdit()" novalidate>
+    <h2 id="media-dialog-title">Edit picture text</h2>
+    @if (formError()) {
+      <p class="alert" role="alert">{{ formError() }}</p>
+    }
+    <label>
+      Description (English)
+      <input type="text" formControlName="alt_en" />
+    </label>
+    <label>
+      Description (தமிழ்)
+      <input type="text" formControlName="alt_ta" lang="ta" />
+    </label>
+    <label>
+      Caption (English) <small>optional</small>
+      <input type="text" formControlName="caption_en" />
+    </label>
+    <label>
+      Caption (தமிழ்) <small>optional</small>
+      <input type="text" formControlName="caption_ta" lang="ta" />
+    </label>
+    <div class="buttons">
+      <button class="btn" type="button" (click)="closeEdit()">Cancel</button>
+      <button class="btn primary" type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save' }}</button>
+    </div>
+  </form>
+</dialog>

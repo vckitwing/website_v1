@@ -1,0 +1,84 @@
+<div class="page-head">
+  <div>
+    <h1>Users</h1>
+    <p class="muted">Super admins manage everything. Editors publish content. Contributors save drafts that an editor publishes.</p>
+  </div>
+  <button class="btn primary" type="button" (click)="openForm(null)">Add user</button>
+</div>
+
+@if (error()) {
+  <p class="alert" role="alert">{{ error() }}</p>
+}
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Last sign-in</th>
+        <th><span class="sr-only">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (user of users(); track user.id) {
+        <tr>
+          <td>
+            {{ user.name }}
+            @if (isMe(user)) {
+              <span class="muted">(you)</span>
+            }
+          </td>
+          <td>{{ user.email }}</td>
+          <td>{{ roleLabels[user.role] }}</td>
+          <td><span class="badge" [class.active]="user.is_active" [class.inactive]="!user.is_active">{{ user.is_active ? 'active' : 'deactivated' }}</span></td>
+          <td class="muted">{{ user.last_login ? (user.last_login | date: 'medium') : 'never' }}</td>
+          <td class="actions"><button class="btn small" type="button" (click)="openForm(user)">Edit</button></td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="empty">{{ loading() ? 'Loading…' : 'No users.' }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<dialog #dialog aria-labelledby="user-dialog-title">
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <h2 id="user-dialog-title">{{ editing() ? 'Edit user' : 'Add user' }}</h2>
+    @if (formError()) {
+      <p class="alert" role="alert">{{ formError() }}</p>
+    }
+    <label>
+      Name
+      <input type="text" formControlName="name" />
+    </label>
+    <label>
+      Email
+      <input type="email" formControlName="email" autocomplete="off" />
+    </label>
+    <label>
+      Role
+      <select formControlName="role">
+        @for (role of roles; track role) {
+          <option [value]="role">{{ roleLabels[role] }}</option>
+        }
+      </select>
+    </label>
+    @if (editing()) {
+      <label class="check"><input type="checkbox" formControlName="is_active" /> Active (deactivated users cannot sign in)</label>
+    }
+    <label>
+      {{ editing() ? 'New password (leave empty to keep the current one)' : 'Password' }}
+      <input type="password" formControlName="password" autocomplete="new-password" />
+      <small>At least 10 characters, with upper- and lower-case letters and a number.</small>
+    </label>
+    <div class="buttons">
+      <button class="btn" type="button" (click)="closeForm()">Cancel</button>
+      <button class="btn primary" type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save' }}</button>
+    </div>
+  </form>
+</dialog>

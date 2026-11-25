@@ -176,12 +176,14 @@
 
 .hero-shell.light-theme .hero-copy {
   &::before {
-    background: radial-gradient(ellipse at 30% 55%, rgba(242, 246, 252, 0.88) 0%, rgba(242, 246, 252, 0.6) 45%, transparent 75%);
+    // Kept to the text block so the crowd shows around it.
+    background: radial-gradient(ellipse 66% 62% at 28% 52%, rgba(242, 246, 252, 0.86) 0%, rgba(242, 246, 252, 0.58) 50%, transparent 100%);
   }
 
+  // A pale halo keeps the dark text legible where it crosses the darker parts of the crowd.
   .eyebrow,
   .slogan .slogan-text {
-    text-shadow: none;
+    text-shadow: 0 0 12px rgba(242, 246, 252, 0.95), 0 0 3px rgba(242, 246, 252, 0.85);
   }
 }
 
@@ -254,7 +256,9 @@
   color: #0a1220;
   font: 600 14px/1 'Outfit', 'Noto Sans Tamil', sans-serif;
   letter-spacing: 0.01em;
-  user-select: none;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 
   svg {
     width: 15px;
@@ -264,6 +268,22 @@
     stroke-width: 1.7;
     stroke-linecap: round;
     stroke-linejoin: round;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32);
+
+    svg {
+      transform: translateX(3px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ed2a40;
+    outline-offset: 4px;
   }
 }
 
@@ -320,6 +340,30 @@
 
 .slide-index-item.is-active .slide-index-bar {
   width: 22px;
+  transform-origin: left center;
+  // Fills over the auto-advance interval (5.2 s, see AppComponent.startSloganTimer), so the countdown is visible.
+  animation: slide-progress 5.2s linear forwards;
+}
+
+@keyframes slide-progress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide-index-item.is-active .slide-index-bar {
+    animation: none;
+  }
+}
+
+.hero-shell.light-theme .slide-index {
+  border-color: rgba(20, 36, 60, 0.14);
+  background: rgba(244, 247, 252, 0.72);
 }
 
 .hero-shell.light-theme .slide-index-item {

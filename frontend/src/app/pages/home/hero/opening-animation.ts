@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 type OpeningElements = {
   screen: HTMLElement;
   canvas: HTMLCanvasElement;
+  flag: SVGSVGElement;
   star: SVGSVGElement;
   identity: HTMLElement;
   vck: HTMLElement;
@@ -61,7 +62,7 @@ export class OpeningAnimation {
     }
 
     const state = { progress: 0, glow: 0 };
-    const { screen, star, vck, name, brandVck, brandName, heroAnchor } = this.elements;
+    const { screen, flag, star, vck, name, brandVck, brandName, heroAnchor } = this.elements;
     const screenRect = screen.getBoundingClientRect();
     const S = star.getBoundingClientRect(); // natural layout: [ VCK ][ star ], centred on the page
     const V = vck.getBoundingClientRect();
@@ -103,7 +104,17 @@ export class OpeningAnimation {
 
     screen.classList.add('opening-active');
     gsap.set(screen, { autoAlpha: 1 });
-    gsap.set(star, { scale: 0.18, autoAlpha: 0, x: startOffsetX, y: 0 });
+    // The flag sits where the star will first appear (the page centre); the star starts as the flag's own white star.
+    const flagBlue = flag.querySelector<SVGRectElement>('.opening-flag-blue');
+    const flagRed = flag.querySelector<SVGRectElement>('.opening-flag-red');
+    const flagWidth = flag.getBoundingClientRect().width;
+    const flagStarScale = (flagWidth * (168.4 / 900)) / Math.max(S.width, 1); // the flag's star is 168.4 of 900 units wide
+    const screenCenterY = screenRect.top + screenRect.height / 2;
+    gsap.set(flag, { xPercent: -50, yPercent: -50, y: starCenterY - screenCenterY, autoAlpha: 0, scale: 0.9, transformOrigin: '50% 50%' });
+    gsap.set(flagBlue, { scaleY: 0, y: 0, transformOrigin: '50% 0%' });
+    gsap.set(flagRed, { scaleY: 0, y: 0, transformOrigin: '50% 100%' });
+    gsap.set(star, { scale: flagStarScale * 0.4, rotation: -24, autoAlpha: 0, x: startOffsetX, y: 0 });
+    const D = 0.72; // the flag opening adds this much before the original sequence continues
     gsap.set([vck, name], { autoAlpha: 0, x: 0, y: 0, scale: 1, transformOrigin: '0 0' });
     const shell = brandVck.closest('.hero-shell');
 
@@ -117,26 +128,34 @@ export class OpeningAnimation {
     });
 
     this.timeline
-      // 1 - the star comes up in the middle of the page...
-      .to(star, { scale: 1, autoAlpha: 1, duration: 0.52, ease: 'back.out(2)' }, 0.12)
+      // 0 - the flag unfurls in the middle of the page with its white star...
+      .to(flag, { autoAlpha: 1, scale: 1, duration: 0.55, ease: 'power2.out' }, 0)
+      .to(flagBlue, { scaleY: 1, duration: 0.55, ease: 'power2.inOut' }, 0)
+      .to(flagRed, { scaleY: 1, duration: 0.55, ease: 'power2.inOut' }, 0.1)
+      .to(star, { scale: flagStarScale, rotation: 0, autoAlpha: 1, duration: 0.5, ease: 'back.out(1.8)' }, 0.35)
+      // ...then the star lifts off the flag, which parts and fades away.
+      .to(star, { scale: 1, duration: 0.62, ease: 'back.out(1.6)' }, 0.95)
+      .to(flagBlue, { y: -70, duration: 0.55, ease: 'power2.in' }, 1.0)
+      .to(flagRed, { y: 70, duration: 0.55, ease: 'power2.in' }, 1.0)
+      .to(flag, { autoAlpha: 0, scale: 1.1, duration: 0.55, ease: 'power2.in' }, 1.0)
       .to(state, {
         progress: 1,
         duration: 1.12,
         ease: 'power2.out',
         onUpdate: () => this.draw(state.progress, state.glow)
-      }, 0.48)
+      }, 1.0)
       .to(state, {
         glow: 1,
         duration: 0.65,
         ease: 'sine.inOut',
         onUpdate: () => this.draw(state.progress, state.glow)
-      }, 0.72)
+      }, 1.22)
       // ...then moves right to make room, and VCK arrives on its left; the pair is centred.
-      .to(star, { x: 0, duration: 0.5, ease: 'power2.inOut' }, 0.82)
-      .fromTo(vck, { autoAlpha: 0, x: -34, y: 0, scale: 0.94 }, { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 0.62, ease: 'power3.out' }, 1.06)
+      .to(star, { x: 0, duration: 0.5, ease: 'power2.inOut' }, 0.82 + D)
+      .fromTo(vck, { autoAlpha: 0, x: -34, y: 0, scale: 0.94 }, { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 0.62, ease: 'power3.out' }, 1.06 + D)
       // 2 - VCK shrinks and rises to the star's height; the full name appears beneath it, right-aligned.
-      .to(star, { x: starLockup.x, y: starLockup.y, scale: lockupStarScale, duration: 0.82, ease: 'power2.inOut' }, 1.82)
-      .to(vck, { x: vckLockup.x, y: vckLockup.y, scale: compactScale, duration: 0.82, ease: 'power2.inOut' }, 1.82)
+      .to(star, { x: starLockup.x, y: starLockup.y, scale: lockupStarScale, duration: 0.82, ease: 'power2.inOut' }, 1.82 + D)
+      .to(vck, { x: vckLockup.x, y: vckLockup.y, scale: compactScale, duration: 0.82, ease: 'power2.inOut' }, 1.82 + D)
       .fromTo(name, {
         autoAlpha: 0,
         x: nameLockup.x,
@@ -150,7 +169,7 @@ export class OpeningAnimation {
         scaleX: 1,
         duration: 0.82,
         ease: 'power2.out'
-      }, 1.82)
+      }, 1.82 + D)
       // 3 - the star flies to the portrait; VCK and the name turn left-aligned and settle into the header.
       .to(star, {
         x: anchor.left + anchor.width / 2 - starCenterX,
@@ -159,9 +178,9 @@ export class OpeningAnimation {
         duration: 1.25,
         ease: 'power2.inOut',
         onStart: this.onStarArrival
-      }, 3.02)
-      .set(name, brandNameWraps ? { textAlign: 'left', whiteSpace: 'normal', maxWidth: 'none', width: bN.width / nameLanding.scale } : { textAlign: 'left' }, 3.1)
-      .set(vck, { textAlign: 'left' }, 3.1)
+      }, 3.02 + D)
+      .set(name, brandNameWraps ? { textAlign: 'left', whiteSpace: 'normal', maxWidth: 'none', width: bN.width / nameLanding.scale } : { textAlign: 'left' }, 3.1 + D)
+      .set(vck, { textAlign: 'left' }, 3.1 + D)
       .to(vck, {
         x: vckLanding.x,
         y: vckLanding.y,
@@ -169,7 +188,7 @@ export class OpeningAnimation {
         letterSpacing: vckLanding.letterSpacing,
         duration: 0.9,
         ease: 'power2.inOut'
-      }, 3.1)
+      }, 3.1 + D)
       .to(name, {
         x: nameLanding.x,
         y: nameLanding.y,
@@ -179,12 +198,12 @@ export class OpeningAnimation {
         color: nameLanding.color,
         duration: 0.9,
         ease: 'power2.inOut'
-      }, 3.1)
+      }, 3.1 + D)
       // The header's own text becomes visible exactly underneath, then the intro screen fades away.
-      .add(() => shell?.classList.add('opening-brand-ready'), 4.05)
-      .to(state, { progress: 1.2, duration: 0.7, ease: 'power1.in', onUpdate: () => this.draw(state.progress, state.glow) }, 3.65)
-      .to(screen, { autoAlpha: 0, duration: 0.42, ease: 'power1.out' }, 4.25)
-      .add(() => shell?.classList.remove('opening-brand-ready'), 4.7);
+      .add(() => shell?.classList.add('opening-brand-ready'), 4.05 + D)
+      .to(state, { progress: 1.2, duration: 0.7, ease: 'power1.in', onUpdate: () => this.draw(state.progress, state.glow) }, 3.65 + D)
+      .to(screen, { autoAlpha: 0, duration: 0.42, ease: 'power1.out' }, 4.25 + D)
+      .add(() => shell?.classList.remove('opening-brand-ready'), 4.7 + D);
   }
 
   destroy(): void {

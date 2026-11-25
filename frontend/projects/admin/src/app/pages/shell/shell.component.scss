@@ -1,0 +1,251 @@
+$sidebar-width: 248px;
+$breakpoint: 900px; // below this the menu becomes a slide-in drawer
+
+.layout {
+  display: grid;
+  grid-template-columns: $sidebar-width minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+// ---- Side menu ---------------------------------------------------------------------------------------------------------
+.sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  height: 100vh;
+  padding: 20px 14px 16px;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.brand {
+  display: grid;
+  gap: 2px;
+  padding: 4px 10px 8px;
+
+  strong {
+    font-size: 18px;
+  }
+
+  .muted {
+    font-size: 13px;
+  }
+}
+
+nav {
+  flex: 1;
+}
+
+.group-title {
+  margin: 16px 10px 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+ul {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: 10px;
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+
+  svg {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.8;
+  }
+
+  &:hover {
+    background: var(--bg);
+  }
+
+  &.active {
+    color: var(--accent-text);
+    background: var(--accent);
+
+    svg {
+      opacity: 1;
+    }
+  }
+}
+
+// ---- Signed-in user, at the bottom --------------------------------------------------------------------------------------
+.account {
+  display: grid;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+
+  &:hover {
+    background: var(--bg);
+  }
+
+  &.active {
+    outline: 1px solid var(--accent);
+  }
+}
+
+.avatar {
+  display: grid;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--accent-text);
+  background: var(--accent);
+  font-weight: 700;
+}
+
+.who-text {
+  display: grid;
+  min-width: 0;
+  line-height: 1.25;
+
+  strong,
+  .muted {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .muted {
+    font-size: 13px;
+  }
+}
+
+.signout {
+  width: 100%;
+}
+
+.content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(16px, 3vw, 36px);
+}
+
+// ---- Phone: top bar + slide-in drawer ------------------------------------------------------------------------------------
+.topbar,
+.backdrop {
+  display: none;
+}
+
+@media (max-width: #{$breakpoint - 1px}) {
+  .layout {
+    display: block;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+
+    strong {
+      font-size: 17px;
+    }
+  }
+
+  .menu-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    cursor: pointer;
+
+    span {
+      width: 20px;
+      height: 2px;
+      border-radius: 2px;
+      background: var(--text);
+    }
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 40;
+    width: min(290px, 86vw);
+    height: auto;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.35);
+    transform: translateX(-102%);
+    visibility: hidden; // closed: not focusable and not read out
+    transition: transform 0.22s ease, visibility 0s linear 0.22s;
+
+    &.open {
+      transform: none;
+      visibility: visible;
+      transition-delay: 0s;
+    }
+  }
+
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    display: block;
+    border: 0;
+    background: rgba(5, 12, 22, 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+
+    &.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+}

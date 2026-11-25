@@ -1,0 +1,367 @@
+:host {
+  display: block;
+  position: relative;
+}
+
+.soc-section {
+  --soc-ink: #f4f7fc;
+  --soc-muted: #a9b7c9;
+  --soc-tile: clamp(120px, 11vw, 156px);
+  --soc-gap: clamp(14px, 2vw, 28px);
+  position: relative;
+  overflow: clip;
+  padding: clamp(72px, 11vh, 120px) clamp(18px, 5vw, 72px) clamp(80px, 12vh, 132px);
+  color: var(--soc-ink);
+  text-align: center;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(47, 105, 163, .14), transparent 45%),
+    var(--page-surface, #07111f);
+  font-family: 'Montserrat', 'Noto Sans Tamil', sans-serif;
+}
+
+.soc-intro {
+  position: relative;
+  z-index: 2;
+  max-width: 640px;
+  margin: 0 auto clamp(36px, 6vh, 64px);
+}
+
+.soc-intro h2 {
+  margin: 0;
+  font-size: clamp(30px, 3.8vw, 50px);
+  font-weight: 600;
+  letter-spacing: -.045em;
+  line-height: 1.1;
+}
+
+.soc-section[lang='ta'] .soc-intro h2 {
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+
+.soc-lede {
+  margin: 16px auto 0;
+  color: var(--soc-muted);
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.7;
+}
+
+// ---- Stage: the star sits in the middle of the four tiles ---------------------------------------------------------
+.soc-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.soc-star {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: clamp(150px, 17vw, 240px); // desktop; phones use a larger one (below)
+  height: auto;
+  translate: -50% -50%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.soc-star polygon {
+  fill: rgba(115, 199, 255, .16);
+  stroke: rgba(244, 247, 252, .6);
+  stroke-width: .8;
+  stroke-linejoin: round;
+}
+
+.soc-defs {
+  position: absolute;
+}
+
+.soc-list {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--soc-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.soc-item {
+  display: block;
+}
+
+// ---- Tile -----------------------------------------------------------------------------------------------------------
+.soc-tile {
+  --soc-flood: #f4f7fc;
+  --soc-glyph-on: #07111f;
+  position: relative;
+  display: flex;
+  width: var(--soc-tile);
+  height: var(--soc-tile);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 1px solid rgba(244, 247, 252, .14);
+  border-radius: 26px;
+  background: linear-gradient(150deg, rgba(22, 48, 79, .92), rgba(10, 24, 42, .92));
+  color: var(--soc-ink);
+  text-decoration: none;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .28);
+  -webkit-tap-highlight-color: transparent;
+  isolation: isolate;
+  transition: scale 160ms cubic-bezier(.23, 1, .32, 1), border-color 180ms cubic-bezier(.23, 1, .32, 1), box-shadow 180ms cubic-bezier(.23, 1, .32, 1);
+}
+
+// Platform colours (their own brand colours), flooding the tile on hover / focus / press.
+.soc-x {
+  --soc-flood: #f4f7fc;
+  --soc-glyph-on: #07111f;
+}
+
+.soc-facebook {
+  --soc-flood: #1877f2;
+  --soc-glyph-on: #f4f7fc;
+}
+
+.soc-instagram {
+  --soc-flood: linear-gradient(135deg, #feda75, #d62976 50%, #4f5bd5);
+  --soc-glyph-on: #f4f7fc;
+}
+
+.soc-youtube {
+  --soc-flood: #ff0000;
+  --soc-glyph-on: #f4f7fc;
+}
+
+.soc-flood {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--soc-flood);
+  opacity: 0;
+  transition: opacity 200ms cubic-bezier(.23, 1, .32, 1);
+}
+
+.soc-glyph {
+  width: clamp(34px, 3.2vw, 44px);
+  height: clamp(34px, 3.2vw, 44px);
+  fill: currentcolor;
+  transition: color 200ms cubic-bezier(.23, 1, .32, 1);
+}
+
+.soc-glyph-line {
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.8;
+}
+
+.soc-dot {
+  fill: currentcolor;
+  stroke: none;
+}
+
+// Each icon keeps its platform's own colour at rest (X uses the page's text colour so it shows on both themes).
+.soc-facebook .soc-glyph {
+  color: #1877f2;
+}
+
+.soc-youtube .soc-glyph {
+  color: #ff0000;
+}
+
+.soc-instagram .soc-glyph-line {
+  stroke: url(#soc-instagram-gradient);
+}
+
+.soc-instagram .soc-dot {
+  fill: #d62976;
+}
+
+.soc-name {
+  max-width: 100%;
+  padding-inline: 8px;
+  font: 600 clamp(12.5px, 1.1vw, 14.5px)/1.25 'Outfit', 'Noto Sans Tamil', sans-serif;
+  letter-spacing: .01em;
+  transition: color 200ms cubic-bezier(.23, 1, .32, 1);
+}
+
+.soc-section[lang='ta'] .soc-name {
+  letter-spacing: 0;
+}
+
+// Ripple rings that spread from the tile in the flag's blue and red.
+.soc-ring {
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border: 2px solid transparent;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.soc-ring-blue {
+  border-color: #2785df;
+}
+
+.soc-ring-red {
+  border-color: #ed2a40;
+}
+
+@keyframes soc-ripple {
+  0% {
+    opacity: .75;
+    scale: .96;
+  }
+
+  100% {
+    opacity: 0;
+    scale: 1.55;
+  }
+}
+
+a.soc-tile:focus-visible {
+  outline: 2px solid #ed2a40;
+  outline-offset: 5px;
+}
+
+a.soc-tile:active {
+  scale: .96;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a.soc-tile:hover {
+    scale: 1.06;
+    border-color: transparent;
+  }
+}
+
+a.soc-tile:focus-visible,
+a.soc-tile:active {
+  border-color: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a.soc-tile:hover .soc-flood,
+  a.soc-tile:focus-visible .soc-flood {
+    opacity: 1;
+  }
+
+  a.soc-tile:hover .soc-glyph,
+  a.soc-tile:hover .soc-name,
+  a.soc-tile:focus-visible .soc-glyph,
+  a.soc-tile:focus-visible .soc-name {
+    color: var(--soc-glyph-on);
+  }
+
+  a.soc-tile:hover .soc-glyph-line,
+  a.soc-tile:focus-visible .soc-glyph-line {
+    stroke: currentcolor;
+  }
+
+  a.soc-tile:hover .soc-dot,
+  a.soc-tile:focus-visible .soc-dot {
+    fill: currentcolor;
+  }
+
+  a.soc-tile:hover .soc-ring-blue,
+  a.soc-tile:focus-visible .soc-ring-blue {
+    animation: soc-ripple 900ms cubic-bezier(.23, 1, .32, 1) both;
+  }
+
+  a.soc-tile:hover .soc-ring-red,
+  a.soc-tile:focus-visible .soc-ring-red {
+    animation: soc-ripple 900ms 180ms cubic-bezier(.23, 1, .32, 1) both;
+  }
+}
+
+// Touch screens have no hover: a press shows the colour and one ripple.
+a.soc-tile:active .soc-flood {
+  opacity: 1;
+}
+
+a.soc-tile:active .soc-glyph,
+a.soc-tile:active .soc-name {
+  color: var(--soc-glyph-on);
+}
+
+a.soc-tile:active .soc-glyph-line {
+  stroke: currentcolor;
+}
+
+a.soc-tile:active .soc-dot {
+  fill: currentcolor;
+}
+
+a.soc-tile:active .soc-ring-blue {
+  animation: soc-ripple 700ms cubic-bezier(.23, 1, .32, 1) both;
+}
+
+// Until a page address is known the tile is plain (not a link).
+.soc-tile.is-pending {
+  cursor: default;
+  opacity: .78;
+}
+
+// ---- Light theme: lively, with each platform's own colour showing at rest --------------------------------------------
+:host-context(.light-theme) .soc-section {
+  --soc-ink: #14243c;
+  --soc-muted: #4a5f78;
+  background:
+    radial-gradient(ellipse 55% 60% at 12% 25%, rgba(39, 133, 223, .24), transparent 60%),
+    radial-gradient(ellipse 55% 60% at 88% 80%, rgba(237, 42, 64, .16), transparent 60%),
+    var(--page-surface, #f2f6fc);
+}
+
+:host-context(.light-theme) .soc-intro h2 {
+  background: linear-gradient(100deg, #14243c 30%, #176bb8 70%, #ce2038);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+:host-context(.light-theme) .soc-tile {
+  border-color: rgba(23, 107, 184, .22);
+  background: linear-gradient(150deg, #f4f7fc, #dfeaf8);
+  box-shadow: 0 18px 38px rgba(39, 133, 223, .26), 0 2px 0 rgba(244, 247, 252, .9) inset;
+}
+
+:host-context(.light-theme) .soc-star polygon {
+  fill: rgba(39, 133, 223, .16);
+  stroke: rgba(23, 107, 184, .55);
+  stroke-width: .8;
+}
+
+// ---- Phones: a 2 x 2 grid ---------------------------------------------------------------------------------------------
+@media (max-width: 760px) {
+  .soc-section {
+    --soc-gap: 14px;
+  }
+
+  .soc-star {
+    width: 220px;
+  }
+
+  .soc-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(100%, 340px);
+  }
+
+  .soc-tile {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .soc-ring {
+    display: none;
+  }
+}

@@ -1,0 +1,63 @@
+<section #sectionRoot class="soc-section" [attr.lang]="language" [attr.aria-label]="language === 'ta' ? 'சமூக ஊடகங்களில் விசிக' : 'VCK on social media'">
+  <header class="soc-intro">
+    <h2>{{ language === 'ta' ? 'இயக்கத்துடன் இணையுங்கள்' : 'Follow the movement' }}</h2>
+    <p class="soc-lede">{{ language === 'ta' ? 'எங்கிருந்தாலும் இயக்கத்துடன் இணைந்திருங்கள்.' : 'Stay close to the movement, wherever you are.' }}</p>
+  </header>
+
+  <!-- Gradient the Instagram glyph is stroked with in the light theme. -->
+  <svg class="soc-defs" width="0" height="0" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="soc-instagram-gradient" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0" stop-color="#f9a825" />
+        <stop offset=".5" stop-color="#d62976" />
+        <stop offset="1" stop-color="#4f5bd5" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div class="soc-stage">
+    <!-- The star the tiles burst out of; it stays behind them as a faint glow. -->
+    <svg class="soc-star" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+      <polygon points="50,4 61,36 96,37 68,58 78,92 50,73 22,92 32,58 4,37 39,36" />
+    </svg>
+
+    <ul class="soc-list">
+      @for (link of links; track link.id) {
+        <li class="soc-item">
+          @if (link.url) {
+            <a class="soc-tile" [class]="'soc-' + link.id" [href]="link.url" target="_blank" rel="noopener noreferrer" [attr.aria-label]="label(link.name)">
+              <span class="soc-flood" aria-hidden="true"></span>
+              <span class="soc-ring soc-ring-blue" aria-hidden="true"></span>
+              <span class="soc-ring soc-ring-red" aria-hidden="true"></span>
+              <ng-container *ngTemplateOutlet="glyph; context: { id: link.id }" />
+              <span class="soc-name">{{ link.name[language] }}</span>
+            </a>
+          } @else {
+            <span class="soc-tile is-pending" [class]="'soc-' + link.id">
+              <span class="soc-flood" aria-hidden="true"></span>
+              <ng-container *ngTemplateOutlet="glyph; context: { id: link.id }" />
+              <span class="soc-name">{{ link.name[language] }}</span>
+            </span>
+          }
+        </li>
+      }
+    </ul>
+  </div>
+
+  <ng-template #glyph let-id="id">
+    @switch (id) {
+      @case ('x') {
+        <svg class="soc-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" /></svg>
+      }
+      @case ('facebook') {
+        <svg class="soc-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13.6 22v-8.4h2.8l.5-3.4h-3.3V8c0-1 .4-1.7 1.8-1.7H17V3.4c-.3 0-1.3-.2-2.5-.2-2.6 0-4.3 1.6-4.3 4.4v2.6H7.4v3.4h2.8V22z" /></svg>
+      }
+      @case ('instagram') {
+        <svg class="soc-glyph soc-glyph-line" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="4" /><circle class="soc-dot" cx="17.2" cy="6.8" r="1.1" /></svg>
+      }
+      @case ('youtube') {
+        <svg class="soc-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21.6 7.2a2.6 2.6 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.6 2.6 0 0 0 2.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.6 2.6 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.6 2.6 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8ZM10 15.2V8.8l5.4 3.2z" fill-rule="evenodd" /></svg>
+      }
+    }
+  </ng-template>
+</section>
