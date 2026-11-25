@@ -1,0 +1,150 @@
+.tl-issue {
+  display: grid;
+  grid-template-columns: minmax(220px, 360px) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(24px, 5vw, 64px);
+}
+
+// the cover is a button: a tilt toward the pointer, and a "Read" tag that appears over it
+.tl-cover {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 1px solid var(--ct-card-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0a1626;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(244, 247, 252, 0.04);
+  cursor: pointer;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-6px) rotate(-1deg);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.55), 0 0 40px rgba(74, 158, 235, 0.22);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ed2a40;
+    outline-offset: 4px;
+  }
+}
+
+.tl-cover-badge {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: #f4f7fc;
+  background: rgba(10, 22, 38, 0.82);
+  font: 700 12px / 1 'Montserrat', 'Noto Sans Tamil', sans-serif;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(6px);
+}
+
+.tl-info {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+
+  h2 {
+    margin: 0;
+    font-size: clamp(26px, 3.4vw, 40px);
+    line-height: 1.15;
+  }
+}
+
+.tl-kicker {
+  margin: 0;
+  color: var(--ct-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.tl-meta {
+  margin: 0;
+  color: var(--ct-muted);
+  font-size: 15px;
+}
+
+.tl-read {
+  margin-top: 8px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.tl-note {
+  max-width: 44ch;
+  margin: 0;
+  color: var(--ct-muted);
+  font-size: 13px;
+}
+
+.tl-empty {
+  max-width: 560px;
+
+  h2 {
+    margin: 0 0 8px;
+  }
+
+  p {
+    margin: 0;
+    color: var(--ct-muted);
+  }
+}
+
+:host-context(.light-theme) .tl-cover {
+  border-color: rgba(23, 107, 184, 0.3);
+  box-shadow: 0 24px 54px rgba(25, 47, 76, 0.28);
+}
+
+:host-context(.light-theme) .tl-cover-badge {
+  color: #f4f7fc;
+  background: rgba(20, 36, 60, 0.88);
+}
+
+@media (max-width: 720px) {
+  .tl-issue {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .tl-cover {
+    width: min(100%, 320px);
+  }
+
+  .tl-info {
+    justify-items: center;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl-cover {
+    transition: none;
+
+    &:hover,
+    &:focus-visible {
+      transform: none;
+    }
+  }
+}

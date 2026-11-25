@@ -7,6 +7,7 @@ import type { HeroPortrait3D } from './pages/home/hero/portrait/hero-portrait-3d
 import type { HeroTypography3D } from './pages/home/hero/typography/hero-typography-3d';
 import { ContactPageComponent } from './pages/contact/contact-page.component';
 import { DonatePageComponent } from './pages/donate/donate-page.component';
+import { TamilLandPageComponent } from './pages/tamil-land/tamil-land-page.component';
 import { FlagSectionComponent } from './pages/home/sections/flag/flag-section.component';
 import { FooterSectionComponent } from './pages/home/sections/footer/footer-section.component';
 import { ConferencesSectionComponent } from './pages/home/sections/conferences/conferences-section.component';
@@ -17,7 +18,7 @@ import { HandwrittenSignatureComponent } from '@shared/handwritten-signature/han
 import { ThinkersSectionComponent } from './pages/home/sections/thinkers/thinkers-section.component';
 import { ThemeSwitchTransitionComponent } from './shared/theme-switch-transition/theme-switch-transition.component';
 
-type PageName = 'home' | 'contact' | 'donate';
+type PageName = 'home' | 'contact' | 'donate' | 'tamil-land';
 /** Where a menu item goes: another page, or somewhere on the home page (`hash` is an element id or a section name). */
 type NavTarget = { page: PageName; hash?: string };
 type NavItem = { ta: string; en: string; go?: NavTarget };
@@ -30,7 +31,7 @@ type SloganLine = { parts: SloganPart[]; words: SloganWord[] };
 @Component({
   selector: 'vck-root',
   standalone: true,
-  imports: [ContactPageComponent, DonatePageComponent, FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ConferencesSectionComponent, FooterSectionComponent, SocialSectionComponent, HandwrittenSignatureComponent, ThemeSwitchTransitionComponent],
+  imports: [ContactPageComponent, DonatePageComponent, TamilLandPageComponent, FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ConferencesSectionComponent, FooterSectionComponent, SocialSectionComponent, HandwrittenSignatureComponent, ThemeSwitchTransitionComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss', './site-nav.scss', './pages/home/hero/hero-typography.scss', './pages/home/hero/hero-signature.scss', './pages/home/hero/hero-mobile.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -143,7 +144,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     {
       id: 'publications', ta: 'வெளியீடுகள்', en: 'Publications', items: [
-        { ta: 'நமது தமிழ்மண்', en: 'Our Tamil Land' },
+        { ta: 'நமது தமிழ்மண்', en: 'Our Tamil Land', go: { page: 'tamil-land' } },
         { ta: 'புத்தகங்கள்', en: 'Books' },
         { ta: 'கொள்கைப் பாடல்கள்', en: 'Policy songs' },
         { ta: 'புகைப்படங்கள்', en: 'Photos' }
@@ -371,7 +372,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private readPage(): PageName {
     const path = location.pathname.startsWith(this.basePath) ? location.pathname.slice(this.basePath.length) : location.pathname.replace(/^\//, '');
     const name = path.replace(/\/$/, '');
-    return name === 'contact' || name === 'donate' ? name : 'home';
+    return name === 'contact' || name === 'donate' || name === 'tamil-land' ? name : 'home';
   }
 
   /** Real address of a target, so links open in a new tab, copy and bookmark properly. */
@@ -397,6 +398,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     const ta = this.language() === 'ta';
     if (page === 'contact') return ta ? 'தொடர்புக்கு — விசிக' : 'Contact — VCK';
     if (page === 'donate') return ta ? 'நன்கொடை — விசிக' : 'Donate — VCK';
+    if (page === 'tamil-land') return ta ? 'நமது தமிழ்மண் — விசிக' : 'Our Tamil Land — VCK';
     return this.homeTitle;
   }
 
