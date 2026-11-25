@@ -7,7 +7,7 @@
 
   @if (publication && issue) {
     <section class="tl-issue ct-reveal" aria-labelledby="tl-issue-title">
-      <button class="tl-cover" type="button" (click)="open($event)" [attr.aria-label]="copy.openLabel[language] + ': ' + meta(issue)">
+      <button class="tl-cover" type="button" (click)="open($event, issue)" [attr.aria-label]="copy.openLabel[language] + ': ' + meta(issue)">
         <img [src]="issue.cover" [alt]="publication.title[language] + ' — ' + meta(issue)" width="600" [attr.height]="(600 * issue.height) / issue.width" decoding="async" draggable="false" />
         <span class="tl-cover-badge">{{ copy.read[language] }}</span>
       </button>
@@ -16,7 +16,7 @@
         <p class="tl-kicker">{{ copy.latest[language] }}</p>
         <h2 id="tl-issue-title">{{ publication.title[language] }}</h2>
         <p class="tl-meta">{{ meta(issue) }}</p>
-        <button class="ct-button ct-button-primary tl-read" type="button" (click)="open($event)">
+        <button class="ct-button ct-button-primary tl-read" type="button" (click)="open($event, issue)">
           {{ copy.read[language] }}
           <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8h9M8.5 4l4 4-4 4" /></svg>
         </button>
@@ -30,7 +30,86 @@
     </section>
   }
 
-  @if (reading() && publication && issue) {
-    <vck-page-reader [edition]="issue" [title]="publication.title[language]" [subtitle]="subtitle(issue)" [language]="language" (closed)="close()" />
+  @if (publication && issues.length) {
+    <section class="tl-archive ct-reveal" aria-labelledby="tl-archive-title">
+      <h2 id="tl-archive-title">{{ copy.allIssues[language] }}</h2>
+
+      <form class="tl-search" role="search" [attr.aria-label]="copy.searchLabel[language]" (submit)="$event.preventDefault()">
+        <label>
+          <span>{{ copy.month[language] }}</span>
+          <select [value]="month() ?? ''" (change)="onMonth($event)">
+            <option value="">{{ copy.anyMonth[language] }}</option>
+            @for (name of copy.months[language]; track $index) {
+              <option [value]="$index + 1">{{ name }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          <span>{{ copy.year[language] }}</span>
+          <select [value]="year() ?? ''" (change)="onYear($event)">
+            <option value="">{{ copy.anyYear[language] }}</option>
+            @for (y of years; track y) {
+              <option [value]="y">{{ y }}</option>
+            }
+          </select>
+        </label>
+        <button class="ct-button" type="button" (click)="reset()" [disabled]="month() === null && year() === null">{{ copy.clear[language] }}</button>
+      </form>
+
+      <p class="tl-summary" aria-live="polite">{{ summary() }}</p>
+
+      @if (visible().length) {
+        <ul class="tl-grid">
+          @for (edition of visible(); track edition.id) {
+            <li>
+              <button class="tl-card" type="button" (click)="open($event, edition)" [attr.aria-label]="copy.readIssue[language] + ': ' + publication.title[language] + ', ' + monthYear(edition)">
+                <span class="tl-card-cover">
+                  <img [src]="edition.cover" [alt]="''" loading="lazy" decoding="async" draggable="false" />
+                  @if (edition.id === issue?.id) {
+                    <span class="tl-card-tag">{{ copy.latestTag[language] }}</span>
+                  }
+                </span>
+                <span class="tl-card-date">{{ monthYear(edition) }}</span>
+                <span class="tl-card-numbers">{{ numbers(edition) }}</span>
+              </button>
+            </li>
+          }
+        </ul>
+
+        @if (pageCount() > 1) {
+          <nav class="tl-pager" [attr.aria-label]="copy.pagination[language]">
+            <button type="button" class="tl-pager-button" (click)="goTo(pageNumber() - 1)" [disabled]="pageNumber() === 1">{{ copy.previousPage[language] }}</button>
+            @for (button of pageButtons(); track $index) {
+              @if (button === null) {
+                <span class="tl-pager-gap" aria-hidden="true">…</span>
+              } @else {
+                <button
+                  type="button"
+                  class="tl-pager-button"
+                  [class.is-current]="button === pageNumber()"
+                  [attr.aria-current]="button === pageNumber() ? 'page' : null"
+                  [attr.aria-label]="copy.pageWord[language] + ' ' + button"
+                  (click)="goTo(button)"
+                >
+                  {{ button }}
+                </button>
+              }
+            }
+            <button type="button" class="tl-pager-button" (click)="goTo(pageNumber() + 1)" [disabled]="pageNumber() === pageCount()">{{ copy.nextPage[language] }}</button>
+          </nav>
+        }
+      } @else {
+        <p class="tl-none" role="status">
+          {{ copy.noneFound[language] }} <strong>{{ searchText() }}</strong>.
+          <button type="button" class="tl-link" (click)="reset()">{{ copy.showAll[language] }}</button>
+        </p>
+      }
+    </section>
+  }
+
+  @if (reading(); as current) {
+    @if (publication) {
+      <vck-page-reader [edition]="current" [title]="publication.title[language]" [subtitle]="subtitle(current)" [language]="language" (closed)="close()" />
+    }
   }
 </div>

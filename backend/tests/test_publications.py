@@ -226,3 +226,73 @@ def test_deleting_removes_files_and_public_listing(client):
     assert client.delete(f"/api/publications/{publication['id']}", headers=ed).status_code == 204
     assert not (Path(TEST_STORAGE) / "publications" / keys[1]).exists()
     assert client.get("/api/publications", headers=ed).json() == []
+
+
+def test_many_writers_of_one_file_all_succeed(client):
+    """Two jobs finishing together both refresh content.json; on Windows this used to fail with 'access denied'."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    from app.storage import get_storage
+
+    storage = get_storage()
+    payloads = [json.dumps({"n": i}).encode() for i in range(60)]
+    with ThreadPoolExecutor(16) as pool:
+        list(pool.map(lambda data: storage.put("concurrent.json", data, "application/json"), payloads))
+    assert json.loads(storage.read("concurrent.json"))["n"] in range(60)  # whole and valid, never half-written
+    assert not list(Path(TEST_STORAGE).glob("*.tmp"))  # no temp files left behind
+    storage.delete("concurrent.json")
+
+
+def test_failing_to_refresh_content_json_does_not_fail_the_edition(client, monkeypatch):
+    import app.jobs
+
+    def boom(db):
+        raise OSError("the storage hiccuped")
+
+    monkeypatch.setattr(app.jobs, "publish_snapshot", boom)
+    ed = auth(client, "ed@x.org")
+    publication = new_publication(client, ed)
+    upload_edition(client, ed, publication["id"], make_pdf(2))
+    edition = client.get("/api/publications", headers=ed).json()[0]["editions"][0]
+    assert edition["state"] == "ready" and edition["processed_pages"] == 2 and edition["error"] is None
+
+
+def test_import_books_from_the_storage_folder(client):
+    from app.import_books import describe_file, import_books
+
+    assert describe_file("2026-11_issue101", "monthly") == {"label": "Issue 101", "year": 2026, "month": 11, "issue_number": 101}
+    assert describe_file("2026-03", "monthly")["label"] == "March 2026"
+    assert describe_file("anything", "monthly") == {"label": "anything", "year": None, "month": None, "issue_number": None}
+
+    books = Path(TEST_STORAGE) / "Books"
+    for folder, name, pages in [("amaipai_thiralvom", "book.pdf", 2), ("thamizhman", "2026-10_issue1.pdf", 3), ("thamizhman", "2026-11_issue2.pdf", 4)]:
+        (books / folder).mkdir(parents=True, exist_ok=True)
+        (books / folder / name).write_bytes(make_pdf(pages))
+    (books / "thamizhman" / "broken.pdf").write_bytes(b"not a pdf at all")
+
+    report = import_books(publish=True)
+    assert any("skipped" in line for line in report)
+    public = {p["slug"]: p for p in client.get("/api/public/content").json()["publications"]}
+    assert set(public) == {"amaipai-thiralvom", "namathu-thamizhman"}
+    assert [e["label"] for e in public["namathu-thamizhman"]["editions"]] == ["Issue 2", "Issue 1"]
+    assert public["amaipai-thiralvom"]["editions"][0]["pages"] == 2
+
+    again = import_books(publish=True)  # safe to run again: nothing is duplicated
+    after = {p["slug"]: p for p in client.get("/api/public/content").json()["publications"]}
+    assert len(after["namathu-thamizhman"]["editions"]) == 2 and len(after["amaipai-thiralvom"]["editions"]) == 1
+    assert len([line for line in again if "ready" in line]) == 3
+
+
+def test_import_does_not_duplicate_a_renamed_issue(client):
+    from app.import_books import import_books
+
+    folder = Path(TEST_STORAGE) / "Books" / "thamizhman"
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "sample.pdf").write_bytes(make_pdf(3))
+    import_books(publish=True)
+    ed = auth(client, "ed@x.org")
+    edition = client.get("/api/publications", headers=ed).json()[0]["editions"][0]
+    client.patch(f"/api/publications/editions/{edition['id']}", json={"label": "Issue 100", "year": 2015, "month": 2}, headers=ed)
+    import_books(publish=True)
+    editions = client.get("/api/publications", headers=ed).json()[0]["editions"]
+    assert [e["label"] for e in editions] == ["Issue 100"]

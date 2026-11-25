@@ -112,6 +112,214 @@
   }
 }
 
+// ---- Earlier issues: search, grid, pages ------------------------------------------------------------------------------------
+.tl-archive {
+  margin-top: clamp(48px, 7vw, 88px);
+  padding-top: clamp(28px, 4vw, 44px);
+  border-top: 1px solid var(--ct-card-border);
+
+  h2 {
+    margin: 0 0 18px;
+    font-size: clamp(22px, 2.6vw, 30px);
+  }
+}
+
+.tl-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+  margin-bottom: 14px;
+
+  label {
+    display: grid;
+    gap: 6px;
+    color: var(--ct-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  select {
+    min-width: 170px;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--ct-field-border);
+    border-radius: 12px;
+    color: var(--ct-text);
+    background-color: var(--ct-field);
+    font: 600 14px / 1 'Montserrat', 'Noto Sans Tamil', sans-serif;
+    letter-spacing: 0;
+    text-transform: none;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid #ed2a40;
+      outline-offset: 2px;
+    }
+
+    option {
+      color: #14243c;
+      background: #f4f7fc;
+    }
+  }
+}
+
+.tl-summary {
+  min-height: 1.4em;
+  margin: 0 0 18px;
+  color: var(--ct-muted);
+  font-size: 14px;
+}
+
+.tl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: clamp(16px, 2.4vw, 28px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tl-card {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  color: var(--ct-text);
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border: 1px solid var(--ct-card-border);
+    border-radius: 8px;
+    background: #0a1626;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    -webkit-user-drag: none;
+  }
+
+  &:hover img,
+  &:focus-visible img {
+    transform: translateY(-4px);
+    box-shadow: 0 22px 44px rgba(0, 0, 0, 0.5), 0 0 26px rgba(74, 158, 235, 0.2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ed2a40;
+    outline-offset: 4px;
+    border-radius: 8px;
+  }
+}
+
+.tl-card-cover {
+  position: relative;
+  display: block;
+}
+
+.tl-card-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: #f4f7fc;
+  background: linear-gradient(135deg, #de2c45, #b71e36);
+  font: 700 11px / 1 'Montserrat', 'Noto Sans Tamil', sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.tl-card-date {
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.tl-card-numbers {
+  color: var(--ct-muted);
+  font-size: 13px;
+}
+
+.tl-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: clamp(28px, 4vw, 44px);
+}
+
+.tl-pager-button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--ct-field-border);
+  border-radius: 12px;
+  color: var(--ct-text);
+  background: var(--ct-field);
+  font: 600 14px / 1 'Montserrat', 'Noto Sans Tamil', sans-serif;
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--ct-accent);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  &.is-current {
+    border-color: transparent;
+    color: #f4f7fc;
+    background: linear-gradient(135deg, #15569a, #247fc6);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ed2a40;
+    outline-offset: 2px;
+  }
+}
+
+.tl-pager-gap {
+  padding: 0 4px;
+  color: var(--ct-muted);
+}
+
+.tl-none {
+  max-width: 60ch;
+  margin: 0;
+  padding: 22px;
+  border: 1px dashed var(--ct-card-border);
+  border-radius: 14px;
+  color: var(--ct-muted);
+}
+
+.tl-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  color: var(--ct-accent);
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+:host-context(.light-theme) .tl-card img {
+  box-shadow: 0 12px 28px rgba(25, 47, 76, 0.22);
+}
+
 :host-context(.light-theme) .tl-cover {
   border-color: rgba(23, 107, 184, 0.3);
   box-shadow: 0 24px 54px rgba(25, 47, 76, 0.28);
@@ -120,6 +328,25 @@
 :host-context(.light-theme) .tl-cover-badge {
   color: #f4f7fc;
   background: rgba(20, 36, 60, 0.88);
+}
+
+@media (max-width: 560px) {
+  // two covers side by side on a phone
+  .tl-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 14px;
+  }
+
+  .tl-search {
+    label,
+    select {
+      width: 100%;
+    }
+
+    label {
+      flex: 1 1 140px;
+    }
+  }
 }
 
 @media (max-width: 720px) {
@@ -139,6 +366,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .tl-card img,
+  .tl-pager-button {
+    transition: none;
+  }
+
+  .tl-card:hover img,
+  .tl-card:focus-visible img {
+    transform: none;
+  }
+
   .tl-cover {
     transition: none;
 

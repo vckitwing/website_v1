@@ -1,0 +1,49 @@
+@if (publication && edition) {
+  <div #pageRoot class="ct-page bk-page" [attr.lang]="language">
+    <div class="bk-layout">
+      <header class="bk-info ct-reveal">
+        <p class="ct-eyebrow">{{ copy.eyebrow[language] }}</p>
+        <h1 class="bk-title">{{ publication.title[language] }}</h1>
+        @if (publication.author) {
+          <p class="bk-author">{{ copy.by[language] }} {{ publication.author[language] }}</p>
+        }
+        <p class="ct-lede">{{ publication.description[language] }}</p>
+        <p class="bk-meta">{{ edition.pages }} {{ copy.pages[language] }}</p>
+        <button #readButton class="ct-button ct-button-primary bk-read" type="button" (click)="openBook($event)">
+          {{ copy.read[language] }}
+          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8h9M8.5 4l4 4-4 4" /></svg>
+        </button>
+        @if (mode() === '3d') {
+          <p class="bk-hint">{{ copy.hint[language] }}</p>
+        }
+        <p class="bk-note">{{ copy.note[language] }}</p>
+      </header>
+
+      <div class="bk-stage ct-reveal">
+        <div class="bk-glow" aria-hidden="true"></div>
+        <canvas #bookCanvas class="bk-canvas" [class.is-ready]="mode() === '3d'" aria-hidden="true"></canvas>
+        @if (mode() !== '3d') {
+          <button class="bk-flat" type="button" (click)="openBook($event)" [attr.aria-label]="copy.openLabel[language]">
+            <img [src]="edition.cover" [alt]="publication.title[language]" loading="lazy" decoding="async" draggable="false" />
+          </button>
+        }
+        <div class="bk-shadow" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    @if (reading()) {
+      <!-- the reader is loaded only when someone opens the book -->
+      @defer (on immediate) {
+        <vck-page-reader [edition]="edition" [title]="publication.title[language]" [subtitle]="publication.author ? publication.author[language] : ''" [language]="language" (closed)="close()" />
+      }
+    }
+  </div>
+} @else {
+  <div #pageRoot class="ct-page bk-page" [attr.lang]="language">
+    <section class="ct-card ct-reveal bk-empty">
+      <h1>{{ copy.fallbackTitle[language] }}</h1>
+      <h2>{{ copy.emptyTitle[language] }}</h2>
+      <p>{{ copy.emptyText[language] }}</p>
+    </section>
+  </div>
+}

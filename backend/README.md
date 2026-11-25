@@ -13,6 +13,7 @@ cp .env.example .env
 .venv/Scripts/python -m app.cli seed                        # loads today's History + Conferences (empty tables only)
 .venv/Scripts/python -m app.cli create-admin you@example.org "Your Name"
 .venv/Scripts/python -m uvicorn app.main:app --reload       # http://localhost:8000/docs
+.venv/Scripts/python -m app.cli import-books --publish      # PDFs in ../Object_Storage_Data/Books -> published books
 .venv/Scripts/python -m pytest                              # tests
 ```
 

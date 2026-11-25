@@ -70,7 +70,14 @@
   } @else if (page() === 'donate') {
     <vck-donate-page [language]="language()" />
   } @else if (page() === 'tamil-land') {
-    <vck-tamil-land-page [language]="language()" />
+    <!-- loaded only when someone opens the page, so the first visit stays light -->
+    @defer (on immediate) {
+      <vck-tamil-land-page [language]="language()" />
+    }
+  } @else if (page() === 'amaipai-thiralvom') {
+    @defer (on immediate) {
+      <vck-amaipai-thiralvom-page [language]="language()" />
+    }
   }
 
   <section #heroSection class="hero" id="home" [attr.aria-label]="language() === 'ta' ? 'விசிக முன்னணிப் பகுதி' : 'VCK hero'">
