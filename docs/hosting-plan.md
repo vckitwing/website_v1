@@ -53,6 +53,7 @@ Status: **decided in outline** (Cloudflare for the frontend and storage, a small
 - **`backups` bucket** (private): encrypted nightly database dumps.
 - **Photo uploads:** the admin sends a photo to the API, which checks type and size, makes web-sized WebP copies (e.g. 400 / 800 / 1600 px) and stores them in R2. The database keeps only the file's key and the captions in English and Tamil.
 - **Local development:** the same code writes to a folder, so no Cloudflare account is needed to develop.
+- **CORS on the `media` bucket (required):** allow GET from the site's address. The 3D book reads its cover picture as a WebGL texture and the site reads `content.json` from there; without CORS headers the book falls back to a flat cover and `content.json` cannot be loaded.
 
 ### 3. The public site never depends on the VPS
 

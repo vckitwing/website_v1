@@ -2,6 +2,7 @@
 
     python -m app.cli seed                       load the website's current History and Conferences (only into empty tables)
     python -m app.cli create-admin EMAIL NAME    create a super admin (asks for the password)
+    python -m app.cli import-books [--publish]   bring the PDFs in Object_Storage_Data/Books into the website
 """
 
 import getpass
@@ -12,6 +13,7 @@ from pathlib import Path
 from sqlalchemy import func, select
 
 from .db import SessionLocal, init_db
+from .import_books import import_books
 from .models import Conference, HistoryMilestone, Role, Status, User
 from .security import hash_password, password_problem
 from .services import publish_snapshot
@@ -72,6 +74,9 @@ if __name__ == "__main__":
     args = sys.argv[1:]
     if args[:1] == ["seed"]:
         seed()
+    elif args[:1] == ["import-books"]:
+        for line in import_books(publish="--publish" in args):
+            print(line)
     elif args[:1] == ["create-admin"] and len(args) == 3:
         create_admin(args[1], args[2])
     else:

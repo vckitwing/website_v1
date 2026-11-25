@@ -19,6 +19,19 @@ cd ../frontend
 npm ci
 ```
 
+### Books and the magazine
+
+A PDF placed in `Object_Storage_Data/Books/` does not appear on the website by itself. Either upload it in the admin
+(**Publications**), or import everything in that folder (from `backend`):
+
+```bash
+.venv/Scripts/python -m app.cli import-books --publish
+```
+
+`Books/amaipai_thiralvom/` is the book; `Books/thamizhman/` holds magazine issues. Name an issue like
+`2026-11_issue101.pdf` so it gets its month, year and number. Running it again only adds new files.
+A 559-page book takes about five minutes.
+
 ## 2. Start
 
 | Terminal | Folder | Command | Opens at |

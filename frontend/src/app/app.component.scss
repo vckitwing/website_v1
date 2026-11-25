@@ -184,4 +184,4 @@ $portrait-mask-mirrored: linear-gradient(to left,transparent 0%,rgba(0,0,0,.08) 
 
 
 /* Sub-pages (contact, donate): only the header, the page itself and the footer are shown; the home sections stay mounted but hidden. */
-.hero-shell.subpage-open > :not(.topbar):not(.sn):not(vck-contact-page):not(vck-donate-page):not(vck-tamil-land-page):not(vck-footer-section):not(.opening-screen) { display:none !important; }
+.hero-shell.subpage-open > :not(.topbar):not(.sn):not(vck-contact-page):not(vck-donate-page):not(vck-tamil-land-page):not(vck-amaipai-thiralvom-page):not(vck-footer-section):not(.opening-screen) { display:none !important; }

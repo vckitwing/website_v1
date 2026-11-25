@@ -1,12 +1,14 @@
 """Object storage: where uploaded files and the published `content.json` live.
 
 Today there is one implementation, `LocalStorage` (a folder on disk). Production will add an R2 implementation with the
-same four methods, chosen by a setting, so nothing else in the API has to change.
+same methods, chosen by a setting, so nothing else in the API has to change.
 """
 
 import os
 import shutil
 import tempfile
+import threading
+import time
 from functools import lru_cache
 from pathlib import Path
 from typing import Protocol
@@ -36,6 +38,8 @@ class LocalStorage:
     def __init__(self, root: Path, base_url: str) -> None:
         self.root = root.resolve()
         self.base_url = base_url.rstrip("/")
+        self._locks: dict[Path, threading.Lock] = {}
+        self._locks_guard = threading.Lock()
         self.root.mkdir(parents=True, exist_ok=True)
 
     def _path(self, key: str) -> Path:
@@ -47,11 +51,33 @@ class LocalStorage:
     def put(self, key: str, data: bytes, content_type: str) -> None:
         path = self._path(key)
         path.parent.mkdir(parents=True, exist_ok=True)
-        # write to a temp file first so a reader never sees a half-written file
-        fd, temp = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
-        with os.fdopen(fd, "wb") as handle:
-            handle.write(data)
-        os.replace(temp, path)
+        # Writers of the SAME file queue up (two jobs finishing together both refresh content.json).
+        with self._lock_for(path):
+            # write to a temp file first so a reader never sees a half-written file
+            fd, temp = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
+            try:
+                with os.fdopen(fd, "wb") as handle:
+                    handle.write(data)
+                self._replace(temp, path)
+            except BaseException:
+                Path(temp).unlink(missing_ok=True)
+                raise
+
+    @staticmethod
+    def _replace(temp: str, path: Path) -> None:
+        """Atomic replace. On Windows it fails while someone is reading the file; a short retry rides that out."""
+        for attempt in range(12):
+            try:
+                os.replace(temp, path)
+                return
+            except PermissionError:
+                if attempt == 11:
+                    raise
+                time.sleep(0.03 * (attempt + 1))
+
+    def _lock_for(self, path: Path) -> threading.Lock:
+        with self._locks_guard:
+            return self._locks.setdefault(path, threading.Lock())
 
     def read(self, key: str) -> bytes:
         return self._path(key).read_bytes()

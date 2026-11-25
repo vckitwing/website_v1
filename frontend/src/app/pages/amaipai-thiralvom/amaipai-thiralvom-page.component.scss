@@ -1,0 +1,5 @@
+// fills the space between the header and the footer
+:host {
+  display: block;
+  flex: 1 0 auto;
+}

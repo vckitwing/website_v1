@@ -65,7 +65,10 @@ def process_edition(edition_id: int) -> None:
             storage.put(cover_key(edition.key), to_webp(render_page(document, 0, settings.cover_width_px)), "image/webp")
             edition.state = "ready"
             db.commit()
-            publish_snapshot(db)
+            try:
+                publish_snapshot(db)
+            except Exception:  # the pictures are done; a hiccup refreshing content.json must not fail the edition
+                log.exception("Edition %s is ready but content.json could not be refreshed", edition_id)
         except PdfRejected as error:
             db.rollback()
             _fail(db, edition_id, str(error))
