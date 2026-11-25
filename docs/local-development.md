@@ -8,7 +8,10 @@ Three things run side by side. Use three terminals.
 cd backend
 python -m venv .venv
 .venv/Scripts/python -m pip install -r requirements.txt        # Linux/macOS: .venv/bin/python
-cp .env.example .env
+# Option A, local PostgreSQL (recommended): asks for the 'postgres' password you set when installing PostgreSQL,
+# creates a 'vck' user + database and writes backend/.env for you. The password never leaves your terminal.
+.venv/Scripts/python scripts/setup_local_db.py
+# Option B, SQLite (no install): cp .env.example .env
 .venv/Scripts/python -m app.cli seed                            # loads today's History + Conferences into a local SQLite file
 .venv/Scripts/python -m app.cli create-admin you@example.org "Your Name"   # asks for a password (10+ chars, upper + lower + number)
 

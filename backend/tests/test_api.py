@@ -1,6 +1,8 @@
 import os
 
-os.environ["DATABASE_URL"] = "sqlite:///./test.db"
+# The tests drop and recreate every table, so they must NEVER point at the real database.
+# Default: a throwaway SQLite file. To test on PostgreSQL set TEST_DATABASE_URL to a separate database (e.g. .../vck_test).
+os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL", "sqlite:///./test.db")
 os.environ["PUBLISH_DIR"] = "./test_published"
 
 import json  # noqa: E402

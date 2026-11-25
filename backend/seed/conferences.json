@@ -2,15 +2,22 @@
   {
     "year": 2003,
     "name": {
-      "en": "Anti-Repressive Laws Conference",
-      "ta": "அடக்குமுறைச் சட்டங்கள் எதிர்ப்பு மாநாடு"
+      "en": "State Conference Against Hindutva Cultural Imposition",
+      "ta": "இந்துத்துவப் பண்பாட்டுத் திணிப்பு எதிர்ப்பு மாநில மாநாடு"
     }
   },
   {
-    "year": 2004,
+    "year": 2005,
     "name": {
-      "en": "Anti-Hindutva Culture Conference",
-      "ta": "இந்துத்துவப் பண்பாடு எதிர்ப்பு மாநாடு"
+      "en": "Fourth Round Table Conference",
+      "ta": "நான்காம் வட்ட மேசை மாநாடு"
+    }
+  },
+  {
+    "year": 2005,
+    "name": {
+      "en": "Dual Voting Rights Conference",
+      "ta": "இரட்டை வாக்குரிமை மாநாடு"
     }
   },
   {
@@ -23,19 +30,26 @@
   {
     "year": 2006,
     "name": {
-      "en": "Eelam Tamil Protection Conference",
-      "ta": "ஈழத்தமிழர் பாதுகாப்பு மாநாடு"
+      "en": "Conference for the Protection of Ezhuthamizhars",
+      "ta": "எழுத்தமிழர் பாதுகாப்பு மாநாடு"
     }
   },
   {
     "year": 2006,
     "name": {
-      "en": "Social Justice Restoration Conference",
-      "ta": "சமூகநீதி மீட்பு மாநாடு"
+      "en": "Tamil Nadu Golden Jubilee Conference",
+      "ta": "தமிழக பொன்விழா மாநாடு"
     }
   },
   {
     "year": 2007,
+    "name": {
+      "en": "Social Justice Restoration Conference",
+      "ta": "சமூகநீதி மீட்சி மாநாடு"
+    }
+  },
+  {
+    "year": 2008,
     "name": {
       "en": "Land Rights Conference",
       "ta": "மண்ணுரிமை மாநாடு"
@@ -51,8 +65,15 @@
   {
     "year": 2008,
     "name": {
-      "en": "Dalit Christian Awakening Conference",
-      "ta": "தலித் கிறித்துவர் எழுச்சி மாநாடு"
+      "en": "Women's Rights Conference",
+      "ta": "மகளிருரிமை மாநாடு"
+    }
+  },
+  {
+    "year": 2008,
+    "name": {
+      "en": "Tamil Christian Awakening Conference",
+      "ta": "தமிழ் கிறித்தவர் எழுச்சி மாநாடு"
     }
   },
   {
@@ -65,15 +86,15 @@
   {
     "year": 2009,
     "name": {
-      "en": "Rising Tamil Eelam National Liberation Conference",
-      "ta": "எழும் தமிழீழ இனவிடுதலை மாநாடு"
+      "en": "Rising Tamil Eelam – National Liberation Conference",
+      "ta": "எழும் தமிழீழம் இன விடுதலை மாநாடு"
     }
   },
   {
     "year": 2010,
     "name": {
-      "en": "Working Women's Liberation Conference",
-      "ta": "உழைக்கும் மகளிர் விடுதலை மாநாடு"
+      "en": "Working Women's Rights Conference",
+      "ta": "உழைக்கும் மகளிருரிமை மாநாடு"
     }
   },
   {
@@ -84,59 +105,38 @@
     }
   },
   {
-    "year": 2011,
-    "name": {
-      "en": "Abolition of Death Penalty Conference",
-      "ta": "மரண தண்டனை ஒழிப்பு மாநாடு"
-    }
-  },
-  {
     "year": 2013,
     "name": {
-      "en": "People's Unity for Social Harmony Conference",
-      "ta": "சமூக அமைதிக்கான மக்கள் ஒற்றுமை மாநாடு"
-    }
-  },
-  {
-    "year": 2013,
-    "name": {
-      "en": "Golden Jubilee Valedictory Conference",
-      "ta": "பொன்விழா நிறைவு மாநாடு"
+      "en": "People's Unity Conference through Social Networks",
+      "ta": "சமூக வலைத்தளான மக்கள் ஒற்றுமை மாநாடு"
     }
   },
   {
     "year": 2014,
     "name": {
-      "en": "Education Rights Conference",
-      "ta": "கல்வி உரிமை மாநாடு"
+      "en": "Right to Education Conference",
+      "ta": "கல்வியுரிமை மாநாடு"
     }
   },
   {
     "year": 2015,
     "name": {
-      "en": "Silver Jubilee Conference",
-      "ta": "வெள்ளி விழா மாநாடு"
-    }
-  },
-  {
-    "year": 2015,
-    "name": {
-      "en": "Women's Conference for Alcohol Prohibition",
-      "ta": "மது ஒழிப்பு மகளிர் மாநாடு"
+      "en": "15th Anniversary Silver Jubilee Conference",
+      "ta": "வெள்ளி விழா மாநாடு 15"
     }
   },
   {
     "year": 2016,
     "name": {
-      "en": "Secularism Protection Conference",
-      "ta": "மதச்சார்பின்மை பாதுகாப்பு மாநாடு"
+      "en": "Women's Prohibition Conference",
+      "ta": "மதுவிலக்கு மகளிர் மாநாடு"
     }
   },
   {
     "year": 2016,
     "name": {
-      "en": "River Water Rights Protection Conference",
-      "ta": "நதிநீர் உரிமை பாதுகாப்பு மாநாடு"
+      "en": "Tamil People's Rights Protection Conference",
+      "ta": "தமிழர் உரிமை பாதுகாப்பு மாநாடு"
     }
   },
   {
@@ -149,29 +149,99 @@
   {
     "year": 2017,
     "name": {
+      "en": "Conference Against Honour Killings",
+      "ta": "ஆணவப் படுகொலைகள் எதிர்ப்பு மாநாடு"
+    }
+  },
+  {
+    "year": 2017,
+    "name": {
       "en": "State Autonomy Conference",
       "ta": "மாநில சுயாட்சி மாநாடு"
     }
   },
   {
-    "year": 2024,
+    "year": 2017,
     "name": {
-      "en": "Winning Democracy Conference",
-      "ta": "வெல்லும் சனநாயகம் மாநாடு"
+      "en": "State Autonomy Conferences",
+      "ta": "திருப்பூர் ஆத்திராவில் மாநில சுயாட்சி மாநாடுகள்"
+    }
+  },
+  {
+    "year": 2017,
+    "name": {
+      "en": "Lawyers' Conference",
+      "ta": "வழக்கறிஞர்கள் மாநாடு"
+    }
+  },
+  {
+    "year": 2018,
+    "name": {
+      "en": "Constitution Protection Conference – Andhra Pradesh",
+      "ta": "அரசியலமைப்புச் சட்ட பாதுகாப்பு மாநாடு – ஆந்திராவில்"
+    }
+  },
+  {
+    "year": 2018,
+    "name": {
+      "en": "State Autonomy Conference – Puducherry",
+      "ta": "மாநில சுயாட்சி மாநாடு – புதுச்சேரியில்"
+    }
+  },
+  {
+    "year": 2018,
+    "name": {
+      "en": "Vanigaani Conference",
+      "ta": "வணிகாணி மாநாடு"
+    }
+  },
+  {
+    "year": 2018,
+    "name": {
+      "en": "Women's Rights and Constitutional Protection Conference",
+      "ta": "பெண்ணுரிமை அரசியலமைப்புச் சட்ட பாதுகாப்பு மாநாடு"
+    }
+  },
+  {
+    "year": 2019,
+    "name": {
+      "en": "Save the Nation Conference – Trichy",
+      "ta": "தேசம் காப்போம் மாநாடு – திருச்சி"
+    }
+  },
+  {
+    "year": 2019,
+    "name": {
+      "en": "Save the Nation Conference – Andhra Pradesh",
+      "ta": "ஆந்திராவில் தேசம் காப்போம் மாநாடு"
+    }
+  },
+  {
+    "year": 2019,
+    "name": {
+      "en": "Conference Against Sanatanism",
+      "ta": "கணாதன எதிர்ப்பு மாநாடு"
     }
   },
   {
     "year": 2024,
     "name": {
-      "en": "Women's Conference for the Eradication of Alcohol and Drugs",
-      "ta": "மது மற்றும் போதைப்பொருள் ஒழிப்பு மகளிர் மாநாடு"
+      "en": "Democracy Shall Prevail Conference",
+      "ta": "வெல்லும் ஜனநாயகம் மாநாடு"
     }
   },
   {
-    "year": 2026,
+    "year": 2024,
     "name": {
-      "en": "Tamil National Awakening Conference",
-      "ta": "தமிழ்த் தேசிய எழுச்சி மாநாடு"
+      "en": "People's Conference for the Eradication of Religion and Drug Addiction",
+      "ta": "மத மற்றும் போதவிப்பாளர் ஒழிப்பு மக்கள் மாநாடு"
+    }
+  },
+  {
+    "year": 2025,
+    "name": {
+      "en": "Electoral Recognition Victory Celebration Conference",
+      "ta": "தேர்தல் அங்கீகார வெற்றிவிழா மாநாடு"
     }
   }
 ]
