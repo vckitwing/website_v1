@@ -1,13 +1,15 @@
 from contextlib import asynccontextmanager
 
-from fastapi import APIRouter, FastAPI, Response
+from fastapi import APIRouter, FastAPI, HTTPException, Response
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
 from .db import SessionLocal, init_db
 from .models import Conference, HistoryMilestone
-from .routers import auth, media, users
+from .jobs import mark_interrupted_as_failed
+from .routers import auth, media, publications, users
 from .routers.content import make_content_router
 from .schemas import (
     ConferenceIn,
@@ -18,12 +20,13 @@ from .schemas import (
     MilestoneUpdate,
 )
 from .services import build_snapshot
-from .storage import get_storage
+from .storage import PUBLIC_FILES, PUBLIC_PREFIXES, get_storage
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    mark_interrupted_as_failed()
     yield
 
 
@@ -47,6 +50,7 @@ api = APIRouter(prefix="/api")
 api.include_router(auth.router, prefix="/auth", tags=["auth"])
 api.include_router(users.router, prefix="/users", tags=["users"])
 api.include_router(media.router, prefix="/media", tags=["media"])
+api.include_router(publications.router, prefix="/publications", tags=["publications"])
 api.include_router(
     make_content_router(
         entity="conference",
@@ -90,7 +94,17 @@ def health():
 
 app.include_router(api)
 
-# Local development only: serve the storage folder at /media (photos, content.json), the way the R2 media bucket
-# will be served in production. Read-only; directory listings are not offered.
+# Local development only: serve the PUBLIC parts of the storage folder at /media, the way the public R2 bucket will be
+# served in production: pictures, page images and content.json. Nothing else is reachable: not `_private/` (the source
+# PDFs), and not the owner's own staging folders (such as Books/). Read-only; no directory listings.
 if settings.environment != "production":
-    app.mount("/media", StaticFiles(directory=get_storage().root), name="media")
+    _storage = get_storage()
+    for _prefix in PUBLIC_PREFIXES:
+        (_storage.root / _prefix).mkdir(parents=True, exist_ok=True)
+        app.mount(f"/media/{_prefix}", StaticFiles(directory=_storage.root / _prefix), name=f"media-{_prefix}")
+
+    @app.get("/media/{name}", include_in_schema=False)
+    def media_file(name: str):
+        if name not in PUBLIC_FILES or not (_storage.root / name).is_file():
+            raise HTTPException(404)
+        return FileResponse(_storage.root / name, headers={"Cache-Control": "no-cache"})

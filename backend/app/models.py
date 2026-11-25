@@ -88,6 +88,52 @@ class MediaAsset(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, index=True)
 
 
+class Publication(Base):
+    """A book (one edition) or a monthly publication (one edition per issue). Shown to readers as page pictures only."""
+
+    __tablename__ = "publications"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    slug: Mapped[str] = mapped_column(String(60), unique=True, index=True)
+    kind: Mapped[str] = mapped_column(String(10))  # "book" | "monthly"
+    title_en: Mapped[str] = mapped_column(String(200))
+    title_ta: Mapped[str] = mapped_column(String(200))
+    description_en: Mapped[str] = mapped_column(Text)
+    description_ta: Mapped[str] = mapped_column(Text)
+    author_en: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    author_ta: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    status: Mapped[str] = mapped_column(String(10), default=Status.draft.value, index=True)
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, onupdate=now)
+
+
+class Edition(Base):
+    """One PDF of a publication, processed into page pictures at publications/<key>/pNNN.webp."""
+
+    __tablename__ = "editions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    publication_id: Mapped[int] = mapped_column(ForeignKey("publications.id", ondelete="CASCADE"), index=True)
+    key: Mapped[str] = mapped_column(String(32), unique=True, index=True)
+    label: Mapped[str] = mapped_column(String(120))  # e.g. "Issue 100" or "First edition"
+    volume: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    issue_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    year: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    month: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    status: Mapped[str] = mapped_column(String(10), default=Status.draft.value, index=True)
+    state: Mapped[str] = mapped_column(String(12), default="processing")  # processing | ready | failed
+    processed_pages: Mapped[int] = mapped_column(Integer, default=0)
+    page_count: Mapped[int] = mapped_column(Integer, default=0)
+    page_width_px: Mapped[int] = mapped_column(Integer, default=0)
+    page_height_px: Mapped[int] = mapped_column(Integer, default=0)
+    watermark: Mapped[bool] = mapped_column(Boolean, default=True)
+    error: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, onupdate=now)
+
+
 class AuditLog(Base):
     """Who changed what, and when. Rows are only ever added."""
 

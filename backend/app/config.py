@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     # Uploads: largest accepted file and largest accepted picture (width x height).
     max_upload_bytes: int = 10 * 1024 * 1024
     max_image_pixels: int = 60_000_000
+    # Publications (books, magazine issues): the PDF is turned into page pictures; the PDF itself is never served.
+    max_pdf_bytes: int = 80 * 1024 * 1024
+    max_pdf_pages: int = 800
+    page_width_px: int = 1100  # width of the page pictures readers see
+    cover_width_px: int = 600
+    watermark_text: str = "Viduthalai Chiruthaigal Katchi"  # drawn faintly across every page picture
 
     @property
     def storage_path(self) -> Path:

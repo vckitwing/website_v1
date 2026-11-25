@@ -14,8 +14,16 @@ from typing import Protocol
 from .config import get_settings
 
 
+# What the web may fetch from the storage folder in development (production serves the public R2 bucket instead).
+# Everything else, notably `_private/` (source PDFs) and the owner's own staging folders, is never served.
+PUBLIC_PREFIXES = ("images", "publications")
+PUBLIC_FILES = ("content.json",)
+PRIVATE_PREFIX = "_private"
+
+
 class Storage(Protocol):
     def put(self, key: str, data: bytes, content_type: str) -> None: ...
+    def read(self, key: str) -> bytes: ...
     def delete(self, key: str) -> None: ...
     def delete_prefix(self, prefix: str) -> None: ...
     def exists(self, key: str) -> bool: ...
@@ -44,6 +52,9 @@ class LocalStorage:
         with os.fdopen(fd, "wb") as handle:
             handle.write(data)
         os.replace(temp, path)
+
+    def read(self, key: str) -> bytes:
+        return self._path(key).read_bytes()
 
     def delete(self, key: str) -> None:
         self._path(key).unlink(missing_ok=True)

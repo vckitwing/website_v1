@@ -99,3 +99,62 @@ export interface MediaUpdate {
   caption_en?: string | null;
   caption_ta?: string | null;
 }
+
+export type PublicationKind = 'book' | 'monthly';
+export type EditionState = 'processing' | 'ready' | 'failed';
+
+export interface Edition {
+  id: number;
+  publication_id: number;
+  label: string;
+  volume: number | null;
+  issue_number: number | null;
+  year: number | null;
+  month: number | null;
+  status: Status;
+  state: EditionState;
+  processed_pages: number;
+  page_count: number;
+  page_width_px: number;
+  page_height_px: number;
+  watermark: boolean;
+  error: string | null;
+  cover_url: string | null; // only once ready
+  created_at: string;
+}
+
+export interface Publication {
+  id: number;
+  slug: string;
+  kind: PublicationKind;
+  title_en: string;
+  title_ta: string;
+  description_en: string;
+  description_ta: string;
+  author_en: string | null;
+  author_ta: string | null;
+  status: Status;
+  editions: Edition[]; // newest first
+  updated_at: string;
+}
+
+export interface PublicationInput {
+  slug: string;
+  kind: PublicationKind;
+  title_en: string;
+  title_ta: string;
+  description_en: string;
+  description_ta: string;
+  author_en: string | null;
+  author_ta: string | null;
+  status: Status;
+}
+
+export interface EditionUpdate {
+  label?: string;
+  volume?: number | null;
+  issue_number?: number | null;
+  year?: number | null;
+  month?: number | null;
+  status?: Status;
+}

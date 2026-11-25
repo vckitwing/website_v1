@@ -3,7 +3,7 @@ import json
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .models import AuditLog, Conference, HistoryMilestone, Status, User
+from .models import AuditLog, Conference, Edition, HistoryMilestone, Publication, Status, User
 from .storage import get_storage
 
 CONTENT_KEY = "content.json"
@@ -23,6 +23,7 @@ def build_snapshot(db: Session) -> dict:
         select(HistoryMilestone).where(HistoryMilestone.status == published).order_by(HistoryMilestone.year, HistoryMilestone.position, HistoryMilestone.id)
     ).all()
     return {
+        "publications": _publications(db),
         "conferences": [{"year": c.year, "name": {"en": c.name_en, "ta": c.name_ta}} for c in conferences],
         "history": [
             {
@@ -34,6 +35,47 @@ def build_snapshot(db: Session) -> dict:
             for m in milestones
         ],
     }
+
+
+def _publications(db: Session) -> list[dict]:
+    """Published publications with their published, ready editions (newest first). Only picture addresses, never the PDF."""
+    storage = get_storage()
+    result = []
+    for p in db.scalars(select(Publication).where(Publication.status == Status.published.value).order_by(Publication.id)).all():
+        editions = db.scalars(
+            select(Edition)
+            .where(Edition.publication_id == p.id, Edition.status == Status.published.value, Edition.state == "ready")
+            .order_by(Edition.year.desc().nulls_last(), Edition.month.desc().nulls_last(), Edition.id.desc())
+        ).all()
+        if not editions:
+            continue
+        result.append(
+            {
+                "slug": p.slug,
+                "kind": p.kind,
+                "title": {"en": p.title_en, "ta": p.title_ta},
+                "description": {"en": p.description_en, "ta": p.description_ta},
+                "author": {"en": p.author_en or "", "ta": p.author_ta or ""} if (p.author_en or p.author_ta) else None,
+                "editions": [
+                    {
+                        "id": e.key,
+                        "label": e.label,
+                        "volume": e.volume,
+                        "issue": e.issue_number,
+                        "year": e.year,
+                        "month": e.month,
+                        "pages": e.page_count,
+                        "width": e.page_width_px,
+                        "height": e.page_height_px,
+                        "cover": storage.url(f"publications/{e.key}/cover.webp"),
+                        # page n is  pagesBase + "p" + n padded to 3 digits + ".webp"
+                        "pagesBase": storage.url(f"publications/{e.key}/"),
+                    }
+                    for e in editions
+                ],
+            }
+        )
+    return result
 
 
 def publish_snapshot(db: Session) -> None:

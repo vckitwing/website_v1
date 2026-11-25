@@ -1,15 +1,19 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpEvent } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   AuditEntry,
   Conference,
   ConferenceInput,
+  Edition,
+  EditionUpdate,
   MediaAsset,
   MediaUpdate,
   Milestone,
   MilestoneInput,
+  Publication,
+  PublicationInput,
   Status,
   User,
   UserCreate,
@@ -88,6 +92,32 @@ export class ApiService {
   }
   deleteMedia(id: number): Promise<void> {
     return firstValueFrom(this.http.delete<void>(`${this.base}/media/${id}`));
+  }
+
+  publications(): Promise<Publication[]> {
+    return firstValueFrom(this.http.get<Publication[]>(`${this.base}/publications`));
+  }
+  createPublication(body: PublicationInput): Promise<Publication> {
+    return firstValueFrom(this.http.post<Publication>(`${this.base}/publications`, body));
+  }
+  updatePublication(id: number, body: Partial<PublicationInput>): Promise<Publication> {
+    return firstValueFrom(this.http.patch<Publication>(`${this.base}/publications/${id}`, body));
+  }
+  deletePublication(id: number): Promise<void> {
+    return firstValueFrom(this.http.delete<void>(`${this.base}/publications/${id}`));
+  }
+  /** Streams HTTP events so the upload percentage can be shown. */
+  uploadEdition(publicationId: number, body: FormData): Observable<HttpEvent<Edition>> {
+    return this.http.post<Edition>(`${this.base}/publications/${publicationId}/editions`, body, { reportProgress: true, observe: 'events' });
+  }
+  updateEdition(id: number, body: EditionUpdate): Promise<Edition> {
+    return firstValueFrom(this.http.patch<Edition>(`${this.base}/publications/editions/${id}`, body));
+  }
+  retryEdition(id: number): Promise<Edition> {
+    return firstValueFrom(this.http.post<Edition>(`${this.base}/publications/editions/${id}/retry`, {}));
+  }
+  deleteEdition(id: number): Promise<void> {
+    return firstValueFrom(this.http.delete<void>(`${this.base}/publications/editions/${id}`));
   }
 
   changePassword(current_password: string, new_password: string): Promise<void> {

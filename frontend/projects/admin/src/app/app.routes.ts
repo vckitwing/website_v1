@@ -11,6 +11,7 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'conferences' },
       { path: 'conferences', title: 'Conferences · VCK Admin', loadComponent: () => import('./pages/conferences/conferences.component').then((m) => m.ConferencesComponent) },
       { path: 'history', title: 'History · VCK Admin', loadComponent: () => import('./pages/history/history.component').then((m) => m.HistoryComponent) },
+      { path: 'publications', title: 'Publications · VCK Admin', loadComponent: () => import('./pages/publications/publications.component').then((m) => m.PublicationsComponent) },
       { path: 'media', title: 'Media · VCK Admin', loadComponent: () => import('./pages/media/media.component').then((m) => m.MediaComponent) },
       { path: 'users', title: 'Users · VCK Admin', canActivate: [superAdminGuard], loadComponent: () => import('./pages/users/users.component').then((m) => m.UsersComponent) },
       { path: 'audit', title: 'Activity log · VCK Admin', canActivate: [superAdminGuard], loadComponent: () => import('./pages/audit/audit.component').then((m) => m.AuditComponent) },

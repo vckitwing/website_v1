@@ -1,21 +1,59 @@
-<header class="bar">
-  <strong class="brand">VCK Admin</strong>
-  <nav aria-label="Sections">
-    <a routerLink="/conferences" routerLinkActive="active">Conferences</a>
-    <a routerLink="/history" routerLinkActive="active">History</a>
-    <a routerLink="/media" routerLinkActive="active">Media</a>
-    @if (auth.isSuperAdmin()) {
-      <a routerLink="/users" routerLinkActive="active">Users</a>
-      <a routerLink="/audit" routerLinkActive="active">Activity</a>
-    }
-  </nav>
-  <div class="who">
-    @if (auth.user(); as user) {
-      <a routerLink="/account" class="name" title="My account">{{ user.name }} · {{ roleLabels[user.role] }}</a>
-    }
-    <button class="btn small" type="button" (click)="auth.logout()">Sign out</button>
-  </div>
-</header>
-<main class="content">
-  <router-outlet />
-</main>
+<div class="layout">
+  <header class="topbar">
+    <button
+      class="menu-button"
+      type="button"
+      aria-controls="side-menu"
+      [attr.aria-expanded]="menuOpen()"
+      [attr.aria-label]="menuOpen() ? 'Close menu' : 'Open menu'"
+      (click)="toggleMenu()"
+    >
+      <span></span><span></span><span></span>
+    </button>
+    <strong>VCK Admin</strong>
+  </header>
+
+  <aside id="side-menu" class="sidebar" [class.open]="menuOpen()" aria-label="Admin menu">
+    <div class="brand">
+      <strong>VCK Admin</strong>
+      <span class="muted">Website content</span>
+    </div>
+
+    <nav aria-label="Sections">
+      @for (group of groups; track group.title) {
+        @if (!group.superAdminOnly || auth.isSuperAdmin()) {
+          <p class="group-title">{{ group.title }}</p>
+          <ul>
+            @for (item of group.items; track item.path) {
+              <li>
+                <a [routerLink]="item.path" routerLinkActive="active" (click)="closeMenu()">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path [attr.d]="item.icon" /></svg>
+                  <span>{{ item.label }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      }
+    </nav>
+
+    <div class="account">
+      @if (auth.user(); as user) {
+        <a routerLink="/account" routerLinkActive="active" class="who" (click)="closeMenu()" title="My account">
+          <span class="avatar" aria-hidden="true">{{ user.name.charAt(0).toUpperCase() }}</span>
+          <span class="who-text">
+            <strong>{{ user.name }}</strong>
+            <span class="muted">{{ roleLabels[user.role] }}</span>
+          </span>
+        </a>
+      }
+      <button class="btn small signout" type="button" (click)="auth.logout()">Sign out</button>
+    </div>
+  </aside>
+
+  <button class="backdrop" type="button" tabindex="-1" aria-label="Close menu" [class.open]="menuOpen()" (click)="closeMenu()"></button>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

@@ -29,7 +29,8 @@ PASSWORD = "Str0ngPassword1"
 def client():
     Base.metadata.drop_all(_engine)
     Base.metadata.create_all(_engine)
-    shutil.rmtree(Path(TEST_STORAGE) / "images", ignore_errors=True)  # every test starts with empty storage
+    for folder in ("images", "publications", "_private", "Books"):  # every test starts with empty storage
+        shutil.rmtree(Path(TEST_STORAGE) / folder, ignore_errors=True)
     login_throttle._failures.clear()
     with SessionLocal() as db:
         for email, role in [("root@x.org", Role.super_admin), ("ed@x.org", Role.editor), ("co@x.org", Role.contributor)]:
