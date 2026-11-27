@@ -1,5 +1,6 @@
 /**
- * The party's teams (wings, movements, councils, centres), as supplied by the owner, in the supplied order and wording.
+ * The party's teams (wings, movements, councils, centres), as supplied by the owner, in the supplied order and wording
+ * (the repeated Social Harmony Council entry was removed at the owner's request).
  * `kind` is only for the filter buttons and follows the word the Tamil name ends with
  * (அணி / பாசறை = wing, இயக்கம் = movement, பேரவை = council, மையம் = centre, anything else = other).
  */
@@ -24,7 +25,7 @@ export const ORG_TEAMS: readonly OrgTeam[] = [
   team('council', 'கிறித்தவ சமூக நீதி பேரவை', 'Christian Social Justice Council'),
   team('movement', 'சுற்றுச்சூழல் பாதுகாப்பு இயக்கம்', 'Environmental Protection Movement'),
   team('wing', 'வணிகர் அணி', 'Traders’ / Merchants’ Wing'),
-  team('council', 'சமூக நல்லிணக்க பேரவை', 'Social Harmony Council'),
+  team('council', 'சமூக நல்லிணக்கப் பேரவை', 'Social Harmony Council'),
   team('other', 'முற்போக்கு மாணவர் கழகம்', 'Progressive Students’ Federation'),
   team('other', 'தொழிலாளர் விடுதலை முன்னணி (அமைப்பு சார்)', 'Labour Liberation Front (Organized Sector)'),
   team('other', 'தொழிலாளர் விடுதலை முன்னணி (அமைப்பு சாரா)', 'Labour Liberation Front (Unorganized Sector)'),
@@ -46,7 +47,6 @@ export const ORG_TEAMS: readonly OrgTeam[] = [
   team('movement', 'தூய்மை பணியாளர் மேம்பாட்டு இயக்கம்', 'Sanitation Workers’ Welfare / Development Movement'),
   team('other', 'தொழிலாளர் விடுதலை முன்னணி (TASMAC)', 'Labour Liberation Front (TASMAC)'),
   team('wing', 'வழக்கறிஞர் அணி', 'Lawyers’ Wing'),
-  team('council', 'சமூக நல்லிணக்கப் பேரவை', 'Social Harmony Council'),
   team('other', 'அனைத்து ஆசிரியர் கூட்டமைப்பு', 'All Teachers’ Federation'),
   team('council', 'மீனவர் மேம்பாட்டு பேரவை', 'Fishermen Welfare / Development Council'),
   team('wing', 'ஓவியர் அணி', 'Painters’ / Artists’ Wing'),
