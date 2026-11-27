@@ -28,7 +28,7 @@
 
 .reader {
   --bar-height: 56px;
-  --reader-ink: #f4f7fc;
+  --reader-ink: var(--vck-white);
   --reader-muted: rgba(244, 247, 252, 0.7);
   --reader-line: rgba(244, 247, 252, 0.18);
   position: absolute;
@@ -127,7 +127,7 @@
 
   &:focus-visible,
   .slider:focus-visible {
-    outline: 2px solid #ed2a40;
+    outline: 2px solid var(--vck-red);
     outline-offset: 2px;
   }
 }
@@ -242,7 +242,7 @@ $zoom-factors: (1: 1.6, 2: 2.4);
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: #f4f7fc;
+  background: var(--vck-white);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
@@ -287,7 +287,7 @@ $zoom-factors: (1: 1.6, 2: 2.4);
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: #f4f7fc;
+  background: var(--vck-white);
   box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
   transition: opacity 0.35s ease, transform 0.35s ease;
 
@@ -371,7 +371,7 @@ $zoom-factors: (1: 1.6, 2: 2.4);
     user-select: text;
 
     &:focus-visible {
-      outline: 2px solid #ed2a40;
+      outline: 2px solid var(--vck-red);
       outline-offset: 2px;
     }
   }

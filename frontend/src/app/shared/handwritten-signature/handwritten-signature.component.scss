@@ -5,7 +5,7 @@
 }
 
 :host-context(.light-theme) {
-  --signature-ink-resolved: var(--signature-ink, #14243c);
+  --signature-ink-resolved: var(--signature-ink, var(--vck-ink));
 }
 
 .signature {

@@ -4,7 +4,7 @@
 }
 
 .conf-section {
-  --conf-ink: #f4f7fc;
+  --conf-ink: var(--vck-white);
   --conf-muted: #a9b7c9;
   --conf-tile: clamp(150px, 15vw, 232px);
   --conf-gap: clamp(10px, 1.1vw, 16px);
@@ -15,7 +15,7 @@
   color: var(--conf-ink);
   background:
     radial-gradient(ellipse at 50% 0, rgba(47, 105, 163, .14), transparent 40%),
-    var(--page-surface, #07111f);
+    var(--page-surface, var(--vck-night));
   font-family: 'Montserrat', 'Noto Sans Tamil', sans-serif;
 }
 
@@ -36,7 +36,7 @@
   filter: drop-shadow(0 0 12px rgba(244, 247, 252, 0.45));
 
   polygon {
-    fill: #f4f7fc;
+    fill: var(--vck-white);
   }
 }
 
@@ -44,7 +44,7 @@
   filter: none;
 
   polygon {
-    fill: #14243c;
+    fill: var(--vck-ink);
   }
 }
 
@@ -180,7 +180,7 @@
 }
 
 .conf-year {
-  color: #73c7ff;
+  color: var(--vck-blue-soft);
   font: 700 clamp(26px, 2.6vw, 36px)/1 'Outfit', sans-serif;
   letter-spacing: -.02em;
 }
@@ -190,7 +190,7 @@
 }
 
 .conf-tile.tone-2 .conf-year {
-  color: #ff7e8c;
+  color: var(--vck-red-soft);
 }
 
 .conf-name {
@@ -234,11 +234,11 @@
 
 // ---- Light theme ---------------------------------------------------------------------------------------------------
 :host-context(.light-theme) .conf-section {
-  --conf-ink: #14243c;
+  --conf-ink: var(--vck-ink);
   --conf-muted: #52657b;
   background:
     radial-gradient(ellipse at 50% 0, rgba(54, 133, 207, .12), transparent 40%),
-    var(--page-surface, #f2f6fc);
+    var(--page-surface, var(--vck-day));
 }
 
 :host-context(.light-theme) .conf-motion {
@@ -260,15 +260,15 @@
 }
 
 :host-context(.light-theme) .conf-year {
-  color: #176bb8;
+  color: var(--vck-blue-deep);
 }
 
 :host-context(.light-theme) .conf-tile.tone-1 .conf-year {
-  color: #14243c;
+  color: var(--vck-ink);
 }
 
 :host-context(.light-theme) .conf-tile.tone-2 .conf-year {
-  color: #ce2038;
+  color: var(--vck-red-strong);
 }
 
 // ---- Phones ------------------------------------------------------------------------------------------------------

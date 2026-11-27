@@ -1,10 +1,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Anek+Tamil:wght@700;800&family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=Space+Grotesk:wght@700&display=swap');
+
+// The one colour standard of the website (blue and red only). Use these names, not new hex values.
+:root {
+  --vck-blue: #2785df;
+  --vck-blue-deep: #176bb8;
+  --vck-blue-dark: #15569a;
+  --vck-blue-bright: #00aef0;
+  --vck-blue-soft: #7fb8f0;
+  --vck-red: #ed2a40;
+  --vck-red-strong: #ce2038;
+  --vck-red-deep: #b71e36;
+  --vck-red-soft: #ff7e8c;
+  --vck-ink: #14243c;
+  --vck-night: #07111f;
+  --vck-white: #f4f7fc;
+  --vck-day: #f2f6fc;
+}
 :root { color-scheme:dark; font-family:'Montserrat','Noto Sans Tamil',sans-serif; font-synthesis:none; text-rendering:optimizeLegibility; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
 * { box-sizing:border-box; }
-html { min-height:100%; scroll-behavior:smooth; background:#07111f; scrollbar-color:#405069 #07111f; scrollbar-width:thin; }
-html:has(.hero-shell.light-theme) { color-scheme:light; background:#f2f6fc; scrollbar-color:#bcc7d6 #f2f6fc; }
+html { min-height:100%; scroll-behavior:smooth; background:var(--vck-night); scrollbar-color:#405069 var(--vck-night); scrollbar-width:thin; }
+html:has(.hero-shell.light-theme) { color-scheme:light; background:var(--vck-day); scrollbar-color:#bcc7d6 var(--vck-day); }
 body { margin:0; min-height:100%; }
 button,a { -webkit-tap-highlight-color:transparent; }
-button:focus-visible,a:focus-visible { outline:2px solid #ed2a40; outline-offset:4px; }
+button:focus-visible,a:focus-visible { outline:2px solid var(--vck-red); outline-offset:4px; }
 /* While the page reader (a book or magazine) is open the page behind it does not scroll. */
 html.vck-reader-open { overflow:hidden; }

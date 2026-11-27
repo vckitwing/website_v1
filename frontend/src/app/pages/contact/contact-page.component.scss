@@ -17,14 +17,14 @@
 }
 
 .ct-page {
-  --ct-text: #f4f7fc;
+  --ct-text: var(--vck-white);
   --ct-muted: rgba(244, 247, 252, 0.72);
   --ct-card: linear-gradient(160deg, rgba(21, 86, 154, 0.22), rgba(9, 25, 43, 0.72) 55%, rgba(183, 30, 54, 0.12));
   --ct-card-border: rgba(74, 158, 235, 0.32);
   --ct-card-shadow: 0 22px 54px rgba(0, 0, 0, 0.34);
   --ct-field: rgba(244, 247, 252, 0.06);
   --ct-field-border: rgba(244, 247, 252, 0.22);
-  --ct-accent: #7fb8f0;
+  --ct-accent: var(--vck-blue-soft);
   max-width: 1120px;
   margin: 0 auto;
   padding: clamp(36px, 6vw, 76px) 0 clamp(48px, 7vw, 96px);
@@ -97,8 +97,8 @@
   height: 46px;
   margin-bottom: 18px;
   border-radius: 12px;
-  color: #f4f7fc;
-  background: linear-gradient(135deg, #15569a, #247fc6);
+  color: var(--vck-white);
+  background: linear-gradient(135deg, var(--vck-blue-dark), #247fc6);
 
   svg {
     width: 22px;
@@ -112,7 +112,7 @@
 }
 
 .ct-icon-red {
-  background: linear-gradient(135deg, #b71e36, #e33548);
+  background: linear-gradient(135deg, var(--vck-red-deep), var(--vck-red));
 }
 
 .ct-office {
@@ -202,8 +202,8 @@
 
 .ct-button-primary {
   border-color: transparent;
-  color: #f4f7fc;
-  background: linear-gradient(135deg, #15569a, #247fc6);
+  color: var(--vck-white);
+  background: linear-gradient(135deg, var(--vck-blue-dark), #247fc6);
 
   &:hover,
   &:focus-visible {
@@ -272,14 +272,14 @@
 
 /* Light theme */
 :host-context(.light-theme) .ct-page {
-  --ct-text: #14243c;
+  --ct-text: var(--vck-ink);
   --ct-muted: rgba(20, 36, 60, 0.74);
   --ct-card: linear-gradient(160deg, rgba(39, 133, 223, 0.1), rgba(247, 249, 253, 0.9) 55%, rgba(237, 42, 64, 0.06));
   --ct-card-border: rgba(23, 107, 184, 0.26);
   --ct-card-shadow: 0 18px 40px rgba(25, 47, 76, 0.13);
   --ct-field: rgba(20, 36, 60, 0.04);
   --ct-field-border: rgba(20, 36, 60, 0.26);
-  --ct-accent: #176bb8;
+  --ct-accent: var(--vck-blue-deep);
 }
 
 :host-context(.light-theme) .ct-email {

@@ -8,7 +8,7 @@
   // Outfit (geometric sans, SIL OFL - free for commercial use) in sentence case. Latin only, so Tamil keeps
   // Noto Sans Tamil. Outfit is a variable font: 700 for the slogan, 800 for the highlighted word.
   .slogan .slogan-text {
-    color: #f4f7fc;
+    color: var(--vck-white);
     font-family: 'Outfit', 'Plus Jakarta Sans', 'Noto Sans Tamil', sans-serif;
     font-size: clamp(48px, 7.3vw, 112px);
     font-weight: 500;
@@ -70,11 +70,11 @@
 
 .hero-shell.light-theme {
   .hero-copy .slogan .slogan-text {
-    color: #14243c;
+    color: var(--vck-ink);
   }
 
   .hero-highlight {
-    color: #c51c35;
+    color: var(--vck-red-strong);
   }
 }
 
@@ -252,7 +252,7 @@
   margin-top: clamp(14px, 2.2vh, 22px);
   padding: 11px 20px 11px 22px;
   border-radius: 999px;
-  background: #f4f7fc;
+  background: var(--vck-white);
   color: #0a1220;
   font: 600 14px/1 'Outfit', 'Noto Sans Tamil', sans-serif;
   letter-spacing: 0.01em;
@@ -282,14 +282,14 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #ed2a40;
+    outline: 2px solid var(--vck-red);
     outline-offset: 4px;
   }
 }
 
 .hero-shell.light-theme .hero-pill {
-  background: #14243c;
-  color: #f4f7fc;
+  background: var(--vck-ink);
+  color: var(--vck-white);
 }
 
 // Vertical 01-04 index on the right edge; the active slogan gets a red line.
@@ -325,7 +325,7 @@
 
   &:hover,
   &.is-active {
-    color: #f4f7fc;
+    color: var(--vck-white);
   }
 }
 
@@ -334,7 +334,7 @@
   width: 0;
   height: 2px;
   border-radius: 2px;
-  background: #ed2a40;
+  background: var(--vck-red);
   transition: width 0.4s ease;
 }
 
@@ -371,7 +371,7 @@
 
   &:hover,
   &.is-active {
-    color: #14243c;
+    color: var(--vck-ink);
   }
 }
 

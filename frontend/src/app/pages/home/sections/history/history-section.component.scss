@@ -9,7 +9,7 @@
   --history-line: rgba(209, 229, 250, .2);
   --history-card: rgba(14, 29, 49, .88);
   --history-card-edge: rgba(225, 238, 255, .1);
-  --history-accent: #8bcaff;
+  --history-accent: var(--vck-blue-soft);
   position: relative;
   // Overflow .hero-shell's side padding equally on both sides (full window width).
   width: 100vw;
@@ -19,7 +19,7 @@
   color: var(--history-ink);
   background:
     radial-gradient(ellipse at 50% 0, rgba(47, 105, 163, .16), transparent 38%),
-    var(--page-surface, #07111f);
+    var(--page-surface, var(--vck-night));
 }
 
 .history-intro {
@@ -131,7 +131,7 @@
   height: 14px;
   border: 2px solid rgba(194, 215, 239, .48);
   border-radius: 50%;
-  background: var(--page-surface, #07111f);
+  background: var(--page-surface, var(--vck-night));
   transition: background .25s ease, border-color .25s ease, box-shadow .25s ease;
 }
 
@@ -146,11 +146,11 @@
 }
 
 .history-star-marker {
-  --star-point-active: #f4f7fc;
+  --star-point-active: var(--vck-white);
   --star-point-inactive: rgba(244, 247, 252, .1);
   --star-point-stroke: rgba(244, 247, 252, .82);
   --star-point-glow: rgba(244, 247, 252, .72);
-  --star-focus: #74c4ff;
+  --star-focus: var(--vck-blue-soft);
   --star-line: rgba(244, 247, 252, .9);
   position: absolute;
   z-index: 3;
@@ -287,31 +287,31 @@
   --history-line: rgba(43, 74, 108, .22);
   --history-card: rgba(244, 247, 252, .9);
   --history-card-edge: rgba(26, 54, 84, .12);
-  --history-accent: #176bb8;
+  --history-accent: var(--vck-blue-deep);
   background:
     radial-gradient(ellipse at 50% 0, rgba(69, 137, 199, .13), transparent 38%),
-    var(--page-surface, #f2f6fc);
+    var(--page-surface, var(--vck-day));
 }
 
 :host-context(.light-theme) .history-star-marker {
-  --star-point-active: #176bb8;
+  --star-point-active: var(--vck-blue-deep);
   --star-point-inactive: rgba(20, 36, 60, .12);
   --star-point-stroke: rgba(20, 36, 60, .64);
   --star-point-glow: rgba(23, 107, 184, .32);
-  --star-focus: #064d86;
+  --star-focus: var(--vck-blue-dark);
   --star-line: rgba(20, 36, 60, .78);
   filter: drop-shadow(0 0 10px rgba(23, 107, 184, .38));
 }
 
 :host-context(.light-theme) .history-node {
   border-color: rgba(24, 53, 84, .44);
-  background: #f2f6fc;
+  background: var(--vck-day);
 }
 
 :host-context(.light-theme) .history-node.is-complete,
 :host-context(.light-theme) .history-node.is-active {
-  border-color: #f4f7fc;
-  background: #176bb8;
+  border-color: var(--vck-white);
+  background: var(--vck-blue-deep);
 }
 
 :host-context(.light-theme) .history-card {

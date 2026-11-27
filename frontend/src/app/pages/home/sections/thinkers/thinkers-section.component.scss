@@ -4,13 +4,13 @@
 }
 
 .th-section {
-  --th-ink: #f4f7fc;
+  --th-ink: var(--vck-white);
   --th-muted: #a9b7c9;
   --th-line: rgba(244, 247, 252, .18);
   --th-pad: clamp(22px, 6vw, 96px);
   position: relative;
   color: var(--th-ink);
-  background: var(--page-surface, #07111f);
+  background: var(--page-surface, var(--vck-night));
   font-family: 'Montserrat', 'Noto Sans Tamil', sans-serif;
 }
 
@@ -115,7 +115,7 @@
   display: block;
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, #2785df, #ed2a40);
+  background: linear-gradient(180deg, var(--vck-blue), var(--vck-red));
   transform: scaleY(0);
   transform-origin: top center;
 }
@@ -128,7 +128,7 @@
   place-items: center;
   border: 1px solid var(--th-line);
   border-radius: 50%;
-  background: var(--page-surface, #07111f);
+  background: var(--page-surface, var(--vck-night));
 }
 
 .th-tick-number {
@@ -150,13 +150,13 @@
 }
 
 .th-rail-star polygon {
-  fill: #f4f7fc;
+  fill: var(--vck-white);
 }
 
 // ---- Chapters ------------------------------------------------------------------------------------------------------
 .th-chapter {
-  --th-accent: #2785df;
-  --th-accent-soft: #73c7ff;
+  --th-accent: var(--vck-blue);
+  --th-accent-soft: var(--vck-blue-soft);
   position: absolute;
   inset: 0;
   display: grid;
@@ -167,13 +167,13 @@
 }
 
 .th-periyar {
-  --th-accent: #ed2a40;
-  --th-accent-soft: #ff7e8c;
+  --th-accent: var(--vck-red);
+  --th-accent-soft: var(--vck-red-soft);
 }
 
 .th-marx {
-  --th-accent: #ed2a40;
-  --th-accent-soft: #73c7ff;
+  --th-accent: var(--vck-red);
+  --th-accent-soft: var(--vck-blue-soft);
 }
 
 .th-numeral {
@@ -346,7 +346,7 @@
 
 // ---- Light theme ---------------------------------------------------------------------------------------------------
 :host-context(.light-theme) .th-section {
-  --th-ink: #14243c;
+  --th-ink: var(--vck-ink);
   --th-muted: #4a5f78;
   --th-line: rgba(20, 36, 60, .2);
 }
@@ -364,23 +364,23 @@
 }
 
 :host-context(.light-theme) .th-chapter {
-  --th-accent-soft: #176bb8;
+  --th-accent-soft: var(--vck-blue-deep);
 }
 
 :host-context(.light-theme) .th-periyar {
-  --th-accent-soft: #ce2038;
+  --th-accent-soft: var(--vck-red-strong);
 }
 
 :host-context(.light-theme) .th-marx {
-  --th-accent-soft: #176bb8;
+  --th-accent-soft: var(--vck-blue-deep);
 }
 
 :host-context(.light-theme) .th-tick {
-  background: #f2f6fc;
+  background: var(--vck-day);
 }
 
 :host-context(.light-theme) .th-rail-star polygon {
-  fill: #176bb8;
+  fill: var(--vck-blue-deep);
 }
 
 :host-context(.light-theme) .th-rail-star {

@@ -1,0 +1,40 @@
+<section class="tm" aria-labelledby="tm-title">
+  <h2 id="tm-title">{{ copy.title[language()] }}</h2>
+  <p class="tm-lede">{{ copy.lede[language()] }}</p>
+
+  <div class="tm-tools">
+    <form class="tm-search" role="search" (submit)="$event.preventDefault()">
+      <label>
+        <span>{{ copy.search[language()] }}</span>
+        <input type="search" autocomplete="off" [placeholder]="copy.searchPlaceholder[language()]" [value]="query()" (input)="onSearch($event)" />
+      </label>
+    </form>
+
+    <div class="tm-filters" role="group" [attr.aria-label]="copy.filter[language()]">
+      @for (filter of filters; track filter.id) {
+        <button type="button" [attr.data-kind]="filter.id" [class.is-active]="kind() === filter.id" [attr.aria-pressed]="kind() === filter.id" (click)="kind.set(filter.id)">
+          {{ filter[language()] }}
+          <span class="tm-number">{{ counts()[filter.id] ?? 0 }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <p class="tm-summary" aria-live="polite">{{ summary() }}</p>
+
+  @if (teams().length) {
+    <ul class="tm-grid">
+      @for (team of teams(); track team.name.ta) {
+        <li [attr.data-kind]="team.kind">
+          <strong>{{ team.name[language()] }}</strong>
+          <span class="tm-kind">{{ kindLabels[team.kind][language()] }}</span>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="tm-none" role="status">
+      {{ copy.none[language()] }}
+      <button type="button" (click)="reset()">{{ copy.reset[language()] }}</button>
+    </p>
+  }
+</section>

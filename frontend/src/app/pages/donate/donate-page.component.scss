@@ -63,8 +63,8 @@
 
   &.is-active {
     border-color: transparent;
-    color: #f4f7fc;
-    background: linear-gradient(135deg, #15569a, #247fc6);
+    color: var(--vck-white);
+    background: linear-gradient(135deg, var(--vck-blue-dark), #247fc6);
   }
 }
 
@@ -139,7 +139,7 @@
     height: 168px;
     padding: 10px;
     border-radius: 12px;
-    background: #f4f7fc;
+    background: var(--vck-white);
   }
 
   figcaption {
@@ -158,15 +158,15 @@
 }
 
 .dn-qr-finder rect {
-  fill: #14243c;
+  fill: var(--vck-ink);
 }
 
 .dn-qr-hole rect {
-  fill: #f4f7fc;
+  fill: var(--vck-white);
 }
 
 .dn-qr-dots rect {
-  fill: #14243c;
+  fill: var(--vck-ink);
 }
 
 .dn-notes {
@@ -182,11 +182,11 @@
 
 :host-context(.light-theme) .dn-sample strong,
 :host-context(.light-theme) .dn-qr small {
-  color: #b61f35;
+  color: var(--vck-red-deep);
 }
 
 :host-context(.light-theme) .dn-chip.is-active {
-  color: #f4f7fc;
+  color: var(--vck-white);
 }
 
 @media (max-width: 860px) {

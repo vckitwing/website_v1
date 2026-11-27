@@ -133,7 +133,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #ed2a40;
+    outline: 2px solid var(--vck-red);
     outline-offset: 5px;
   }
 }

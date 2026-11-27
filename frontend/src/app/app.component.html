@@ -78,6 +78,10 @@
     @defer (on immediate) {
       <vck-amaipai-thiralvom-page [language]="language()" />
     }
+  } @else if (page() === 'org-structure') {
+    @defer (on immediate) {
+      <vck-org-structure-page [language]="language()" />
+    }
   }
 
   <section #heroSection class="hero" id="home" [attr.aria-label]="language() === 'ta' ? 'விசிக முன்னணிப் பகுதி' : 'VCK hero'">

@@ -33,7 +33,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #ed2a40;
+    outline: 2px solid var(--vck-red);
     outline-offset: 4px;
   }
 }
@@ -44,7 +44,7 @@
   bottom: 12px;
   padding: 8px 14px;
   border-radius: 999px;
-  color: #f4f7fc;
+  color: var(--vck-white);
   background: rgba(10, 22, 38, 0.82);
   font: 700 12px / 1 'Montserrat', 'Noto Sans Tamil', sans-serif;
   letter-spacing: 0.04em;
@@ -155,13 +155,13 @@
     cursor: pointer;
 
     &:focus-visible {
-      outline: 2px solid #ed2a40;
+      outline: 2px solid var(--vck-red);
       outline-offset: 2px;
     }
 
     option {
-      color: #14243c;
-      background: #f4f7fc;
+      color: var(--vck-ink);
+      background: var(--vck-white);
     }
   }
 }
@@ -214,7 +214,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #ed2a40;
+    outline: 2px solid var(--vck-red);
     outline-offset: 4px;
     border-radius: 8px;
   }
@@ -231,8 +231,8 @@
   left: 8px;
   padding: 5px 10px;
   border-radius: 999px;
-  color: #f4f7fc;
-  background: linear-gradient(135deg, #de2c45, #b71e36);
+  color: var(--vck-white);
+  background: linear-gradient(135deg, var(--vck-red), var(--vck-red-deep));
   font: 700 11px / 1 'Montserrat', 'Noto Sans Tamil', sans-serif;
   letter-spacing: 0.04em;
 }
@@ -280,12 +280,12 @@
 
   &.is-current {
     border-color: transparent;
-    color: #f4f7fc;
-    background: linear-gradient(135deg, #15569a, #247fc6);
+    color: var(--vck-white);
+    background: linear-gradient(135deg, var(--vck-blue-dark), #247fc6);
   }
 
   &:focus-visible {
-    outline: 2px solid #ed2a40;
+    outline: 2px solid var(--vck-red);
     outline-offset: 2px;
   }
 }
@@ -326,7 +326,7 @@
 }
 
 :host-context(.light-theme) .tl-cover-badge {
-  color: #f4f7fc;
+  color: var(--vck-white);
   background: rgba(20, 36, 60, 0.88);
 }
 

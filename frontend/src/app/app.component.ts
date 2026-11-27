@@ -9,6 +9,7 @@ import { ContactPageComponent } from './pages/contact/contact-page.component';
 import { DonatePageComponent } from './pages/donate/donate-page.component';
 import { TamilLandPageComponent } from './pages/tamil-land/tamil-land-page.component';
 import { AmaipaiThiralvomPageComponent } from './pages/amaipai-thiralvom/amaipai-thiralvom-page.component';
+import { OrgStructurePageComponent } from './pages/org-structure/org-structure-page.component';
 import { FlagSectionComponent } from './pages/home/sections/flag/flag-section.component';
 import { FooterSectionComponent } from './pages/home/sections/footer/footer-section.component';
 import { ConferencesSectionComponent } from './pages/home/sections/conferences/conferences-section.component';
@@ -19,7 +20,7 @@ import { HandwrittenSignatureComponent } from '@shared/handwritten-signature/han
 import { ThinkersSectionComponent } from './pages/home/sections/thinkers/thinkers-section.component';
 import { ThemeSwitchTransitionComponent } from './shared/theme-switch-transition/theme-switch-transition.component';
 
-type PageName = 'home' | 'contact' | 'donate' | 'tamil-land' | 'amaipai-thiralvom';
+type PageName = 'home' | 'contact' | 'donate' | 'tamil-land' | 'amaipai-thiralvom' | 'org-structure';
 /** Where a menu item goes: another page, or somewhere on the home page (`hash` is an element id or a section name). */
 type NavTarget = { page: PageName; hash?: string };
 type NavItem = { ta: string; en: string; go?: NavTarget };
@@ -32,7 +33,7 @@ type SloganLine = { parts: SloganPart[]; words: SloganWord[] };
 @Component({
   selector: 'vck-root',
   standalone: true,
-  imports: [ContactPageComponent, DonatePageComponent, TamilLandPageComponent, AmaipaiThiralvomPageComponent, FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ConferencesSectionComponent, FooterSectionComponent, SocialSectionComponent, HandwrittenSignatureComponent, ThemeSwitchTransitionComponent],
+  imports: [ContactPageComponent, DonatePageComponent, TamilLandPageComponent, AmaipaiThiralvomPageComponent, OrgStructurePageComponent, FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ConferencesSectionComponent, FooterSectionComponent, SocialSectionComponent, HandwrittenSignatureComponent, ThemeSwitchTransitionComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss', './site-nav.scss', './pages/home/hero/hero-typography.scss', './pages/home/hero/hero-signature.scss', './pages/home/hero/hero-mobile.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -130,6 +131,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     {
       id: 'structure', ta: 'இயக்க கட்டமைப்பு', en: 'Org Structure', items: [
+        { ta: 'அமைப்பு வரைபடம்', en: 'Org View', go: { page: 'org-structure' } },
         { ta: 'தலைமை', en: 'Leadership' },
         { ta: 'மாநிலச் செயலாளர்கள்', en: 'State secretaries' },
         { ta: 'மாவட்டச் செயலாளர்கள்', en: 'District secretaries' },
@@ -373,7 +375,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private readPage(): PageName {
     const path = location.pathname.startsWith(this.basePath) ? location.pathname.slice(this.basePath.length) : location.pathname.replace(/^\//, '');
     const name = path.replace(/\/$/, '');
-    return name === 'contact' || name === 'donate' || name === 'tamil-land' || name === 'amaipai-thiralvom' ? name : 'home';
+    return name === 'contact' || name === 'donate' || name === 'tamil-land' || name === 'amaipai-thiralvom' || name === 'org-structure' ? name : 'home';
   }
 
   /** Real address of a target, so links open in a new tab, copy and bookmark properly. */
@@ -401,6 +403,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     if (page === 'donate') return ta ? 'நன்கொடை — விசிக' : 'Donate — VCK';
     if (page === 'tamil-land') return ta ? 'நமது தமிழ்மண் — விசிக' : 'Our Tamil Land — VCK';
     if (page === 'amaipai-thiralvom') return ta ? 'அமைப்பாய்த் திரள்வோம் — விசிக' : 'Amaippai Thiralvom — VCK';
+    if (page === 'org-structure') return ta ? 'அமைப்பு வரைபடம் — விசிக' : 'Org View — VCK';
     return this.homeTitle;
   }
 

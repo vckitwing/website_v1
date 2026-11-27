@@ -1,0 +1,707 @@
+// The chart reads from top to bottom: a main line down the middle, offices beside it, branches that join again.
+.og-page {
+  // every card in the chart has this size
+  --og-w: 186px;
+  --og-h: 154px;
+  max-width: 1200px;
+  --og-card: rgba(18, 40, 68, 0.88);
+  --og-line: rgba(127, 184, 240, 0.4);
+  --og-panel: #0b1c32;
+}
+
+:host-context(.light-theme) .og-page {
+  --og-card: var(--vck-white);
+  --og-line: rgba(23, 107, 184, 0.35);
+  --og-panel: var(--vck-white);
+}
+
+// Blue and red only (the party's colours): the levels alternate between them, in a deeper or brighter shade.
+[data-level='central'] {
+  --og-accent: var(--vck-red);
+}
+
+[data-level='zonal'] {
+  --og-accent: var(--vck-blue);
+}
+
+[data-level='district'] {
+  --og-accent: var(--vck-red-deep);
+}
+
+[data-level='local'] {
+  --og-accent: var(--vck-blue-bright);
+}
+
+[data-level='ground'] {
+  --og-accent: var(--vck-red);
+}
+
+[data-level='teams'] {
+  --og-accent: var(--vck-blue-deep);
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--vck-red);
+  outline-offset: 3px;
+}
+
+// ---- Search, level shortcuts -------------------------------------------------------------------------------------------------
+.og-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  position: relative;
+  z-index: 5;
+  margin-bottom: 28px;
+}
+
+.og-search {
+  position: relative;
+  flex: 1 1 260px;
+  max-width: 380px;
+
+  label {
+    display: grid;
+    gap: 6px;
+    color: var(--ct-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  input {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 14px;
+    border: 1px solid var(--ct-field-border);
+    border-radius: 12px;
+    color: var(--ct-text);
+    background: var(--ct-field);
+    font: 500 15px / 1.3 'Montserrat', 'Noto Sans Tamil', sans-serif;
+    letter-spacing: 0;
+  }
+}
+
+.og-results {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--og-line);
+  border-radius: 14px;
+  background: var(--og-panel);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.4);
+
+  button {
+    display: grid;
+    gap: 2px;
+    width: 100%;
+    min-height: 46px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 10px;
+    color: var(--ct-text);
+    background: none;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--ct-field);
+    }
+
+    span {
+      color: var(--ct-muted);
+      font-size: 12.5px;
+    }
+  }
+}
+
+.og-none {
+  padding: 12px;
+  color: var(--ct-muted);
+}
+
+.og-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--ct-field-border);
+    border-radius: 999px;
+    color: var(--ct-text);
+    background: var(--ct-field);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &::before {
+      content: '';
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--og-accent);
+    }
+
+    &:hover {
+      border-color: var(--og-accent);
+    }
+  }
+}
+
+// ---- Layout: chart + panel -----------------------------------------------------------------------------------------------------
+.og-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  align-items: start;
+  gap: clamp(20px, 3vw, 40px);
+}
+
+.og-chart {
+  display: grid;
+  justify-items: stretch;
+}
+
+.og-level {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  scroll-margin-top: 16px;
+}
+
+.og-level-title {
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 6px 14px;
+  border: 1px solid var(--og-accent);
+  border-radius: 999px;
+  color: var(--ct-text);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+// the line from one level to the next
+.og-level + .og-level::before {
+  content: '';
+  width: 2px;
+  height: 30px;
+  margin-bottom: 14px;
+  background: var(--og-line);
+}
+
+.og-tier {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+}
+
+.og-tier + .og-tier::before {
+  content: '';
+  width: 2px;
+  height: 28px;
+  background: var(--og-line);
+}
+
+// ---- Cards: one size, the same light gradient style as the team cards below; blue or red by level -------------------------------
+.og-card {
+  --og-from: color-mix(in srgb, var(--vck-blue) 14%, var(--vck-white));
+  --og-to: color-mix(in srgb, var(--vck-blue) 42%, var(--vck-white));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: var(--og-w);
+  height: var(--og-h);
+  max-width: 100%;
+  padding: 12px 6px; // narrow sides: some Tamil words are long
+  border: 1px solid color-mix(in srgb, var(--og-accent) 28%, transparent);
+  border-radius: 16px;
+  color: var(--vck-ink);
+  background:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--vck-white) 75%, transparent), transparent 58%),
+    linear-gradient(150deg, var(--og-from), var(--og-to));
+  text-align: center;
+  cursor: pointer;
+  scroll-margin-top: 16px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, opacity 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: var(--og-accent);
+  }
+
+  &.is-line {
+    border-color: var(--og-accent);
+    box-shadow: 0 0 0 3px var(--og-accent), 0 14px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  &.is-selected {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 0 0 4px var(--og-accent), 0 0 34px color-mix(in srgb, var(--og-accent) 60%, transparent);
+  }
+}
+
+// red levels
+[data-level='central'] .og-card,
+[data-level='district'] .og-card,
+[data-level='ground'] .og-card {
+  --og-from: color-mix(in srgb, var(--vck-red) 14%, var(--vck-white));
+  --og-to: color-mix(in srgb, var(--vck-red) 40%, var(--vck-white));
+}
+
+:host-context(.light-theme) .og-card {
+  box-shadow: 0 8px 20px rgba(25, 47, 76, 0.12);
+}
+
+:host-context(.light-theme) .og-card.is-line {
+  box-shadow: 0 0 0 3px var(--og-accent), 0 14px 30px rgba(25, 47, 76, 0.2);
+}
+
+:host-context(.light-theme) .og-card.is-selected {
+  box-shadow: 0 0 0 4px var(--og-accent), 0 0 34px color-mix(in srgb, var(--og-accent) 45%, transparent);
+}
+
+// with a role chosen, everything outside its line steps back
+.has-selection .og-card:not(.is-line) {
+  opacity: 0.55;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+  }
+}
+
+.og-title {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.og-scope {
+  color: color-mix(in srgb, var(--vck-ink) 82%, var(--vck-white));
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.og-tag {
+  display: inline-block;
+  margin: 0;
+  padding: 2px 10px;
+  border: 1px solid var(--og-line);
+  border-radius: 999px;
+  color: var(--ct-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+// ---- Offices beside a role ------------------------------------------------------------------------------------------------------
+.og-offices {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  margin-top: 14px;
+  padding: 18px 12px 12px;
+  border: 1px dashed var(--og-line);
+  border-radius: 18px;
+
+  li {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    flex: 0 0 var(--og-w);
+    max-width: 100%;
+  }
+}
+
+.og-sub {
+  display: grid;
+  justify-items: center;
+
+  &::before {
+    content: '';
+    width: 2px;
+    height: 18px;
+    background: var(--og-line);
+  }
+}
+
+// ---- Parallel branches that join again -------------------------------------------------------------------------------------------
+.og-branches {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+
+  > li {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    padding-top: 22px;
+
+    // the split: a drop into each branch, joined by a bar
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: calc(50% - 1px);
+      width: 2px;
+      height: 22px;
+      background: var(--og-line);
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -7px;
+      right: -7px;
+      height: 2px;
+      background: var(--og-line);
+    }
+
+    &:first-child::after {
+      left: 50%;
+    }
+
+    &:last-child::after {
+      right: 50%;
+    }
+  }
+}
+
+.og-step + .og-step {
+  display: grid;
+  justify-items: center;
+
+  &::before {
+    content: '';
+    width: 2px;
+    height: 22px;
+    background: var(--og-line);
+  }
+}
+
+// the join: the three branches come back together above the polling booth
+.og-join {
+  position: relative;
+  width: calc(100% * 2 / 3 + 5px);
+  height: 22px;
+  border: 2px solid var(--og-line);
+  border-top: 0;
+  border-radius: 0 0 12px 12px;
+}
+
+// ---- Details panel ---------------------------------------------------------------------------------------------------------------
+.og-panel {
+  position: sticky;
+  top: 16px;
+  max-height: calc(100svh - 32px);
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid var(--og-line);
+  border-radius: 18px;
+  background: var(--og-panel);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.26);
+
+  h2 {
+    margin: 0;
+    font-size: 19px;
+    line-height: 1.3;
+  }
+
+  h3 {
+    margin: 18px 0 8px;
+    color: var(--ct-accent);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+}
+
+// the small tag inside a (light) card
+.og-card .og-tag {
+  border-color: transparent;
+  color: var(--vck-white);
+  background: color-mix(in srgb, var(--vck-ink) 82%, var(--vck-blue-soft));
+}
+
+.og-teams {
+  scroll-margin-top: 8px;
+}
+
+.og-teams-link {
+  margin-top: 14px;
+}
+
+.og-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.og-other,
+.og-panel-scope,
+.og-hint {
+  margin: 6px 0 0;
+  color: var(--ct-muted);
+  font-size: 13.5px;
+}
+
+.og-close {
+  display: inline-grid;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid var(--og-line);
+  border-radius: 10px;
+  color: var(--ct-text);
+  background: var(--ct-field);
+  cursor: pointer;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+}
+
+.og-plain {
+  display: grid;
+  gap: 4px;
+  font-size: 13.5px;
+}
+
+.og-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  button {
+    display: grid;
+    gap: 2px;
+    min-height: 40px;
+    padding: 7px 12px;
+    border: 1px solid var(--og-line);
+    border-radius: 12px;
+    color: var(--ct-text);
+    background: var(--ct-field);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+
+    small {
+      color: var(--ct-muted);
+      font-weight: 500;
+    }
+
+    &:hover {
+      border-color: var(--ct-accent);
+    }
+  }
+}
+
+.og-nobody {
+  color: var(--ct-muted);
+  font-size: 13.5px;
+}
+
+.og-chain {
+  display: grid;
+
+  li {
+    position: relative;
+    padding-left: 20px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 2px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--og-line);
+      transform: translateY(-50%);
+    }
+
+    & + li::after {
+      content: '';
+      position: absolute;
+      bottom: calc(50% + 5px);
+      left: 6px;
+      width: 1px;
+      height: calc(100% - 9px);
+      background: var(--og-line);
+    }
+
+    &.is-current::before {
+      background: var(--vck-red);
+    }
+  }
+
+  button {
+    width: 100%;
+    min-height: 34px;
+    padding: 4px 6px;
+    border: 0;
+    border-radius: 8px;
+    color: var(--ct-text);
+    background: none;
+    font-size: 13.5px;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--ct-field);
+    }
+  }
+
+  .is-current button {
+    font-weight: 700;
+  }
+}
+
+// ---- Narrower screens: the panel becomes a bottom sheet ---------------------------------------------------------------------------
+@media (max-width: 1000px) {
+  .og-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .og-panel {
+    position: fixed;
+    z-index: 80;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    max-height: 62svh;
+    padding: 18px 18px calc(18px + env(safe-area-inset-bottom));
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -18px 44px rgba(0, 0, 0, 0.45);
+    transform: translateY(105%);
+    visibility: hidden;
+    transition: transform 0.25s ease, visibility 0s linear 0.25s;
+
+    &.is-open {
+      transform: none;
+      visibility: visible;
+      transition-delay: 0s;
+    }
+  }
+
+  // room to scroll the last cards above the open sheet
+  .has-selection .og-chart {
+    padding-bottom: 62svh;
+  }
+}
+
+@media (max-width: 700px) {
+  .og-search {
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .og-jump {
+    flex-wrap: nowrap;
+    width: 100%;
+    overflow-x: auto;
+    padding: 4px 0 16px; // keeps the scroll bar clear of the buttons
+    scrollbar-width: thin;
+    scrollbar-color: var(--og-line) transparent;
+
+    button {
+      flex: none;
+    }
+  }
+
+  .og-page {
+    --og-w: 260px;
+    --og-h: 112px;
+  }
+
+  .og-offices {
+    flex-direction: column;
+    align-items: center;
+
+    li {
+      flex: none;
+    }
+  }
+
+  // one branch after another, each marked by a line down its side
+  .og-branches {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+
+    > li,
+    > li:first-child,
+    > li:last-child {
+      padding: 0 0 0 16px;
+      border-left: 2px solid var(--og-line);
+
+      &::before,
+      &::after {
+        display: none;
+      }
+    }
+  }
+
+  .og-join {
+    width: 2px;
+    height: 24px;
+    border: 0;
+    border-radius: 0;
+    background: var(--og-line);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .og-card,
+  .og-panel {
+    transition: none;
+  }
+
+  .og-card:hover,
+  .og-card.is-selected {
+    transform: none;
+  }
+}

@@ -9,22 +9,22 @@ $compact-width: 1270px;
 $compact-width-ta: 1520px;
 
 .hero-shell {
-  --sn-text: #f4f7fc;
+  --sn-text: var(--vck-white);
   --sn-muted: rgba(244, 247, 252, 0.62);
   --sn-hover: rgba(127, 184, 240, 0.14);
   --sn-open: rgba(127, 184, 240, 0.22);
-  --sn-accent: #7fb8f0;
+  --sn-accent: var(--vck-blue-soft);
   --sn-panel: #0a1b30;
   --sn-border: rgba(74, 158, 235, 0.34);
   --sn-shadow: 0 22px 48px rgba(0, 0, 0, 0.5);
 }
 
 .hero-shell.light-theme {
-  --sn-text: #14243c;
+  --sn-text: var(--vck-ink);
   --sn-muted: rgba(20, 36, 60, 0.58);
   --sn-hover: rgba(23, 107, 184, 0.1);
   --sn-open: rgba(23, 107, 184, 0.16);
-  --sn-accent: #176bb8;
+  --sn-accent: var(--vck-blue-deep);
   --sn-panel: #f7f9fd;
   --sn-border: rgba(23, 107, 184, 0.26);
   --sn-shadow: 0 20px 44px rgba(25, 47, 76, 0.2);
@@ -76,7 +76,7 @@ $compact-width-ta: 1520px;
   }
 
   &:focus-visible {
-    outline: 2px solid #ed2a40;
+    outline: 2px solid var(--vck-red);
     outline-offset: 2px;
   }
 
@@ -101,7 +101,7 @@ $compact-width-ta: 1520px;
       width: 18px;
       height: 2px;
       border-radius: 2px;
-      background: #ed2a40;
+      background: var(--vck-red);
       transform: translateX(-50%);
     }
   }
@@ -130,21 +130,21 @@ $compact-width-ta: 1520px;
 .sn-link.sn-cta {
   margin-left: 8px;
   padding: 0 clamp(16px, 1.3vw, 22px);
-  color: #f4f7fc;
-  background: linear-gradient(135deg, #de2c45, #b71e36);
+  color: var(--vck-white);
+  background: linear-gradient(135deg, var(--vck-red), var(--vck-red-deep));
   box-shadow: 0 6px 16px rgba(215, 31, 55, 0.32);
 
   &:hover {
-    background: linear-gradient(135deg, #de2c45, #b71e36);
+    background: linear-gradient(135deg, var(--vck-red), var(--vck-red-deep));
     filter: brightness(1.1);
     transform: translateY(-1px);
   }
 
   &.is-current {
-    color: #f4f7fc;
+    color: var(--vck-white);
 
     &::after {
-      background: #f4f7fc;
+      background: var(--vck-white);
     }
   }
 }
@@ -228,7 +228,7 @@ $compact-width-ta: 1520px;
   }
 
   &:is(a):focus-visible {
-    outline: 2px solid #ed2a40;
+    outline: 2px solid var(--vck-red);
     outline-offset: -2px;
   }
 
@@ -309,7 +309,7 @@ $compact-width-ta: 1520px;
     width: 18px;
     height: 2px;
     border-radius: 2px;
-    background: linear-gradient(90deg, #ed2a40, #2785df);
+    background: linear-gradient(90deg, var(--vck-red), var(--vck-blue));
     transition: transform 0.2s ease, opacity 0.2s ease;
   }
 
@@ -330,7 +330,7 @@ $compact-width-ta: 1520px;
   }
 
   &:focus-visible {
-    outline: 2px solid #ed2a40;
+    outline: 2px solid var(--vck-red);
     outline-offset: 2px;
   }
 }
