@@ -20,7 +20,7 @@ export const ORG_TEAMS: readonly OrgTeam[] = [
   team('movement', 'உழைக்கும் மக்கள் பண்பாட்டு இயக்கம்', 'Working People’s Cultural Movement'),
   team('wing', 'பொறியாளர் அணி', 'Engineers’ Wing'),
   team('centre', 'விளையாட்டு திறன் மேம்பாட்டு மையம்', 'Sports Skill Development Center'),
-  team('council', 'அரசு ஊழியர் அச்சுறுத்தியல் பேரவை', 'Government Employees’ Federation / Council'),
+  team('council', 'அரசு ஊழியர் ஐக்கியப் பேரவை', 'Government Employees’ United Council'),
   team('centre', 'மருத்துவ தொண்டு மையம்', 'Medical Service Center'),
   team('council', 'கிறித்தவ சமூக நீதி பேரவை', 'Christian Social Justice Council'),
   team('movement', 'சுற்றுச்சூழல் பாதுகாப்பு இயக்கம்', 'Environmental Protection Movement'),
