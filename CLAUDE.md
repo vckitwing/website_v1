@@ -196,7 +196,7 @@ What the owner has asked for or corrected. Apply it to new work without being as
 - Does the owner want a **fuller sentence for the caution mark** on the Disciplinary Action Committee? The card says only "எச்சரிக்கை / Caution".
 - The party should **check the English names** on the Org View page (roles, levels, teams, team hierarchies): they are our translations.
 
-## SEO (a top requirement; planned, not built)
+## SEO (a top requirement; foundation built, the rest deferred)
 
 The owner wants this website to be the **source of truth for VCK** with **the best SEO** (2026-11-28). Keep it in mind in every change.
 
@@ -214,9 +214,16 @@ The owner wants this website to be the **source of truth for VCK** with **the be
 - Icons, web manifest and share picture in `public/seo/`; `robots.txt` and `sitemap.xml` written after the build.
 - **Indexing is OFF** (`allowIndexing: false` in `seo/site.config.json`: every page is `noindex, nofollow` and the sitemap is not advertised) and **`siteUrl` is the placeholder `https://www.example.org`**. To go live: set the real address (including any sub-folder), then `allowIndexing: true`. The donate page stays `noindex` while its details are samples.
 
-### Still to do
+### Still to do (deferred by the owner, 2026-11-28)
 
-3. **Content:** a text `h1` on the home page (the headline is a canvas); team hierarchies as real text (they appear only in the overlay); the publication pages prerender only their empty state (published content is fetched in the browser); later separate pages for history, conferences, leaders and wings; public summaries for the books and magazine.
+**Develop the other pages and features first; the rest of the SEO work comes afterwards.** Don't start steps 3-5 until asked. The "Rules for all new work" above still apply to everything built in the meantime, so new pages arrive search-ready.
+
+3. **Content** (proposed order: the first two need little from the owner):
+   1. A text `h1` on the home page (the headline is a canvas; need not change the look). Proposed wording, not yet approved: "விடுதலைச் சிறுத்தைகள் கட்சி (விசிக) — அமைப்பாய்த் திரள்வோம்" / "Viduthalai Chiruthaigal Katchi (VCK) — Organize and Unite".
+   2. Team hierarchies as real page text (they appear only in the overlay).
+   3. Book and magazine titles / issues in the built pages (they prerender only "coming soon", because published content is fetched in the browser).
+   4. Short public summaries of the book and each issue (full text stays protected).
+   5. Separate pages for history, each conference, leaders and wings (needs checked facts, text and photos; correct the conference names first). Matters most.
 4. **Speed:** measure on phones and fix (initial bundle ~670 kB raw / 162 kB transferred).
 5. **Owner's side:** domain, Google Search Console, Bing Webmaster Tools, a Google business profile for the head office, links from official social accounts and Wikipedia / Wikidata.
 
