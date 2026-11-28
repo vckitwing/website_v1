@@ -1,21 +1,10 @@
 import { gsap } from 'gsap';
-import { getStarJourneyElements, updateStarThreadPath } from '@shared/story/star-journey';
+import { registerStarLeg, svgStarBox } from '@shared/story/star-journey-controller';
 
 type AnimationConditions = {
   isDesktop: boolean;
   isMobile: boolean;
   reduceMotion: boolean;
-};
-
-type FlightGeometry = {
-  fromX: number;
-  fromY: number;
-  fromWidth: number;
-  fromHeight: number;
-  toX: number;
-  toY: number;
-  toWidth: number;
-  toHeight: number;
 };
 
 export async function createIdeologyAnimation(root: HTMLElement, onActiveChange: (index: number) => void): Promise<() => void> {
@@ -31,33 +20,12 @@ export async function createIdeologyAnimation(root: HTMLElement, onActiveChange:
   const progress = root.querySelector<HTMLElement>('.principle-progress span');
   const host = root.closest('vck-ideology-section');
   const source = host?.previousElementSibling?.querySelector<SVGSVGElement>('.star-meaning-mark');
+  const historyHost = host?.nextElementSibling;
 
   if (!stage || !star || faces.length !== 5 || connections.length !== 5 || travelers.length !== 5 || cards.length !== 5 || !progress || !source) {
     throw new Error('The ideology section requires its five star points, principle cards, and the preceding flag star.');
   }
   const ideologyStar = star;
-  const journey = getStarJourneyElements(root);
-
-  const geometry = (): FlightGeometry => {
-    const rootBounds = root.getBoundingClientRect();
-    const sourceBounds = source.getBoundingClientRect();
-    const targetBounds = ideologyStar.getBoundingClientRect();
-    const sectionTop = rootBounds.top + window.scrollY;
-    const transitionStart = sectionTop - window.innerHeight;
-    const targetCenterX = targetBounds.left + targetBounds.width / 2 + window.scrollX;
-    const targetCenterY = targetBounds.top + targetBounds.height / 2 + window.scrollY;
-
-    return {
-      fromX: sourceBounds.left + sourceBounds.width / 2 + window.scrollX,
-      fromY: sourceBounds.top + sourceBounds.height / 2 + window.scrollY - transitionStart,
-      fromWidth: sourceBounds.width,
-      fromHeight: sourceBounds.height,
-      toX: targetCenterX - window.scrollX,
-      toY: targetCenterY - sectionTop,
-      toWidth: targetBounds.width,
-      toHeight: targetBounds.height
-    };
-  };
 
   const media = gsap.matchMedia(root);
   media.add({
@@ -66,81 +34,22 @@ export async function createIdeologyAnimation(root: HTMLElement, onActiveChange:
     reduceMotion: '(prefers-reduced-motion: reduce)'
   }, (context) => {
     const { reduceMotion } = context.conditions as AnimationConditions;
-    const moveDuration = reduceMotion ? .01 : 1;
-    let updateEntryThread = (): void => {};
-    let updateExitThread = (): void => {};
+    const removeLegs: Array<() => void> = [];
+    let cancelled = false;
+    const keep = (promise: Promise<() => void>): void => {
+      void promise.then((remove) => {
+        if (cancelled) remove();
+        else removeLegs.push(remove);
+      });
+    };
 
-    gsap.set(journey.overlay, { autoAlpha: 0 });
-    gsap.set(journey.star, { xPercent: -50, yPercent: -50, autoAlpha: 0 });
-    gsap.set(journey.thread, { strokeDasharray: 1, strokeDashoffset: 1, autoAlpha: 0 });
-    gsap.set(ideologyStar, { autoAlpha: 0 });
+    // The star flying in from the "star at the centre" card lands on this star and reveals it (the page's star journey
+    // controls its visibility); with reduced motion it is simply there.
+    gsap.set(ideologyStar, { autoAlpha: reduceMotion ? 1 : 0 });
     const highlightDuration = reduceMotion ? .01 : .24;
     const edgeDuration = reduceMotion ? .01 : .34;
     const contentDuration = reduceMotion ? .01 : .22;
     const activeScale = reduceMotion ? 1 : 1.035;
-
-    const transition = gsap.timeline({
-      defaults: { ease: 'power1.inOut' },
-      scrollTrigger: {
-        trigger: root,
-        start: 'top bottom',
-        end: 'top top',
-        scrub: reduceMotion ? true : .45,
-        invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          if (self.isActive) updateEntryThread();
-        }
-      }
-    });
-
-    if (reduceMotion) {
-      transition
-        .fromTo(source, { autoAlpha: 1 }, { autoAlpha: 0, duration: .01 }, 0)
-        .fromTo(ideologyStar, { autoAlpha: 0 }, { autoAlpha: 1, duration: .01 }, 0);
-    } else {
-      const entryThreadPath = (): string => {
-        const points = geometry();
-        updateStarThreadPath(
-          journey.threadSvg,
-          journey.thread,
-          { x: points.fromX, y: points.fromY },
-          { x: points.toX, y: points.toY }
-        );
-        return journey.thread.getAttribute('d') ?? '';
-      };
-      updateEntryThread = entryThreadPath;
-
-      transition
-        .set(journey.thread, {
-          strokeDasharray: 1,
-          strokeDashoffset: 1,
-          autoAlpha: 1,
-          immediateRender: false
-        }, 0)
-        .fromTo(journey.star, {
-          x: () => geometry().fromX,
-          y: () => geometry().fromY,
-          width: () => geometry().fromWidth,
-          height: () => geometry().fromHeight,
-          autoAlpha: 0,
-          xPercent: -50,
-          yPercent: -50
-        }, {
-          x: () => geometry().toX,
-          y: () => geometry().toY,
-          width: () => geometry().toWidth,
-          height: () => geometry().toHeight,
-          autoAlpha: 1,
-          duration: moveDuration * .78,
-          ease: 'none',
-          immediateRender: false
-        }, 0)
-        .to(journey.overlay, { autoAlpha: 1, duration: .01 }, 0)
-        .fromTo(source, { autoAlpha: 1 }, { autoAlpha: 0, duration: .55 }, 0)
-        .to(journey.thread, { strokeDashoffset: 0, duration: moveDuration * .78 }, 0)
-        .to(journey.overlay, { autoAlpha: 0, duration: .08 }, .92)
-        .to(ideologyStar, { autoAlpha: 1, duration: .2 }, .78);
-    }
 
     gsap.set(faces, { scale: 1, transformOrigin: '50% 50%' });
     gsap.set(faces[0], { scale: activeScale });
@@ -159,12 +68,10 @@ export async function createIdeologyAnimation(root: HTMLElement, onActiveChange:
         end: 'bottom bottom',
         pin: stage,
         pinSpacing: false,
-        scrub: reduceMotion ? true : .55,
+        // Tied exactly to the scroll: the flying star measures this star live, so the two must agree.
+        scrub: true,
         invalidateOnRefresh: true,
-        anticipatePin: 1,
-        onUpdate: (self) => {
-          if (self.isActive) updateExitThread();
-        }
+        anticipatePin: 1
       }
     });
     timeline.eventCallback('onUpdate', () => {
@@ -205,64 +112,51 @@ export async function createIdeologyAnimation(root: HTMLElement, onActiveChange:
         }, index);
       }
 
-      const getExitGeometry = () => {
-        const starBounds = ideologyStar.getBoundingClientRect();
-        return {
-          from: {
-            x: starBounds.left + starBounds.width / 2,
-            y: starBounds.top + starBounds.height / 2
-          },
-          fromWidth: Math.max(starBounds.width, 1),
-          fromHeight: Math.max(starBounds.height, 1),
-          to: { x: window.innerWidth / 2, y: window.innerHeight + 26 }
-        };
-      };
-      const exitThreadPath = (): string => {
-        const points = getExitGeometry();
-        updateStarThreadPath(journey.threadSvg, journey.thread, points.from, points.to);
-        return journey.thread.getAttribute('d') ?? '';
-      };
-      updateExitThread = exitThreadPath;
-      const handoffTime = 4.47;
+      const rootTop = (): number => root.getBoundingClientRect().top + window.scrollY;
 
-      timeline
-        .addLabel('historyHandoff', handoffTime)
-        .set(journey.star, {
-          xPercent: -50,
-          yPercent: -50,
-          x: () => getExitGeometry().from.x,
-          y: () => getExitGeometry().from.y,
-          width: () => getExitGeometry().fromWidth,
-          height: () => getExitGeometry().fromHeight,
-          rotation: 0,
-          autoAlpha: 1
-        }, handoffTime)
-        .set(journey.thread, {
-          strokeDasharray: 1,
-          strokeDashoffset: 1,
-          autoAlpha: 0
-        }, handoffTime)
-        .to(ideologyStar, { autoAlpha: 0, duration: .12 }, handoffTime)
-        .to(journey.overlay, { autoAlpha: 1, duration: .01 }, handoffTime)
-        .to(journey.star, {
-          x: () => getExitGeometry().to.x,
-          y: () => getExitGeometry().to.y,
-          width: 52,
-          height: 52,
-          autoAlpha: 1,
-          duration: .55,
-          ease: 'none'
-        }, handoffTime + .01)
-        .to(journey.thread, {
-          strokeDashoffset: 0,
-          autoAlpha: .9,
-          duration: .55
-        }, handoffTime + .01);
+      // Leg 3 of the star journey: it pops out of the "star at the centre" card as the page scrolls on, and travels down
+      // to merge with this star as the section reaches the top (where the stage pins).
+      const meaningCard = source.closest<HTMLElement>('.star-meaning');
+      keep(registerStarLeg(root, {
+        id: 'star-meaning-to-ideology',
+        // The star pops out while the card is still on screen (its star 25% of the way down the viewport at the latest),
+        // never later than the moment the ideology section's top reaches the bottom of the screen.
+        start: () => {
+          const mark = source.getBoundingClientRect();
+          const lift = meaningCard ? Number(gsap.getProperty(meaningCard, 'y')) || 0 : 0;
+          const restY = mark.top + mark.height / 2 + window.scrollY - lift;
+          return Math.min(rootTop() - window.innerHeight, restY - window.innerHeight * 0.25);
+        },
+        end: () => rootTop(),
+        from: () => svgStarBox(source),
+        to: () => svgStarBox(ideologyStar),
+        source,
+        target: ideologyStar
+      }));
+
+      // Leg 4: once the five faces have been through, the star pops out of the stage and travels on to the history timeline.
+      const scrollTrigger = timeline.scrollTrigger;
+      const marker = historyHost?.querySelector<HTMLElement>('.history-star-marker');
+      const track = historyHost?.querySelector<HTMLElement>('.history-track');
+      if (scrollTrigger && marker && track) {
+        const markerStar = (): Element => marker.querySelector('svg') ?? marker;
+        keep(registerStarLeg(root, {
+          id: 'ideology-to-history',
+          start: () => scrollTrigger.start + (scrollTrigger.end - scrollTrigger.start) * (4.5 / Math.max(timeline.duration(), 0.01)),
+          // The star arrives while the marker (5% down the track) is just over half way up the screen.
+          end: () => track.getBoundingClientRect().top + window.scrollY + track.clientHeight * 0.05 - window.innerHeight * 0.55,
+          from: () => svgStarBox(ideologyStar),
+          to: () => svgStarBox(markerStar()),
+          source: ideologyStar,
+          target: marker
+        }));
+      }
     }
 
     ScrollTrigger.refresh();
     return () => {
-      transition.scrollTrigger?.kill();
+      cancelled = true;
+      removeLegs.forEach((remove) => remove());
       timeline.scrollTrigger?.kill();
     };
   });

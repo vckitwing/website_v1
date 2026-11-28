@@ -1,0 +1,202 @@
+/* Page, card, button, field and heading styles come from the contact page's stylesheet (the `ct-*` classes); this file adds the rest. */
+
+.ct-grid {
+  margin-bottom: clamp(16px, 2.4vw, 28px);
+}
+
+.dn-sample {
+  margin: 0 0 clamp(18px, 2.6vw, 30px);
+  padding: 14px 18px;
+  border: 1px solid rgba(237, 42, 64, 0.55);
+  border-radius: 12px;
+  color: var(--ct-text);
+  background: rgba(237, 42, 64, 0.12);
+  font-size: 14px;
+  line-height: 1.6;
+
+  strong {
+    margin-right: 4px;
+    color: #ff9aa6;
+    letter-spacing: 0.04em;
+  }
+}
+
+.dn-lede {
+  margin: -4px 0 18px;
+  color: var(--ct-muted);
+  line-height: 1.65;
+
+  strong {
+    color: var(--ct-text);
+  }
+}
+
+.dn-amounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.dn-chip {
+  min-width: 78px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--ct-field-border);
+  border-radius: 999px;
+  color: var(--ct-text);
+  background: var(--ct-field);
+  font: 600 14px / 1 'Montserrat', sans-serif;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(127, 184, 240, 0.8);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ct-accent);
+    outline-offset: 3px;
+  }
+
+  &.is-active {
+    border-color: transparent;
+    color: var(--vck-white);
+    background: linear-gradient(135deg, var(--vck-blue-dark), #247fc6);
+  }
+}
+
+.dn-custom {
+  max-width: 240px;
+  margin-bottom: 8px;
+}
+
+.dn-rows {
+  display: grid;
+  margin: 0;
+}
+
+.dn-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid var(--ct-field-border);
+
+  &:first-child {
+    border-top: 0;
+  }
+
+  dt,
+  dd {
+    margin: 0;
+  }
+}
+
+.dn-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ct-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.dn-page[lang='ta'] .dn-label {
+  letter-spacing: 0.04em;
+  text-transform: none;
+  font-size: 12.5px;
+}
+
+.dn-value {
+  display: block;
+  color: var(--ct-text);
+  font: 600 16px / 1.4 'Outfit', 'Noto Sans Tamil', sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.dn-copy {
+  flex: none;
+  min-height: 38px;
+  padding: 8px 14px;
+  font-size: 12px;
+}
+
+.dn-qr {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  margin: 26px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--ct-field-border);
+
+  svg {
+    width: 168px;
+    height: 168px;
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--vck-white);
+  }
+
+  figcaption {
+    display: grid;
+    gap: 4px;
+    text-align: center;
+    color: var(--ct-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  small {
+    color: #ff9aa6;
+    font-weight: 600;
+  }
+}
+
+.dn-qr-finder rect {
+  fill: var(--vck-ink);
+}
+
+.dn-qr-hole rect {
+  fill: var(--vck-white);
+}
+
+.dn-qr-dots rect {
+  fill: var(--vck-ink);
+}
+
+.dn-notes {
+  ul {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding-left: 20px;
+    color: var(--ct-muted);
+    line-height: 1.65;
+  }
+}
+
+:host-context(.light-theme) .dn-sample strong,
+:host-context(.light-theme) .dn-qr small {
+  color: var(--vck-red-deep);
+}
+
+:host-context(.light-theme) .dn-chip.is-active {
+  color: var(--vck-white);
+}
+
+@media (max-width: 860px) {
+  .dn-custom {
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dn-chip {
+    transition: none;
+  }
+}

@@ -1,141 +1,147 @@
-<main class="hero-shell" [class.light-theme]="theme() === 'light'" [class.opening-active]="openingActive()" [attr.lang]="language()">
-  <div #openingScreen class="opening-screen" aria-hidden="true">
+<main class="hero-shell" [class.light-theme]="theme() === 'light'" [class.opening-active]="openingActive()" [class.subpage-open]="page() !== 'home'" [attr.lang]="language()">
+  <div #openingScreen class="opening-screen" [class.is-skipped]="skipIntro" aria-hidden="true">
     <canvas #openingCanvas class="opening-particles"></canvas>
+    <svg #openingFlag class="opening-flag" viewBox="0 0 900 600" aria-hidden="true">
+      <rect class="opening-flag-blue" x="0" y="0" width="900" height="300" />
+      <rect class="opening-flag-red" x="0" y="300" width="900" height="300" />
+    </svg>
     <div #openingIdentity class="opening-identity">
-      <svg #openingStar class="opening-star" viewBox="0 0 100 100" aria-hidden="true">
-        <polygon points="50,4 61,36 96,37 68,58 78,92 50,73 22,92 32,58 4,37 39,36" />
-        <circle class="opening-star-vertex opening-star-vertex-blue" cx="50" cy="4" r="2.5" />
-        <circle class="opening-star-vertex opening-star-vertex-red" cx="96" cy="37" r="2.5" />
-        <circle class="opening-star-vertex opening-star-vertex-blue" cx="78" cy="92" r="2.5" />
-        <circle class="opening-star-vertex opening-star-vertex-red" cx="22" cy="92" r="2.5" />
-        <circle class="opening-star-vertex opening-star-vertex-blue" cx="4" cy="37" r="2.5" />
-      </svg>
       <div class="opening-copy">
         <span #openingVck class="opening-vck">VCK</span>
         <span #openingName class="opening-name">VIDUTHALAI CHIRUTHAIGAL KATCHI</span>
       </div>
+      <svg #openingStar class="opening-star" viewBox="0 0 100 100" aria-hidden="true">
+        <polygon points="50,4 61,36 96,37 68,58 78,92 50,73 22,92 32,58 4,37 39,36" />
+      </svg>
     </div>
   </div>
   <header class="topbar">
-    <a class="brand" href="#home" [attr.aria-label]="language() === 'ta' ? 'விசிக முகப்பு' : 'VCK home'">
+    <a class="brand" [href]="hrefFor({ page: 'home', hash: 'home' })" (click)="onNavigate($event, { page: 'home', hash: 'home' })" [attr.aria-label]="language() === 'ta' ? 'விசிக முகப்பு' : 'VCK home'">
       <img class="brand-mark" src="assets/Logo/vck_logo.jpg" alt="" />
       <span class="brand-copy"><strong #brandVck>VCK</strong><small #brandName>VIDUTHALAI CHIRUTHAIGAL KATCHI</small></span>
     </a>
     <div class="top-actions">
-      <button class="language" type="button" (click)="toggleLanguage()" [attr.aria-label]="language() === 'en' ? 'தமிழுக்கு மாற்று' : 'Switch language to English'" [attr.aria-pressed]="language() === 'ta'">
+      <a class="language" [href]="languageHref()" (click)="toggleLanguage($event)" [attr.hreflang]="language() === 'en' ? 'ta' : 'en'" [attr.lang]="language() === 'en' ? 'ta' : 'en'" [attr.aria-label]="language() === 'en' ? 'தமிழுக்கு மாற்று' : 'Switch language to English'">
         {{ language() === 'en' ? 'தமிழ்' : 'EN' }}
-      </button>
+      </a>
       <button #themeToggleButton class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-label]="language() === 'ta' ? (theme() === 'dark' ? 'ஒளி தோற்றத்திற்கு மாற்று' : 'இருள் தோற்றத்திற்கு மாற்று') : (theme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme')" [attr.aria-pressed]="theme() === 'light'">
         <span aria-hidden="true">{{ theme() === 'dark' ? '☼' : '☾' }}</span>
       </button>
     </div>
-    <button class="mobile-menu-toggle" type="button" (click)="toggleMobileNavigation(); $event.stopPropagation()" [class.menu-open]="mobileNavigationOpen()" [attr.aria-expanded]="mobileNavigationOpen()" aria-controls="main-navigation" [attr.aria-label]="language() === 'ta' ? (mobileNavigationOpen() ? 'வழிசெலுத்தல் பட்டியை மூடவும்' : 'வழிசெலுத்தல் பட்டியைத் திறக்கவும்') : (mobileNavigationOpen() ? 'Close navigation menu' : 'Open navigation menu')">
+    <button class="sn-burger" type="button" (click)="toggleMobileNavigation(); $event.stopPropagation()" [class.menu-open]="mobileNavigationOpen()" [attr.aria-expanded]="mobileNavigationOpen()" aria-controls="main-navigation" [attr.aria-label]="language() === 'ta' ? (mobileNavigationOpen() ? 'வழிசெலுத்தல் பட்டியை மூடவும்' : 'வழிசெலுத்தல் பட்டியைத் திறக்கவும்') : (mobileNavigationOpen() ? 'Close navigation menu' : 'Open navigation menu')">
       <span></span><span></span><span></span>
     </button>
   </header>
 
-  <nav id="main-navigation" class="site-nav" [class.mobile-open]="mobileNavigationOpen()" [attr.aria-label]="language() === 'ta' ? 'முதன்மை வழிசெலுத்தல்' : 'Main navigation'" (click)="$event.stopPropagation()">
-    @for (section of navigation; track section.id) {
-      <div class="nav-group" (mouseenter)="openNavigationMenu(section.id)" (mouseleave)="closeNavigationMenu(section.id)" (focusin)="openNavigationMenu(section.id)">
-        @if (section.items.length) {
-          <button class="nav-toggle" type="button" (click)="activateNavigation(section.id)" aria-haspopup="true" [attr.aria-expanded]="openNavigation() === section.id" [attr.aria-controls]="'nav-menu-' + section.id">
-            <span>{{ language() === 'ta' ? section.ta : section.en }}</span>
-          </button>
-          @if (openNavigation() === section.id) {
-            <ul class="nav-menu" [id]="'nav-menu-' + section.id">
-              @for (item of section.items; track item.en) {
-                <li>{{ language() === 'ta' ? item.ta : item.en }}</li>
-              }
-            </ul>
+  <nav id="main-navigation" class="sn" [class.sn-open]="mobileNavigationOpen()" [attr.aria-label]="language() === 'ta' ? 'முதன்மை வழிசெலுத்தல்' : 'Main navigation'" (click)="$event.stopPropagation()">
+    <ul class="sn-list">
+      @for (section of navigation; track section.id) {
+        <li class="sn-group" [class.is-open]="openNavigation() === section.id" (mouseenter)="openNavigationMenu(section.id)" (mouseleave)="closeNavigationMenu(section.id)" (focusout)="onGroupFocusOut($event, section.id)" (keydown)="onGroupKey($event, section.id)">
+          @if (section.items.length) {
+            <button class="sn-link" type="button" [class.is-current]="isCurrent(section)" [attr.aria-current]="isCurrent(section) ? 'page' : null" (click)="toggleSection(section.id)" aria-haspopup="true" [attr.aria-expanded]="openNavigation() === section.id" [attr.aria-controls]="'nav-menu-' + section.id">
+              <span>{{ language() === 'ta' ? section.ta : section.en }}</span>
+              <svg class="sn-chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2.5 4.5 6 8l3.5-3.5" /></svg>
+            </button>
+            @if (openNavigation() === section.id) {
+              <ul class="sn-menu" [id]="'nav-menu-' + section.id">
+                @for (item of section.items; track item.en) {
+                  <li>
+                    @if (item.go; as target) {
+                      <a class="sn-item" [href]="hrefFor(target)" (click)="onNavigate($event, target)"><span>{{ language() === 'ta' ? item.ta : item.en }}</span><svg class="sn-arrow" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8h9M8.5 4l4 4-4 4" /></svg></a>
+                    } @else {
+                      <span class="sn-item is-soon" aria-disabled="true"><span>{{ language() === 'ta' ? item.ta : item.en }}</span><em class="sn-soon">{{ language() === 'ta' ? 'விரைவில்' : 'Soon' }}</em></span>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+          } @else if (section.go; as target) {
+            <a class="sn-link" [class.sn-cta]="section.id === 'donate'" [class.is-current]="isCurrent(section)" [attr.aria-current]="isCurrent(section) ? 'page' : null" [href]="hrefFor(target)" (click)="onNavigate($event, target)"><span>{{ language() === 'ta' ? section.ta : section.en }}</span></a>
+          } @else {
+            <span class="sn-link is-soon"><span>{{ language() === 'ta' ? section.ta : section.en }}</span></span>
           }
-        } @else {
-          <span class="nav-toggle nav-placeholder">{{ language() === 'ta' ? section.ta : section.en }}</span>
-        }
-      </div>
-    }
+        </li>
+      }
+    </ul>
   </nav>
 
-  <section class="hero" id="home" [attr.aria-label]="language() === 'ta' ? 'விசிக முன்னணிப் பகுதி' : 'VCK hero'">
-    <div class="hero-waves" aria-hidden="true">
-      <svg viewBox="0 0 1600 900" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="hero-wave-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#2785df" stop-opacity="0" />
-            <stop offset="16%" stop-color="#2785df" stop-opacity=".8" />
-            <stop offset="48%" stop-color="#8fcaff" stop-opacity=".45" />
-            <stop offset="82%" stop-color="#ed2a40" stop-opacity=".7" />
-            <stop offset="100%" stop-color="#ed2a40" stop-opacity="0" />
-          </linearGradient>
-          <filter id="hero-wave-blur" x="-20%" y="-30%" width="140%" height="160%">
-            <feGaussianBlur stdDeviation="18" />
-          </filter>
-        </defs>
-        <g class="hero-wave-glow">
-          <path d="M-80 355 C190 185 360 490 620 350 S1010 180 1210 295 S1500 460 1680 240" />
-          <path d="M-80 555 C160 365 380 690 610 530 S980 330 1200 445 S1480 640 1680 410" />
-          <path d="M-80 735 C170 560 370 820 600 700 S1000 500 1210 610 S1485 795 1680 565" />
-        </g>
-        <g class="hero-wave-lines">
-          <path d="M-80 260 C180 100 380 390 610 255 S990 95 1205 205 S1480 360 1680 155" />
-          <path d="M-80 445 C200 300 380 560 630 425 S1010 280 1220 380 S1500 540 1680 345" />
-          <path d="M-80 625 C170 440 380 740 610 585 S990 390 1205 500 S1490 685 1680 455" />
-          <path d="M-80 810 C150 650 365 880 610 770 S1000 590 1220 675 S1490 835 1680 650" />
-          <path d="M-80 350 C160 205 360 500 590 365 S965 190 1175 300 S1470 475 1680 270" />
-          <path d="M-80 700 C200 510 405 795 650 650 S1030 455 1240 570 S1510 735 1680 530" />
-        </g>
-      </svg>
-    </div>
-    <img #heroArtwork class="hero-artwork" [class.portrait-reveal-pending]="portraitRevealPending()" src="assets/hero_section/thiruma.png" [attr.alt]="language() === 'ta' ? 'தோழர் திருமாவளவன்' : 'Thol. Thirumavalavan'" />
+  @if (page() === 'contact') {
+    @defer (on immediate; hydrate on immediate) {
+      <vck-contact-page [language]="language()" />
+    }
+  } @else if (page() === 'donate') {
+    @defer (on immediate; hydrate on immediate) {
+      <vck-donate-page [language]="language()" />
+    }
+  } @else if (page() === 'tamil-land') {
+    <!-- loaded only when someone opens the page, so the first visit stays light -->
+    @defer (on immediate; hydrate on immediate) {
+      <vck-tamil-land-page [language]="language()" />
+    }
+  } @else if (page() === 'amaipai-thiralvom') {
+    @defer (on immediate; hydrate on immediate) {
+      <vck-amaipai-thiralvom-page [language]="language()" />
+    }
+  } @else if (page() === 'org-structure') {
+    @defer (on immediate; hydrate on immediate) {
+      <vck-org-structure-page [language]="language()" />
+    }
+  }
+
+  <section #heroSection class="hero" id="home" [attr.data-nosnippet]="page() === 'home' ? null : ''" [attr.aria-label]="language() === 'ta' ? 'விசிக முன்னணிப் பகுதி' : 'VCK hero'">
+    <canvas #headlineCanvas class="hero-headline-3d" role="img" [attr.aria-label]="language() === 'ta' ? 'அமைப்பாய்த் திரள்வோம்' : 'Organize and unite'"></canvas>
+    <img #heroArtwork class="hero-artwork" [class.portrait-reveal-pending]="portraitRevealPending()" [class.portrait-3d-active]="portrait3dActive()" src="assets/hero_section/thiruma.webp" [attr.alt]="language() === 'ta' ? 'தோழர் திருமாவளவன்' : 'Thol. Thirumavalavan'" />
+    <canvas #portrait3dCanvas class="hero-portrait-3d" aria-hidden="true"></canvas>
+    <canvas #ribbonFrontCanvas class="hero-ribbon-front" aria-hidden="true"></canvas>
     <canvas #portraitTrace class="portrait-trace" aria-hidden="true"></canvas>
     <div class="crowd-strip" aria-hidden="true">
-      <img src="assets/hero_section/crowd.png" alt="" />
+      <img src="assets/hero_section/crowd.webp" alt="" />
     </div>
-    <canvas #portraitCanvas class="story-canvas" aria-hidden="true"></canvas>
     <div class="hero-copy">
-      <p #heroEyebrow class="eyebrow"><span class="eyebrow-line"></span> {{ language() === 'ta' ? 'மக்களிலிருந்து எழும் தலைவர்' : 'A LEADER RISES FROM THE PEOPLE' }}</p>
+      <p #heroEyebrow class="eyebrow"><span class="eyebrow-line"></span> {{ language() === 'ta' ? 'நிறுவப்பட்டது 1982 · விடுதலைச் சிறுத்தைகள் கட்சி' : 'EST. 1982 · VIDUTHALAI CHIRUTHAIGAL KATCHI' }}</p>
       <div class="slogan" aria-live="polite" aria-atomic="true">
-        <p #heroHeadline class="slogan-text" [class.slogan-long]="formattedSlogan().length > 48" [attr.lang]="language()">
+        <p #heroHeadline class="slogan-text" [class.slogan-long]="formattedSlogan().length > 48" [class.slogan-xlong]="formattedSlogan().length > 90" [attr.lang]="language()">
           @for (line of formattedSloganLines(); track $index) {
             <span #heroHeadlineLine class="hero-headline-line">
-              @for (part of line.parts; track $index) {
-                <span [class.hero-highlight]="part.highlighted">{{ part.text }}</span>
+              @for (word of line.words; track $index) {
+                <span class="hero-word">@for (part of word.parts; track $index) {<span [class.hero-highlight]="part.highlighted">{{ part.text }}</span>}</span>
               }
             </span>
           }
         </p>
       </div>
+      <a class="hero-pill" [href]="hrefFor({ page: 'donate' })" (click)="onNavigate($event, { page: 'donate' })">{{ language() === 'ta' ? 'நன்கொடை' : 'Donate Us' }}<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" /></svg></a>
+    </div>
+
+    <nav class="slide-index" [attr.aria-label]="language() === 'ta' ? 'முழக்கங்கள்' : 'Slogans'">
+      @for (slide of slides; track slide) {
+        <button type="button" class="slide-index-item" [class.is-active]="activeSlide() === slide" [attr.aria-current]="activeSlide() === slide ? 'true' : null" [attr.aria-label]="(language() === 'ta' ? 'முழக்கம் ' : 'Slogan ') + (slide + 1)" (click)="selectSlide(slide)">
+          <span class="slide-index-number">0{{ slide + 1 }}</span><span class="slide-index-bar"></span>
+        </button>
+      }
+    </nav>
+
+    <div class="hero-signature">
+      <vck-handwritten-signature #heroSignature trigger="manual" [replay]="true" [label]="language() === 'ta' ? 'தொல். திருமாவளவனின் கையொப்பம்' : 'Signature of Thol. Thirumavalavan'" />
     </div>
 
     <div #heroAnchor class="portrait-stage portrait-settled">
       <div class="portrait-halo" aria-hidden="true"></div>
       <div class="portrait-caption"><span class="caption-dot"></span><span>{{ language() === 'ta' ? 'தொல். திருமாவளவன்' : 'THOL. THIRUMAVALAVAN' }}</span><span class="caption-role">{{ language() === 'ta' ? 'தலைவர், விசிக' : 'PRESIDENT, VCK' }}</span></div>
-      <p class="portrait-hint">{{ language() === 'ta' ? 'தொட்டு நகர்த்தவும்' : 'TOUCH TO MOVE' }} <span aria-hidden="true">✳</span></p>
     </div>
-
-    <div class="vertical-note" aria-hidden="true">{{ language() === 'ta' ? 'மக்கள் · நீதி · விடுதலை' : 'PEOPLE · JUSTICE · LIBERATION' }}</div>
   </section>
 
-  <vck-flag-section [language]="language()" />
-  <vck-ideology-section [language]="language()" />
-  <vck-history-section [language]="language()" />
-  <vck-thinkers-section [language]="language()" />
+  <vck-flag-section [language]="language()" [attr.data-nosnippet]="page() === 'home' ? null : ''" />
+  <vck-ideology-section [language]="language()" [attr.data-nosnippet]="page() === 'home' ? null : ''" />
+  <vck-history-section [language]="language()" [attr.data-nosnippet]="page() === 'home' ? null : ''" />
+  <vck-social-section [language]="language()" [attr.data-nosnippet]="page() === 'home' ? null : ''" />
+  <vck-thinkers-section [language]="language()" [attr.data-nosnippet]="page() === 'home' ? null : ''" />
+  <vck-conferences-section [language]="language()" [attr.data-nosnippet]="page() === 'home' ? null : ''" />
 
-  <footer class="hero-footer" id="story">
-    <span class="footer-label">{{ language() === 'ta' ? 'நமது இயக்கம், நமது எதிர்காலம்' : 'OUR MOVEMENT, OUR FUTURE' }}</span>
-    <span class="scroll-cue"><span></span> {{ language() === 'ta' ? 'தொடர்ந்து பார்க்க கீழே நகர்த்தவும்' : 'SCROLL TO EXPLORE' }}</span>
-  </footer>
+  <vck-footer-section [language]="language()" />
+
 </main>
 <div class="story-star-journey" aria-hidden="true">
-  <svg class="story-star-journey-thread" viewBox="0 0 100 100" preserveAspectRatio="none">
-    <defs>
-      <linearGradient id="story-star-thread-gradient">
-        <stop offset="0" stop-color="#69bdff" />
-        <stop offset=".52" stop-color="#fff" />
-        <stop offset="1" stop-color="#ee5269" />
-      </linearGradient>
-    </defs>
-    <path class="story-star-thread-path" pathLength="1" />
-  </svg>
   <svg class="story-star-journey-shape" viewBox="0 0 100 100" preserveAspectRatio="none">
     <polygon points="50,4 61,36 96,37 68,58 78,92 50,73 22,92 32,58 4,37 39,36" />
   </svg>

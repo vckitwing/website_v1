@@ -1,0 +1,387 @@
+.tl-issue {
+  display: grid;
+  grid-template-columns: minmax(220px, 360px) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(24px, 5vw, 64px);
+}
+
+// the cover is a button: a tilt toward the pointer, and a "Read" tag that appears over it
+.tl-cover {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 1px solid var(--ct-card-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0a1626;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(244, 247, 252, 0.04);
+  cursor: pointer;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-6px) rotate(-1deg);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.55), 0 0 40px rgba(74, 158, 235, 0.22);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--vck-red);
+    outline-offset: 4px;
+  }
+}
+
+.tl-cover-badge {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: var(--vck-white);
+  background: rgba(10, 22, 38, 0.82);
+  font: 700 12px / 1 'Montserrat', 'Noto Sans Tamil', sans-serif;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(6px);
+}
+
+.tl-info {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+
+  h2 {
+    margin: 0;
+    font-size: clamp(26px, 3.4vw, 40px);
+    line-height: 1.15;
+  }
+}
+
+.tl-kicker {
+  margin: 0;
+  color: var(--ct-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.tl-meta {
+  margin: 0;
+  color: var(--ct-muted);
+  font-size: 15px;
+}
+
+.tl-read {
+  margin-top: 8px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.tl-note {
+  max-width: 44ch;
+  margin: 0;
+  color: var(--ct-muted);
+  font-size: 13px;
+}
+
+.tl-empty {
+  max-width: 560px;
+
+  h2 {
+    margin: 0 0 8px;
+  }
+
+  p {
+    margin: 0;
+    color: var(--ct-muted);
+  }
+}
+
+// ---- Earlier issues: search, grid, pages ------------------------------------------------------------------------------------
+.tl-archive {
+  margin-top: clamp(48px, 7vw, 88px);
+  padding-top: clamp(28px, 4vw, 44px);
+  border-top: 1px solid var(--ct-card-border);
+
+  h2 {
+    margin: 0 0 18px;
+    font-size: clamp(22px, 2.6vw, 30px);
+  }
+}
+
+.tl-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+  margin-bottom: 14px;
+
+  label {
+    display: grid;
+    gap: 6px;
+    color: var(--ct-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  select {
+    min-width: 170px;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--ct-field-border);
+    border-radius: 12px;
+    color: var(--ct-text);
+    background-color: var(--ct-field);
+    font: 600 14px / 1 'Montserrat', 'Noto Sans Tamil', sans-serif;
+    letter-spacing: 0;
+    text-transform: none;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid var(--vck-red);
+      outline-offset: 2px;
+    }
+
+    option {
+      color: var(--vck-ink);
+      background: var(--vck-white);
+    }
+  }
+}
+
+.tl-summary {
+  min-height: 1.4em;
+  margin: 0 0 18px;
+  color: var(--ct-muted);
+  font-size: 14px;
+}
+
+.tl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: clamp(16px, 2.4vw, 28px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tl-card {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  color: var(--ct-text);
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border: 1px solid var(--ct-card-border);
+    border-radius: 8px;
+    background: #0a1626;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    -webkit-user-drag: none;
+  }
+
+  &:hover img,
+  &:focus-visible img {
+    transform: translateY(-4px);
+    box-shadow: 0 22px 44px rgba(0, 0, 0, 0.5), 0 0 26px rgba(74, 158, 235, 0.2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--vck-red);
+    outline-offset: 4px;
+    border-radius: 8px;
+  }
+}
+
+.tl-card-cover {
+  position: relative;
+  display: block;
+}
+
+.tl-card-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: var(--vck-white);
+  background: linear-gradient(135deg, var(--vck-red), var(--vck-red-deep));
+  font: 700 11px / 1 'Montserrat', 'Noto Sans Tamil', sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.tl-card-date {
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.tl-card-numbers {
+  color: var(--ct-muted);
+  font-size: 13px;
+}
+
+.tl-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: clamp(28px, 4vw, 44px);
+}
+
+.tl-pager-button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--ct-field-border);
+  border-radius: 12px;
+  color: var(--ct-text);
+  background: var(--ct-field);
+  font: 600 14px / 1 'Montserrat', 'Noto Sans Tamil', sans-serif;
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--ct-accent);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  &.is-current {
+    border-color: transparent;
+    color: var(--vck-white);
+    background: linear-gradient(135deg, var(--vck-blue-dark), #247fc6);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--vck-red);
+    outline-offset: 2px;
+  }
+}
+
+.tl-pager-gap {
+  padding: 0 4px;
+  color: var(--ct-muted);
+}
+
+.tl-none {
+  max-width: 60ch;
+  margin: 0;
+  padding: 22px;
+  border: 1px dashed var(--ct-card-border);
+  border-radius: 14px;
+  color: var(--ct-muted);
+}
+
+.tl-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  color: var(--ct-accent);
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+:host-context(.light-theme) .tl-card img {
+  box-shadow: 0 12px 28px rgba(25, 47, 76, 0.22);
+}
+
+:host-context(.light-theme) .tl-cover {
+  border-color: rgba(23, 107, 184, 0.3);
+  box-shadow: 0 24px 54px rgba(25, 47, 76, 0.28);
+}
+
+:host-context(.light-theme) .tl-cover-badge {
+  color: var(--vck-white);
+  background: rgba(20, 36, 60, 0.88);
+}
+
+@media (max-width: 560px) {
+  // two covers side by side on a phone
+  .tl-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 14px;
+  }
+
+  .tl-search {
+    label,
+    select {
+      width: 100%;
+    }
+
+    label {
+      flex: 1 1 140px;
+    }
+  }
+}
+
+@media (max-width: 720px) {
+  .tl-issue {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .tl-cover {
+    width: min(100%, 320px);
+  }
+
+  .tl-info {
+    justify-items: center;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl-card img,
+  .tl-pager-button {
+    transition: none;
+  }
+
+  .tl-card:hover img,
+  .tl-card:focus-visible img {
+    transform: none;
+  }
+
+  .tl-cover {
+    transition: none;
+
+    &:hover,
+    &:focus-visible {
+      transform: none;
+    }
+  }
+}

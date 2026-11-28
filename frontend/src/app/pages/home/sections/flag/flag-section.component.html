@@ -1,7 +1,6 @@
 <section #sectionRoot class="flag-section" [attr.lang]="language" [attr.aria-label]="language === 'ta' ? 'விசிக கொடியும் அதன் பொருளும்' : 'The VCK flag and what it represents'">
   <div class="flag-stage">
     <header class="flag-heading">
-      <p class="flag-eyebrow">{{ language === 'ta' ? 'நமது அடையாளம் · நமது உறுதி' : 'OUR IDENTITY · OUR RESOLVE' }}</p>
       <h2>{{ language === 'ta' ? 'ஒரு கொடி. ஒரு சமத்துவக் கனவு.' : 'One flag. A vision of equality.' }}</h2>
       <p class="flag-intro">{{ language === 'ta' ? 'ஒவ்வொரு நிறத்திலும் ஒரு மக்கள் கனவு.' : 'A people’s vision carried in every colour.' }}</p>
     </header>
@@ -11,8 +10,8 @@
         [attr.aria-label]="language === 'ta' ? 'மேல் பாதியில் வான்நீலமும் கீழ் பாதியில் சிவப்பும் மையத்தில் வெள்ளை ஐந்து முனை நட்சத்திரமும் கொண்ட விசிக கொடி' : 'VCK flag: sky blue on top, red on the bottom, and a white five-pointed star at the centre'">
         <defs>
           <radialGradient id="flag-star-glow">
-            <stop offset="0" stop-color="#fff" stop-opacity=".48" />
-            <stop offset="1" stop-color="#fff" stop-opacity="0" />
+            <stop offset="0" stop-color="#f4f7fc" stop-opacity=".48" />
+            <stop offset="1" stop-color="#f4f7fc" stop-opacity="0" />
           </radialGradient>
         </defs>
         <rect #blueField class="flag-field flag-field-blue" x="0" y="0" width="900" height="300" />
@@ -38,12 +37,6 @@
       <span class="flag-scroll-line"></span>
       {{ language === 'ta' ? 'தொடர்ந்து நகர்த்தி நிறங்களின் பொருளைக் காண்க' : 'SCROLL TO DISCOVER WHAT THE COLOURS CARRY' }}
     </p>
-  </div>
-
-  <div class="star-flight" aria-hidden="true">
-    <svg viewBox="365.8 210 168.4 160.1" preserveAspectRatio="none">
-      <polygon points="450,210 472.3,269.1 534.2,272.2 485.6,311 501.3,370.1 450,336 398.7,370.1 414.4,311 365.8,272.2 427.7,269.1" />
-    </svg>
   </div>
 
   <article class="star-meaning" [attr.aria-label]="language === 'ta' ? 'வெள்ளை நட்சத்திரத்தின் பொருள்' : 'The white star'">

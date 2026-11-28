@@ -1,4 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild, inject, PLATFORM_ID } from '@angular/core';
 import { createFlagAnimation } from './flag-animation';
 
 export type FlagLanguage = 'en' | 'ta';
@@ -19,6 +20,7 @@ type FlagMeaning = {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FlagSectionComponent implements AfterViewInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   @Input({ required: true }) language: FlagLanguage = 'en';
   @ViewChild('sectionRoot', { static: true }) private sectionRoot!: ElementRef<HTMLElement>;
 
@@ -57,6 +59,7 @@ export class FlagSectionComponent implements AfterViewInit, OnDestroy {
   private destroyed = false;
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
     void createFlagAnimation(this.sectionRoot.nativeElement).then(
       (dispose) => {
         if (this.destroyed) {

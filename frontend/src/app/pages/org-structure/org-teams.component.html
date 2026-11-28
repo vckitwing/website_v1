@@ -1,0 +1,53 @@
+<section class="tm" aria-labelledby="tm-title">
+  <h2 id="tm-title">{{ copy.title[language()] }}</h2>
+  <p class="tm-lede">{{ copy.lede[language()] }}</p>
+
+  <div class="tm-tools">
+    <form class="tm-search" role="search" (submit)="$event.preventDefault()">
+      <label>
+        <span>{{ copy.search[language()] }}</span>
+        <input type="search" autocomplete="off" [placeholder]="copy.searchPlaceholder[language()]" [value]="query()" (input)="onSearch($event)" />
+      </label>
+    </form>
+
+    <div class="tm-filters" role="group" [attr.aria-label]="copy.filter[language()]">
+      @for (filter of filters; track filter.id) {
+        <button type="button" [attr.data-kind]="filter.id" [class.is-active]="kind() === filter.id" [attr.aria-pressed]="kind() === filter.id" (click)="kind.set(filter.id)">
+          {{ filter[language()] }}
+          <span class="tm-number">{{ counts()[filter.id] ?? 0 }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <p class="tm-summary" aria-live="polite">{{ summary() }}</p>
+
+  @if (teams().length) {
+    <ul class="tm-grid">
+      @for (team of teams(); track team.name.ta) {
+        <li [attr.data-kind]="team.kind" [class.is-caution]="team.caution">
+          <strong>{{ team.name[language()] }}</strong>
+          <span class="tm-foot">
+            @if (team.flow) {
+              <button type="button" class="tm-open" aria-haspopup="dialog" [attr.aria-label]="flowCopy.view[language()] + ': ' + team.name[language()]" (click)="show(team, $event)">
+                {{ flowCopy.view[language()] }}
+              </button>
+            }
+            @if (team.caution) {
+              <span class="tm-caution">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4 21.5 20h-19Z" /><path d="M12 10v4.5M12 17.2v.1" /></svg>
+                {{ copy.caution[language()] }}
+              </span>
+            }
+            <span class="tm-kind">{{ kindLabels[team.kind][language()] }}</span>
+          </span>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="tm-none" role="status">
+      {{ copy.none[language()] }}
+      <button type="button" (click)="reset()">{{ copy.reset[language()] }}</button>
+    </p>
+  }
+</section>

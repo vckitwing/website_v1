@@ -1,0 +1,479 @@
+// Header navigation (loaded after app.component.scss).
+//
+// Desktop: a row of pill buttons right of the brand. Items with a menu show a chevron and open a dropdown on hover or on
+// click (a click "pins" it open); "Donate Us" is the highlighted call to action; the page you are on carries a red mark.
+// Compact (narrow screens, and Tamil below 1520px because its labels are longer): a burger button opens one panel with an
+// accordion. Menu entries that have no page yet are shown plainly with a "Soon" tag instead of looking like dead links.
+
+$compact-width: 1270px;
+$compact-width-ta: 1520px;
+
+.hero-shell {
+  --sn-text: var(--vck-white);
+  --sn-muted: rgba(244, 247, 252, 0.62);
+  --sn-hover: rgba(127, 184, 240, 0.14);
+  --sn-open: rgba(127, 184, 240, 0.22);
+  --sn-accent: var(--vck-blue-soft);
+  --sn-panel: #0a1b30;
+  --sn-border: rgba(74, 158, 235, 0.34);
+  --sn-shadow: 0 22px 48px rgba(0, 0, 0, 0.5);
+}
+
+.hero-shell.light-theme {
+  --sn-text: var(--vck-ink);
+  --sn-muted: rgba(20, 36, 60, 0.58);
+  --sn-hover: rgba(23, 107, 184, 0.1);
+  --sn-open: rgba(23, 107, 184, 0.16);
+  --sn-accent: var(--vck-blue-deep);
+  --sn-panel: #f7f9fd;
+  --sn-border: rgba(23, 107, 184, 0.26);
+  --sn-shadow: 0 20px 44px rgba(25, 47, 76, 0.2);
+}
+
+// ---- Desktop -----------------------------------------------------------------------------------------------------------
+.hero-shell .sn {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  height: 92px;
+  right: calc(clamp(24px, 6.2vw, 96px) + 132px);
+  display: flex;
+  align-items: center;
+}
+
+.sn-list {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sn-group {
+  position: relative;
+}
+
+.sn-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 clamp(10px, 1vw, 15px);
+  border: 0;
+  border-radius: 999px;
+  color: var(--sn-text);
+  background: transparent;
+  font: 600 clamp(12.5px, 0.98vw, 14.5px) / 1 'Outfit', 'Noto Sans Tamil', sans-serif;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover {
+    background: var(--sn-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--vck-red);
+    outline-offset: 2px;
+  }
+
+  &.is-soon {
+    color: var(--sn-muted);
+    cursor: default;
+
+    &:hover {
+      background: transparent;
+    }
+  }
+
+  // the page you are on: accent colour and a short red bar
+  &.is-current {
+    color: var(--sn-accent);
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 3px;
+      width: 18px;
+      height: 2px;
+      border-radius: 2px;
+      background: var(--vck-red);
+      transform: translateX(-50%);
+    }
+  }
+}
+
+.sn-group.is-open > .sn-link {
+  background: var(--sn-open);
+}
+
+.sn-chevron {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s ease;
+}
+
+.sn-group.is-open .sn-chevron {
+  transform: rotate(180deg);
+}
+
+// the call to action
+.sn-link.sn-cta {
+  margin-left: 8px;
+  padding: 0 clamp(16px, 1.3vw, 22px);
+  color: var(--vck-white);
+  background: linear-gradient(135deg, var(--vck-red), var(--vck-red-deep));
+  box-shadow: 0 6px 16px rgba(215, 31, 55, 0.32);
+
+  &:hover {
+    background: linear-gradient(135deg, var(--vck-red), var(--vck-red-deep));
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+
+  &.is-current {
+    color: var(--vck-white);
+
+    &::after {
+      background: var(--vck-white);
+    }
+  }
+}
+
+// Tamil labels are longer: a little tighter so the row still fits beside the brand on common laptop widths.
+.hero-shell[lang='ta'] .sn-list {
+  gap: 2px;
+}
+
+.hero-shell[lang='ta'] .sn-link {
+  gap: 5px;
+  padding: 0 clamp(7px, 0.7vw, 11px);
+  font-size: clamp(11.5px, 0.86vw, 13px);
+}
+
+.hero-shell[lang='ta'] .sn-link.sn-cta {
+  margin-left: 4px;
+  padding: 0 clamp(11px, 1vw, 16px);
+}
+
+// ---- Dropdown ----------------------------------------------------------------------------------------------------------
+.sn-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 10px);
+  left: 0;
+  display: grid;
+  gap: 2px;
+  min-width: 270px;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  border: 1px solid var(--sn-border);
+  border-radius: 16px;
+  background: var(--sn-panel);
+  box-shadow: var(--sn-shadow);
+  animation: sn-menu-in 0.18s ease-out both;
+}
+
+// the last two groups open towards the left so the panel never runs under the language / theme buttons
+.sn-group:nth-last-child(-n + 2) .sn-menu {
+  left: auto;
+  right: 0;
+}
+
+// a hover bridge so the pointer can travel from the pill to the panel without the menu closing
+.sn-menu::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  height: 12px;
+}
+
+.sn-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  color: var(--sn-text);
+  font: 500 14px / 1.3 'Montserrat', 'Noto Sans Tamil', sans-serif;
+  text-decoration: none;
+  transition: background-color 0.16s ease;
+
+  &:is(a) {
+    cursor: pointer;
+  }
+
+  &:is(a):hover,
+  &:is(a):focus-visible {
+    background: var(--sn-hover);
+
+    .sn-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  &:is(a):focus-visible {
+    outline: 2px solid var(--vck-red);
+    outline-offset: -2px;
+  }
+
+  &.is-soon {
+    color: var(--sn-muted);
+    cursor: default;
+  }
+}
+
+.sn-overview {
+  margin-bottom: 4px;
+  padding-bottom: 2px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--sn-border);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.sn-arrow {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  fill: none;
+  stroke: var(--sn-accent);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.sn-soon {
+  flex: none;
+  padding: 3px 8px;
+  border: 1px solid var(--sn-border);
+  border-radius: 999px;
+  color: var(--sn-muted);
+  font: 700 10px / 1 'Montserrat', 'Noto Sans Tamil', sans-serif;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-shell[lang='ta'] .sn-soon {
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+@keyframes sn-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ---- Burger (compact only) ---------------------------------------------------------------------------------------------
+.sn-burger {
+  display: none;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid var(--sn-border);
+  border-radius: 12px;
+  color: var(--sn-text);
+  background: var(--sn-hover);
+  cursor: pointer;
+
+  span {
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--vck-red), var(--vck-blue));
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  &.menu-open {
+    background: var(--sn-open);
+
+    span:first-child {
+      transform: translateY(7px) rotate(45deg);
+    }
+
+    span:nth-child(2) {
+      opacity: 0;
+    }
+
+    span:last-child {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--vck-red);
+    outline-offset: 2px;
+  }
+}
+
+// ---- Compact layout ----------------------------------------------------------------------------------------------------
+@mixin compact($scope) {
+  #{$scope} .sn-burger {
+    display: flex;
+  }
+
+  #{$scope} .topbar {
+    gap: 12px;
+  }
+
+  #{$scope} .brand {
+    margin-right: auto;
+  }
+
+  #{$scope} .top-actions {
+    margin-left: auto;
+  }
+
+  #{$scope} .sn {
+    display: none;
+    top: 100px;
+    left: clamp(18px, 4vw, 40px);
+    right: clamp(18px, 4vw, 40px);
+    height: auto;
+    max-height: calc(100svh - 124px);
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid var(--sn-border);
+    border-radius: 18px;
+    background: var(--sn-panel);
+    box-shadow: var(--sn-shadow);
+  }
+
+  #{$scope} .sn.sn-open {
+    display: block;
+    animation: sn-menu-in 0.2s ease-out both;
+  }
+
+  #{$scope} .sn-list {
+    display: grid;
+    gap: 2px;
+  }
+
+  #{$scope} .sn-link {
+    width: 100%;
+    height: 54px;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-radius: 12px;
+    font-size: 15.5px;
+
+    &.is-current::after {
+      left: 16px;
+      bottom: 10px;
+      transform: none;
+    }
+  }
+
+  #{$scope} .sn-link.sn-cta {
+    justify-content: center;
+    margin: 8px 0 2px;
+  }
+
+  #{$scope} .sn-menu {
+    position: static;
+    min-width: 0;
+    margin: 2px 0 8px 14px;
+    padding: 2px 0 2px 10px;
+    border: 0;
+    border-left: 2px solid var(--sn-border);
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    animation: none;
+  }
+
+  #{$scope} .sn-menu::before {
+    display: none;
+  }
+
+  #{$scope} .sn-item {
+    min-height: 50px;
+  }
+
+  #{$scope} .sn-arrow {
+    opacity: 0.8;
+    transform: none;
+  }
+}
+
+@media (max-width: $compact-width) {
+  @include compact('.hero-shell');
+}
+
+@media (min-width: #{$compact-width + 1}) and (max-width: $compact-width-ta) {
+  @include compact(".hero-shell[lang='ta']");
+}
+
+@media (max-width: 760px) {
+  // tighter header so the brand name fits on one line beside the buttons
+  .hero-shell .topbar {
+    gap: 8px;
+  }
+
+  .hero-shell .language {
+    padding: 0 10px;
+  }
+
+  .hero-shell .sn {
+    top: 80px;
+    left: 18px;
+    right: 18px;
+    max-height: calc(100svh - 100px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sn-link,
+  .sn-chevron,
+  .sn-arrow,
+  .sn-burger span {
+    transition: none;
+  }
+
+  .sn-menu,
+  .hero-shell .sn.sn-open {
+    animation: none;
+  }
+}
+
+// the language switch is a real link (to the same page in the other language), styled like the theme button
+.hero-shell a.language {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.opening-screen.is-skipped {
+  display: none;
+}
+

@@ -1,0 +1,191 @@
+<div #pageRoot class="ct-page og-page" [class.has-selection]="selected()" [attr.lang]="language">
+  <header class="ct-intro ct-reveal">
+    <p class="ct-eyebrow">{{ copy.eyebrow[language] }}</p>
+    <h1>{{ copy.title[language] }}</h1>
+    <p class="ct-lede">{{ copy.lede[language] }}</p>
+  </header>
+
+  <!-- one card, used everywhere in the chart -->
+  <ng-template #card let-id="id" let-main="main">
+    @let item = role(id);
+    <button
+      type="button"
+      class="og-card"
+      [id]="'org-' + item.id"
+      [class.is-main]="main"
+      [class.is-selected]="selectedId() === item.id"
+      [class.is-line]="line().has(item.id)"
+      [attr.aria-pressed]="selectedId() === item.id"
+      (click)="select(item.id)"
+    >
+      <span class="og-title">{{ item.title[language] }}</span>
+      @if (item.scope; as scope) {
+        <span class="og-scope">{{ scope[language] }}</span>
+      }
+      @if (item.sameCadre) {
+        <span class="og-tag">{{ copy.sameCadre[language] }}</span>
+      }
+    </button>
+  </ng-template>
+
+  <div class="og-tools ct-reveal">
+    <form class="og-search" role="search" (submit)="onSearchSubmit($event)">
+      <label>
+        <span>{{ copy.search[language] }}</span>
+        <input type="search" autocomplete="off" [placeholder]="copy.searchPlaceholder[language]" [value]="query()" (input)="onSearch($event)" />
+      </label>
+      @if (query().trim()) {
+        <ul class="og-results">
+          @for (found of results(); track found.id) {
+            <li>
+              <button type="button" (click)="show(found.id)">
+                <strong>{{ found.title[language] }}</strong>
+                @if (found.scope; as scope) {
+                  <span>{{ scope[language] }}</span>
+                }
+              </button>
+            </li>
+          } @empty {
+            <li class="og-none" role="status">{{ copy.noResult[language] }}</li>
+          }
+        </ul>
+      }
+    </form>
+
+    <nav class="og-jump" [attr.aria-label]="copy.jump[language]">
+      @for (level of levels; track level.id) {
+        <button type="button" [attr.data-level]="level.id" (click)="jump(level.id)">{{ level.title[language] }}</button>
+      }
+      <button type="button" data-level="teams" (click)="jump('teams')">{{ teamsTitle[language] }}</button>
+    </nav>
+  </div>
+
+  <div class="og-layout">
+    <div class="og-chart">
+      @for (level of levels; track level.id) {
+        <section class="og-level" [id]="'level-' + level.id" [attr.data-level]="level.id" [attr.aria-labelledby]="'level-title-' + level.id">
+          <h2 class="og-level-title" [id]="'level-title-' + level.id">{{ level.title[language] }}</h2>
+
+          @for (tier of level.tiers; track $index) {
+            @if (tier.kind === 'role') {
+              <div class="og-tier">
+                <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ id: tier.id, main: true }" />
+
+                @if (tier.offices; as offices) {
+                  @if (offices.length > 1) {
+                    <div class="og-drop" aria-hidden="true"></div>
+                  }
+                  <ul class="og-offices" [id]="'offices-' + tier.id" [class.is-single]="offices.length === 1" [class.og-row]="offices.length > 1">
+                    @for (office of offices; track office) {
+                      <li>
+                        <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ id: office, main: false }" />
+                      </li>
+                    }
+                  </ul>
+                }
+              </div>
+            } @else {
+              <div class="og-drop" aria-hidden="true"></div>
+              <ul class="og-branches og-row">
+                @for (column of tier.columns; track column[0]) {
+                  <li>
+                    @for (id of column; track id) {
+                      <div class="og-step">
+                        <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ id: id, main: false }" />
+                      </div>
+                    }
+                  </li>
+                }
+              </ul>
+              <div class="og-join" aria-hidden="true"></div>
+            }
+          }
+        </section>
+      }
+    </div>
+
+    <!-- details of the chosen role: a side panel on wide screens, a bottom sheet on phones -->
+    <aside class="og-panel" [class.is-open]="selected()" [attr.aria-label]="copy.detailsTitle[language]" aria-live="polite">
+      @if (selected(); as current) {
+        <div class="og-panel-head">
+          <div>
+            <h2>{{ current.title[language] }}</h2>
+            <p class="og-other" [attr.lang]="language === 'ta' ? 'en' : 'ta'">{{ current.title[language === 'ta' ? 'en' : 'ta'] }}</p>
+          </div>
+          <button type="button" class="og-close" (click)="clear()" [attr.aria-label]="copy.close[language]">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </div>
+        @if (current.scope; as scope) {
+          <p class="og-panel-scope">{{ scope[language] }}</p>
+        }
+        @if (current.sameCadre) {
+          <p class="og-tag">{{ copy.sameCadre[language] }}</p>
+        }
+        @if (current.members; as members) {
+          <h3>{{ copy.includes[language] }}</h3>
+          <ul class="og-plain">
+            @for (member of members; track member.en) {
+              <li>
+                @if (member.flow; as flow) {
+                  <button type="button" class="og-flow-link" aria-haspopup="dialog" (click)="openFlow(flow, $event)">{{ member[language] }} ›</button>
+                } @else {
+                  {{ member[language] }}
+                }
+              </li>
+            }
+          </ul>
+        }
+
+        @if (current.id === 'state-secretaries') {
+          <button type="button" class="ct-button og-teams-link" (click)="showTeams()">{{ teamsTitle[language] }} ↓</button>
+        }
+
+        <h3>{{ copy.reportsTo[language] }}</h3>
+        <ul class="og-chips">
+          @for (parent of parents(); track parent.id) {
+            <li><button type="button" (click)="show(parent.id)">{{ parent.title[language] }}</button></li>
+          } @empty {
+            <li class="og-nobody">{{ copy.nobody[language] }}</li>
+          }
+        </ul>
+
+        <h3>{{ copy.leads[language] }}</h3>
+        <ul class="og-chips">
+          @for (child of children(); track child.id) {
+            <li>
+              <button type="button" (click)="show(child.id)">
+                {{ child.title[language] }}
+                @if (child.scope; as scope) {
+                  <small>{{ scope[language] }}</small>
+                }
+              </button>
+            </li>
+          } @empty {
+            <li class="og-nobody">{{ copy.nobody[language] }}</li>
+          }
+        </ul>
+
+        <h3>{{ copy.chain[language] }}</h3>
+        <ol class="og-chain">
+          @for (step of chain(); track step.id) {
+            <li [class.is-current]="step.id === current.id">
+              <button type="button" (click)="show(step.id)">{{ step.title[language] }}</button>
+            </li>
+          }
+        </ol>
+      } @else {
+        <h2>{{ copy.detailsTitle[language] }}</h2>
+        <p class="og-hint">{{ copy.detailsHint[language] }}</p>
+      }
+    </aside>
+  </div>
+
+  <div class="og-teams" id="level-teams">
+    <vck-org-teams [language]="language" (openTeam)="teamOpen.set($event)" />
+  </div>
+
+  @if (teamOpen(); as opened) {
+    <vck-org-team-overlay [language]="language" [opened]="opened" (closed)="teamOpen.set(null)" />
+  }
+</div>

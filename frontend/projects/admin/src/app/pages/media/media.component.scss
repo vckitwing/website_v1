@@ -1,0 +1,71 @@
+.upload {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 24px;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tile {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 12px;
+}
+
+.thumb {
+  display: block;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--bg);
+
+  img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+}
+
+.meta {
+  display: grid;
+  gap: 2px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+
+  .name {
+    font-size: 15px;
+  }
+}
+
+.ta {
+  font-family: 'Noto Sans Tamil', system-ui, sans-serif;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 560px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,343 @@
+// Admin styles. One shared stylesheet: the admin is a tool, so plain and consistent beats decorative.
+:root {
+  --bg: #f4f6fa;
+  --surface: #ffffff;
+  --text: #14243c;
+  --muted: #5b6b82;
+  --line: #d9e0ea;
+  --accent: #1f6fc0;
+  --accent-text: #f4f7fc;
+  --danger: #c4243a;
+  --ok: #17794a;
+  --warn: #9a6200;
+  --focus: #ed2a40;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1626;
+    --surface: #12233a;
+    --text: #e6edf7;
+    --muted: #93a4bd;
+    --line: #25384f;
+    --accent: #4a9eeb;
+    --accent-text: #08121f;
+    --danger: #ff7a8a;
+    --ok: #5fd39a;
+    --warn: #f0b54a;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', 'Noto Sans Tamil', sans-serif;
+}
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 24px;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+p {
+  margin: 0 0 12px;
+}
+
+a {
+  color: var(--accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+// ---- Controls ---------------------------------------------------------------------------------------------------------
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--surface);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover:not(:disabled) {
+    border-color: var(--accent);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &.primary {
+    border-color: var(--accent);
+    color: var(--accent-text);
+    background: var(--accent);
+  }
+
+  &.danger {
+    color: var(--danger);
+  }
+
+  &.small {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 13px;
+  }
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--surface);
+  font: inherit;
+
+  &[lang='ta'] {
+    font-family: 'Noto Sans Tamil', system-ui, sans-serif;
+  }
+
+  &.ng-invalid.ng-touched {
+    border-color: var(--danger);
+  }
+}
+
+textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+input[type='checkbox'] {
+  width: auto;
+  min-height: 0;
+}
+
+.toolbar input,
+.toolbar select {
+  width: auto;
+  min-width: 160px;
+}
+
+label {
+  display: grid;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 14px;
+
+  small {
+    font-weight: 400;
+    color: var(--muted);
+  }
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+// ---- Surfaces ---------------------------------------------------------------------------------------------------------
+.card {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.table-wrap {
+  position: relative; // keeps the visually hidden header text inside the scroll area
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
+td.actions {
+  white-space: nowrap;
+  text-align: right;
+
+  .btn + .btn {
+    margin-left: 6px;
+  }
+}
+
+td.ta {
+  font-family: 'Noto Sans Tamil', system-ui, sans-serif;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+
+  &.published,
+  &.active {
+    color: var(--ok);
+  }
+
+  &.draft,
+  &.inactive {
+    color: var(--warn);
+  }
+}
+
+.alert {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  color: var(--danger);
+
+  &.ok {
+    border-color: var(--ok);
+    color: var(--ok);
+  }
+}
+
+.empty {
+  padding: 28px;
+  text-align: center;
+  color: var(--muted);
+}
+
+// ---- Dialog form ------------------------------------------------------------------------------------------------------
+dialog {
+  width: min(640px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--text);
+  background: var(--surface);
+
+  &::backdrop {
+    background: rgba(5, 12, 22, 0.6);
+  }
+
+  form {
+    display: grid;
+    gap: 14px;
+    padding: 22px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 6px;
+  }
+}
+
+@media (max-width: 560px) {
+  dialog .row {
+    grid-template-columns: 1fr;
+  }
+
+  th,
+  td {
+    padding: 9px 10px;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.account-form {
+  display: grid;
+  gap: 14px;
+  max-width: 420px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

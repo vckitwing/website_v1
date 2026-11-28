@@ -14,29 +14,12 @@
   background:
     radial-gradient(ellipse at 50% 38%, rgba(31, 111, 190, .16), transparent 42%),
     var(--page-surface, #07111f);
+  // Paint the page surface out to both viewport edges (over .hero-shell's side
+  // padding, where its noise/gradient layers showed as side "borders") without
+  // changing the section's layout width.
+  box-shadow: 0 0 0 100vmax var(--page-surface, #07111f);
+  clip-path: inset(0 -100vmax);
   font-family: 'Montserrat', 'Noto Sans Tamil', sans-serif;
-}
-
-.star-flight {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 5;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-}
-
-.star-flight svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  filter: drop-shadow(0 1px 5px rgba(6, 18, 30, .24));
-}
-
-.star-flight polygon {
-  fill: #fff;
 }
 
 .flag-stage {
@@ -51,11 +34,16 @@
 .flag-stage::before {
   position: absolute;
   z-index: -1;
+
   inset: 20% 8% 13%;
+  border: 1px solid rgba(244, 247, 252, .035);
+
+  inset: 20% 12% 13%;
   border: 1px solid rgba(255, 255, 255, .035);
+
   border-radius: 50%;
   content: '';
-  transform: scaleX(1.3);
+  transform: scaleX(1.12);
 }
 
 .flag-heading {
@@ -64,14 +52,6 @@
   z-index: 1;
   width: min(90%, 720px);
   text-align: center;
-}
-
-.flag-eyebrow {
-  margin: 0 0 14px;
-  color: #94b5d8;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .22em;
 }
 
 .flag-heading h2 {
@@ -88,10 +68,6 @@
   color: #aab8c9;
   font-size: clamp(13px, 1.2vw, 16px);
   line-height: 1.7;
-}
-
-.flag-section[lang='ta'] .flag-eyebrow {
-  letter-spacing: .08em;
 }
 
 .flag-section[lang='ta'] .flag-heading h2,
@@ -134,15 +110,10 @@
 }
 
 .flag-star {
-  fill: #fff;
+  fill: #f4f7fc;
   filter: drop-shadow(0 1px 5px rgba(6, 18, 30, .24));
   transform-box: fill-box;
   transform-origin: center;
-}
-
-.flag-section.hero-star-covered .flag-star,
-.flag-section.hero-star-covered .flag-star-aura {
-  visibility: hidden !important;
 }
 
 .flag-scroll-hint {
@@ -182,7 +153,7 @@
   aspect-ratio: 16 / 9;
   padding: clamp(12px, 1.4vw, 18px);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, .15);
+  border: 1px solid rgba(244, 247, 252, .15);
   border-radius: 5px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, .17);
   pointer-events: auto;
@@ -206,23 +177,45 @@
   bottom: -72px;
   width: 190px;
   height: 190px;
-  border: 1px solid rgba(255, 255, 255, .15);
+  border: 1px solid rgba(244, 247, 252, .15);
   border-radius: 50%;
   content: '';
   pointer-events: none;
 }
 
+// The cards are exactly the flag's colours (the flag's panels turn into them).
 .meaning-card-blue {
-  background: linear-gradient(140deg, #0879bd, #07518e);
+  border-color: transparent;
+  background: var(--flag-blue);
+  color: #06182b;
 }
 
 .meaning-card-red {
-  background: linear-gradient(140deg, #d92736, #901f30);
+  border-color: transparent;
+  background: var(--flag-red);
+}
+
+// Dark ink on the sky blue (white would only reach about 2.4:1 there); white stays on the red.
+.meaning-card-blue .meaning-eyebrow {
+  color: rgba(6, 24, 43, .78);
+}
+
+.meaning-card-blue h3,
+.meaning-card-blue .meaning-qualities {
+  color: #06182b;
+}
+
+.meaning-card-blue .meaning-description {
+  color: rgba(6, 24, 43, .9);
+}
+
+.meaning-card-blue::after {
+  border-color: rgba(6, 24, 43, .2);
 }
 
 .meaning-eyebrow {
   margin: 0 0 clamp(8px, 1vw, 12px);
-  color: rgba(255, 255, 255, .72);
+  color: rgba(244, 247, 252, .72);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: .17em;
@@ -230,7 +223,7 @@
 
 .meaning-card h3 {
   margin: 0;
-  color: #fff;
+  color: #f4f7fc;
   font-size: clamp(22px, 2.2vw, 30px);
   font-weight: 600;
   line-height: 1.2;
@@ -238,7 +231,7 @@
 
 .meaning-qualities {
   margin: 6px 0 8px;
-  color: #fff;
+  color: #f4f7fc;
   font-size: clamp(13px, 1.1vw, 16px);
   font-weight: 600;
   line-height: 1.3;
@@ -247,7 +240,7 @@
 .meaning-description {
   max-width: 52ch;
   margin: 0;
-  color: rgba(255, 255, 255, .88);
+  color: rgba(244, 247, 252, .88);
   font-size: clamp(11px, .9vw, 13px);
   line-height: 1.5;
 }
@@ -260,9 +253,9 @@
   gap: clamp(20px, 4vw, 48px);
   margin: clamp(72px, 12vh, 140px) auto 0;
   padding: clamp(26px, 4vw, 48px);
-  border: 1px solid rgba(255, 255, 255, .14);
+  border: 1px solid rgba(244, 247, 252, .14);
   background:
-    radial-gradient(ellipse at 12% 50%, rgba(255, 255, 255, .11), transparent 36%),
+    radial-gradient(ellipse at 12% 50%, rgba(244, 247, 252, .11), transparent 36%),
     linear-gradient(125deg, #172943, #0d1b2c);
   box-shadow: 0 24px 60px rgba(0, 0, 0, .18);
 }
@@ -271,11 +264,11 @@
   display: block;
   width: min(100%, 88px);
   overflow: visible;
-  filter: drop-shadow(0 0 16px rgba(255, 255, 255, .35));
+  filter: drop-shadow(0 0 16px rgba(244, 247, 252, .35));
 }
 
 .star-meaning-mark polygon {
-  fill: #fff;
+  fill: #f4f7fc;
 }
 
 .star-meaning-copy .meaning-eyebrow {
@@ -284,7 +277,7 @@
 
 .star-meaning-copy h3 {
   margin: 0;
-  color: #fff;
+  color: #f4f7fc;
   font-size: clamp(22px, 2.5vw, 32px);
   font-weight: 600;
   line-height: 1.35;
@@ -293,7 +286,7 @@
 .star-meaning-copy > p:last-child {
   max-width: 58ch;
   margin: 12px 0 0;
-  color: rgba(255, 255, 255, .84);
+  color: rgba(244, 247, 252, .84);
   font-size: clamp(13px, 1.15vw, 15px);
   line-height: 1.8;
 }
@@ -309,6 +302,12 @@
 @media (min-width: 1101px) {
   .flag-stage {
     min-height: clamp(620px, 45vw, 900px);
+  }
+
+  // A smaller flag on desktop (it was 52vw / 670px); it still expands when the colours part.
+  .flag-figure {
+    width: min(36vw, 480px);
+    margin-top: 64px;
   }
 
   .meaning-card {
@@ -344,10 +343,6 @@
 
 :host-context(.light-theme) .flag-heading h2 {
   color: #14243c;
-}
-
-:host-context(.light-theme) .flag-eyebrow {
-  color: #315d83;
 }
 
 :host-context(.light-theme) .flag-intro,

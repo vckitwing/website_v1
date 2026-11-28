@@ -1,32 +1,58 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, signal } from '@angular/core';
+import { isPlatformBrowser, Location } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnDestroy, OnInit, PLATFORM_ID, QueryList, ViewChild, ViewChildren, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs';
+import { Language, otherLanguage, PageName, pathFor, readAddress } from './routing/pages';
+import { SeoService } from './seo/seo.service';
 import { gsap } from 'gsap';
 import { hasCompletedHeroPortraitReveal, HeroPortraitReveal } from './pages/home/hero/hero-portrait-reveal';
-import { HeroStarNetwork } from './pages/home/hero/hero-star-network';
 import { createHeroFlagHandoff } from './pages/home/hero/hero-star-handoff';
 import { OpeningAnimation } from './pages/home/hero/opening-animation';
+import type { HeroPortrait3D } from './pages/home/hero/portrait/hero-portrait-3d';
+import type { HeroTypography3D } from './pages/home/hero/typography/hero-typography-3d';
+import { ContactPageComponent } from './pages/contact/contact-page.component';
+import { DonatePageComponent } from './pages/donate/donate-page.component';
+import { TamilLandPageComponent } from './pages/tamil-land/tamil-land-page.component';
+import { AmaipaiThiralvomPageComponent } from './pages/amaipai-thiralvom/amaipai-thiralvom-page.component';
+import { OrgStructurePageComponent } from './pages/org-structure/org-structure-page.component';
 import { FlagSectionComponent } from './pages/home/sections/flag/flag-section.component';
+import { FooterSectionComponent } from './pages/home/sections/footer/footer-section.component';
+import { ConferencesSectionComponent } from './pages/home/sections/conferences/conferences-section.component';
+import { SocialSectionComponent } from './pages/home/sections/social/social-section.component';
 import { HistorySectionComponent } from './pages/home/sections/history/history-section.component';
 import { IdeologySectionComponent } from './pages/home/sections/ideology/ideology-section.component';
+import { HandwrittenSignatureComponent } from '@shared/handwritten-signature/handwritten-signature.component';
 import { ThinkersSectionComponent } from './pages/home/sections/thinkers/thinkers-section.component';
 import { ThemeSwitchTransitionComponent } from './shared/theme-switch-transition/theme-switch-transition.component';
 
+/** Where a menu item goes: another page, or somewhere on the home page (`hash` is an element id or a section name). */
+type NavTarget = { page: PageName; hash?: string };
+type NavItem = { ta: string; en: string; go?: NavTarget };
+type NavSection = { id: string; ta: string; en: string; go?: NavTarget; items: NavItem[] };
+
 type SloganPart = { text: string; highlighted: boolean };
-type SloganLine = { parts: SloganPart[] };
+type SloganWord = { parts: SloganPart[] };
+type SloganLine = { parts: SloganPart[]; words: SloganWord[] };
 
 @Component({
   selector: 'vck-root',
   standalone: true,
-  imports: [FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ThemeSwitchTransitionComponent],
+  imports: [ContactPageComponent, DonatePageComponent, TamilLandPageComponent, AmaipaiThiralvomPageComponent, OrgStructurePageComponent, FlagSectionComponent, IdeologySectionComponent, HistorySectionComponent, ThinkersSectionComponent, ConferencesSectionComponent, FooterSectionComponent, SocialSectionComponent, HandwrittenSignatureComponent, ThemeSwitchTransitionComponent],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss', './pages/home/hero/hero-typography.scss'],
+  styleUrls: ['./app.component.scss', './site-nav.scss', './pages/home/hero/hero-typography.scss', './pages/home/hero/hero-signature.scss', './pages/home/hero/hero-mobile.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('portraitCanvas', { static: true }) private canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('portrait3dCanvas', { static: true }) private portrait3dCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('heroSignature', { static: true }) private heroSignatureRef!: HandwrittenSignatureComponent;
+  @ViewChild('ribbonFrontCanvas', { static: true }) private ribbonFrontCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('headlineCanvas', { static: true }) private headlineCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('themeToggleButton', { static: true }) private themeToggleButtonRef!: ElementRef<HTMLButtonElement>;
   @ViewChild('themeTransition', { static: true }) private themeTransitionRef!: ThemeSwitchTransitionComponent;
   @ViewChild('openingScreen', { static: true }) private openingScreenRef!: ElementRef<HTMLElement>;
   @ViewChild('openingCanvas', { static: true }) private openingCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('openingFlag', { static: true }) private openingFlagRef!: ElementRef<SVGSVGElement>;
   @ViewChild('openingStar', { static: true }) private openingStarRef!: ElementRef<SVGSVGElement>;
   @ViewChild('openingIdentity', { static: true }) private openingIdentityRef!: ElementRef<HTMLElement>;
   @ViewChild('openingVck', { static: true }) private openingVckRef!: ElementRef<HTMLElement>;
@@ -34,11 +60,19 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('brandVck', { static: true }) private brandVckRef!: ElementRef<HTMLElement>;
   @ViewChild('brandName', { static: true }) private brandNameRef!: ElementRef<HTMLElement>;
   @ViewChild('heroAnchor', { static: true }) private heroAnchorRef!: ElementRef<HTMLElement>;
+  @ViewChild('heroSection', { static: true }) private heroSectionRef!: ElementRef<HTMLElement>;
   @ViewChild('heroArtwork', { static: true }) private heroArtworkRef!: ElementRef<HTMLImageElement>;
   @ViewChild('portraitTrace', { static: true }) private portraitTraceRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('heroEyebrow', { static: true }) private heroEyebrowRef!: ElementRef<HTMLElement>;
   @ViewChild('heroHeadline', { static: true }) private heroHeadlineRef!: ElementRef<HTMLParagraphElement>;
   @ViewChildren('heroHeadlineLine') private heroHeadlineLineRefs!: QueryList<ElementRef<HTMLElement>>;
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly location = inject(Location);
+  private readonly router = inject(Router);
+  private readonly seo = inject(SeoService);
+  private readonly destroyRef = inject(DestroyRef);
+  /** The page and language of the address the visit started on. */
+  private readonly start = readAddress(this.location.path(true));
   readonly slogans = [
     { ta: 'அடங்க மறு, அத்து மீறு, திமிறி எழு, திருப்பி அடி', en: 'Refuse to submit, transgress the limits, rise up in defiance, strike back.' },
     { ta: 'விழிப்பாய் இரு! நெருப்பாய் எழு!', en: 'Stay alert! Rise up like fire!' },
@@ -57,8 +91,12 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     { ta: 'போராட', en: 'fight' },
     { ta: 'சமத்துவ', en: 'equal' }
   ];
-  readonly activeSlogan = signal(Math.floor(Math.random() * this.slogans.length));
-  readonly language = signal<'en' | 'ta'>('en');
+  /** The four slogans shown in the hero (indices into `slogans`), cycled automatically and via the 01-04 index. */
+  private readonly sloganDeck = [0, 1, 4, 6] as const;
+  readonly slides = [0, 1, 2, 3] as const;
+  readonly activeSlide = signal(0);
+  readonly activeSlogan = computed(() => this.sloganDeck[this.activeSlide()] ?? 0);
+  readonly language = signal<Language>(this.start.language);
   readonly formattedSlogan = computed(() => this.slogans[this.activeSlogan()][this.language()].replace(/([!;])\s*/g, '$1\n'));
   readonly formattedSloganLines = computed<SloganLine[]>(() => {
     const text = this.formattedSlogan();
@@ -74,7 +112,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       offset = lineEnd + 1;
 
       if (matchIndex < lineStart || matchIndex >= lineEnd) {
-        return { parts: [{ text: line, highlighted: false }] };
+        const parts = [{ text: line, highlighted: false }];
+        return { parts, words: this.toWords(parts) };
       }
 
       const highlightStart = matchIndex - lineStart;
@@ -83,22 +122,25 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       if (highlightStart > 0) parts.push({ text: line.slice(0, highlightStart), highlighted: false });
       parts.push({ text: line.slice(highlightStart, highlightEnd), highlighted: true });
       if (highlightEnd < line.length) parts.push({ text: line.slice(highlightEnd), highlighted: false });
-      return { parts };
+      return { parts, words: this.toWords(parts) };
     });
   });
   readonly theme = signal<'dark' | 'light'>(this.readSavedTheme());
   readonly openNavigation = signal<string | null>(null);
   readonly mobileNavigationOpen = signal(false);
-  readonly navigation = [
+  readonly page = signal<PageName>(this.start.page);
+  readonly navigation: NavSection[] = [
+    { id: 'home', ta: 'முகப்பு', en: 'Home', go: { page: 'home', hash: 'home' }, items: [] },
     {
       id: 'movement', ta: 'இயக்கம்', en: 'Movement', items: [
-        { ta: 'இயக்க வரலாறு', en: 'Movement history' },
+        { ta: 'இயக்க வரலாறு', en: 'Movement history', go: { page: 'home', hash: 'history' } },
         { ta: 'கொள்கைகள்', en: 'Policies' },
         { ta: 'மக்கள் பிரதிநிதிகள் (எம்.பி / எம்.எல்.ஏ)', en: 'Elected representatives (MPs / MLAs)' }
       ]
     },
     {
-      id: 'structure', ta: 'இயக்க கட்டமைப்பு', en: 'Organization structure', items: [
+      id: 'structure', ta: 'இயக்க கட்டமைப்பு', en: 'Org Structure', items: [
+        { ta: 'அமைப்பு வரைபடம்', en: 'Org View', go: { page: 'org-structure' } },
         { ta: 'தலைமை', en: 'Leadership' },
         { ta: 'மாநிலச் செயலாளர்கள்', en: 'State secretaries' },
         { ta: 'மாவட்டச் செயலாளர்கள்', en: 'District secretaries' },
@@ -108,30 +150,31 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     {
       id: 'field', ta: 'களத்தில் சிறுத்தைகள்', en: 'In the field', items: [
         { ta: 'தேர்தல்கள்', en: 'Elections' },
-        { ta: 'மாநாடுகள்', en: 'Conferences' },
+        { ta: 'மாநாடுகள்', en: 'Conferences', go: { page: 'home', hash: 'conferences' } },
         { ta: 'சாதனைகள்', en: 'Achievements' }
       ]
     },
     {
       id: 'publications', ta: 'வெளியீடுகள்', en: 'Publications', items: [
-        { ta: 'நமது தமிழ்மண்', en: 'Our Tamil Land' },
-        { ta: 'புத்தகங்கள்', en: 'Books' },
+        { ta: 'நமது தமிழ்மண்', en: 'Our Tamil Land', go: { page: 'tamil-land' } },
+        { ta: 'அமைப்பாய்த் திரள்வோம்', en: 'Amaipai Thiralvom', go: { page: 'amaipai-thiralvom' } },
         { ta: 'கொள்கைப் பாடல்கள்', en: 'Policy songs' },
         { ta: 'புகைப்படங்கள்', en: 'Photos' }
       ]
     },
-    { id: 'donate', ta: 'நன்கொடை', en: 'Donate Us', items: [] },
-    {
-      id: 'contact', ta: 'தொடர்புக்கு', en: 'Contact', items: [
-        { ta: 'முகவரி', en: 'Address' },
-        { ta: 'தொலைபேசி / மின்னஞ்சல்', en: 'Phone / email' },
-        { ta: 'தொடர்பு படிவம்', en: 'Contact form' }
-      ]
-    }
+    { id: 'contact', ta: 'தொடர்புக்கு', en: 'Contact', go: { page: 'contact' }, items: [] },
+    { id: 'donate', ta: 'நன்கொடை', en: 'Donate Us', go: { page: 'donate' }, items: [] }
   ];
-  readonly openingActive = signal(true);
+  /** A visit that starts on a sub-page has no intro: its flight to the hero would have nothing to land on. */
+  readonly skipIntro = this.start.page !== 'home';
+  readonly openingActive = signal(this.start.page === 'home');
   readonly portraitRevealPending = signal(true);
-  private starNetwork?: HeroStarNetwork;
+  private headline3d?: HeroTypography3D;
+  private portrait3d?: HeroPortrait3D;
+  private portraitRevealDone = false;
+  readonly portrait3dActive = signal(false);
+  private destroyed = false;
+  private signatureTimer?: number;
   private portraitReveal?: HeroPortraitReveal;
   private opening?: OpeningAnimation;
   private handoffCleanup?: () => void;
@@ -139,29 +182,79 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private heroTextTimeline?: gsap.core.Timeline;
   private heroAnimationFrame?: number;
 
-  ngOnInit(): void {
-    this.portraitRevealPending.set(!hasCompletedHeroPortraitReveal());
-    this.starNetwork = new HeroStarNetwork(this.canvasRef.nativeElement);
-    this.sloganTimer = window.setInterval(() => {
-      this.activeSlogan.update((current) => {
-        const next = Math.floor(Math.random() * (this.slogans.length - 1));
-        return next >= current ? next + 1 : next;
-      });
-      this.animateSlogan();
-    }, 4600);
+  constructor() {
+    this.seo.apply(this.page(), this.language());
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd), takeUntilDestroyed(this.destroyRef))
+      .subscribe((event) => this.applyAddress(event.urlAfterRedirects));
   }
 
+  ngOnInit(): void {
+    if (!this.isBrowser) return; // everything below needs a real screen
+    this.portraitRevealPending.set(!hasCompletedHeroPortraitReveal());
+    // The relief portrait is a progressive enhancement: skipped entirely for reduced motion (the flat photo stays).
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      void import('./pages/home/hero/portrait/hero-portrait-3d').then(({ HeroPortrait3D }) => {
+        if (this.destroyed) return;
+        const portrait = new HeroPortrait3D(this.portrait3dCanvasRef.nativeElement, this.heroArtworkRef.nativeElement.src, () => this.portrait3dActive.set(true));
+        this.portrait3d = portrait;
+        portrait.load().then(() => { if (this.portraitRevealDone) portrait.show(); }, (error: unknown) => console.error('Unable to load the 3D portrait; keeping the flat photograph.', error));
+      }, (error: unknown) => console.error('Unable to load the 3D portrait module.', error));
+    }
+    // Lazy chunk: the extruded headline (outlines, SVGLoader, environment map) is not needed for first paint.
+    void import('./pages/home/hero/typography/hero-typography-3d').then(({ HeroTypography3D }) => {
+      // Built when the browser is idle so the opening animation and first paint are not competing with WebGL start-up.
+      const start = (): void => {
+        if (this.destroyed || this.headline3d) return;
+        this.headline3d = new HeroTypography3D(this.headlineCanvasRef.nativeElement, this.ribbonFrontCanvasRef.nativeElement, this.language(), this.theme());
+        if (!this.openingActive()) this.headline3d.reveal();
+      };
+      const idle = (window as Window & { requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number }).requestIdleCallback;
+      if (idle) idle.call(window, start, { timeout: 1500 });
+      else window.setTimeout(start, 200);
+    }, (error: unknown) => console.error('Unable to load the 3D hero headline.', error));
+    this.startSloganTimer();
+  }
+
+  private swipeStart?: { x: number; y: number; time: number };
+  private readonly onSwipeStart = (event: TouchEvent): void => {
+    const touch = event.touches[0];
+    this.swipeStart = touch ? { x: touch.clientX, y: touch.clientY, time: performance.now() } : undefined;
+  };
+  /** A quick, mostly horizontal swipe on the hero changes the slogan (the page still scrolls vertically as usual). */
+  private readonly onSwipeEnd = (event: TouchEvent): void => {
+    const start = this.swipeStart;
+    const touch = event.changedTouches[0];
+    this.swipeStart = undefined;
+    if (!start || !touch) return;
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.6 || performance.now() - start.time > 700) return;
+    const count = this.slides.length;
+    this.selectSlide((this.activeSlide() + (dx < 0 ? 1 : -1) + count) % count);
+  };
+
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
+    const hero = this.heroSectionRef.nativeElement;
+    hero.addEventListener('touchstart', this.onSwipeStart, { passive: true });
+    hero.addEventListener('touchend', this.onSwipeEnd, { passive: true });
     this.portraitReveal = new HeroPortraitReveal(
       this.heroArtworkRef.nativeElement,
       this.portraitTraceRef.nativeElement,
-      (progress) => this.starNetwork?.setPortraitRevealProgress(progress)
+      (progress) => {
+        if (progress >= 1 && !this.portraitRevealDone) {
+          this.portraitRevealDone = true;
+          this.portrait3d?.show();
+        }
+      }
     );
     if (!this.portraitRevealPending()) this.portraitReveal.showFinalState();
 
     this.opening = new OpeningAnimation({
       screen: this.openingScreenRef.nativeElement,
       canvas: this.openingCanvasRef.nativeElement,
+      flag: this.openingFlagRef.nativeElement,
       star: this.openingStarRef.nativeElement,
       identity: this.openingIdentityRef.nativeElement,
       vck: this.openingVckRef.nativeElement,
@@ -172,19 +265,62 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     }, () => this.startPortraitReveal(), () => {
       this.openingActive.set(false);
       this.animateHeroTypography(true);
+      this.headline3d?.reveal();
+      // The hero is now visible: let the president sign it (small beat after the intro settles).
+      this.signatureTimer = window.setTimeout(() => this.heroSignatureRef.play(), 900);
     });
-    this.opening.play(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    this.opening.play(window.matchMedia('(prefers-reduced-motion: reduce)').matches || this.skipIntro);
 
-    void createHeroFlagHandoff(this.heroAnchorRef.nativeElement, (progress) => {
-      this.starNetwork?.setStarHandoff(progress);
-    }).then((cleanup) => {
+    void createHeroFlagHandoff(this.heroAnchorRef.nativeElement).then((cleanup) => {
       this.handoffCleanup = cleanup;
     }, (error: unknown) => console.error('Unable to initialize the hero-to-flag star handoff.', error));
   }
 
-  toggleLanguage(): void {
-    this.language.update((value) => value === 'en' ? 'ta' : 'en');
+  /** The address of this page in the other language. */
+  languageHref(): string {
+    return this.location.prepareExternalUrl(pathFor(this.page(), otherLanguage(this.language())));
+  }
+
+  toggleLanguage(event: MouseEvent): void {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    const hash = this.location.path(true).match(/#.*$/)?.[0] ?? '';
+    void this.router.navigateByUrl(pathFor(this.page(), otherLanguage(this.language())) + hash);
+  }
+
+  /** Splits a slogan line into words, keeping a highlighted word whole even when punctuation follows it. */
+  private toWords(parts: SloganPart[]): SloganWord[] {
+    const words: SloganWord[] = [];
+    let current: SloganPart[] = [];
+    const flush = (): void => {
+      if (current.length) words.push({ parts: current });
+      current = [];
+    };
+    for (const part of parts) {
+      for (const piece of part.text.split(/(\s+)/)) {
+        if (!piece) continue;
+        if (/^\s+$/.test(piece)) flush();
+        else current.push({ text: piece, highlighted: part.highlighted });
+      }
+    }
+    flush();
+    return words;
+  }
+
+  /** Shows slogan `index` (0-3) now and restarts the auto-advance countdown. */
+  selectSlide(index: number): void {
+    if (index === this.activeSlide()) return;
+    this.activeSlide.set(index);
     this.animateSlogan();
+    this.startSloganTimer();
+  }
+
+  private startSloganTimer(): void {
+    window.clearInterval(this.sloganTimer);
+    this.sloganTimer = window.setInterval(() => {
+      this.activeSlide.update((current) => (current + 1) % this.slides.length);
+      this.animateSlogan();
+    }, 5200);
   }
 
   private animateSlogan(): void {
@@ -215,12 +351,11 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private animateHeroTypography(includeEyebrow: boolean): void {
     this.heroTextTimeline?.kill();
     const eyebrow = this.heroEyebrowRef.nativeElement;
-    const lines = this.heroHeadlineLineRefs.toArray().map((line) => line.nativeElement);
-    const highlights = Array.from(this.heroHeadlineRef.nativeElement.querySelectorAll<HTMLElement>('.hero-highlight'));
-    const animatedElements = [...(includeEyebrow ? [eyebrow] : []), ...lines, ...highlights];
+    const words = Array.from(this.heroHeadlineRef.nativeElement.querySelectorAll<HTMLElement>('.hero-word'));
+    const animatedElements = [...(includeEyebrow ? [eyebrow] : []), ...words];
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      gsap.set(animatedElements, { clearProps: 'clipPath,transform,opacity,visibility,backgroundPosition' });
+      gsap.set(animatedElements, { clearProps: 'clipPath,transform,opacity,visibility' });
       return;
     }
 
@@ -238,26 +373,18 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         ease: 'power2.out'
       });
     }
-    if (lines.length) {
-      timeline.fromTo(lines, {
-        clipPath: 'inset(0 100% 0 0)',
-        y: 14
+    if (words.length) {
+      // Words rise into place from beneath their line (each line clips its overflow), one after another.
+      timeline.fromTo(words, {
+        yPercent: 110,
+        autoAlpha: 0
       }, {
-        clipPath: 'inset(0 0% 0 0)',
-        y: 0,
-        duration: 0.68,
-        stagger: 0.11,
+        yPercent: 0,
+        autoAlpha: 1,
+        duration: 0.62,
+        stagger: 0.05,
         ease: 'power3.out'
       }, includeEyebrow ? 0.14 : 0);
-    }
-    if (highlights.length) {
-      timeline.fromTo(highlights, {
-        backgroundPosition: '0% 50%'
-      }, {
-        backgroundPosition: '100% 50%',
-        duration: 0.85,
-        ease: 'sine.inOut'
-      }, includeEyebrow ? 0.84 : 0.68);
     }
     this.heroTextTimeline = timeline;
   }
@@ -267,28 +394,155 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.openNavigation.set(null);
   }
 
-  activateNavigation(section: string): void {
-    this.openNavigation.set(section);
+  // ---- Pages: the Angular router owns the address; this component shows the page ------------------------------------------
+
+  /** Real address of a target, so links open in a new tab, copy and bookmark properly (and search engines follow them). */
+  hrefFor(target: NavTarget): string {
+    return this.location.prepareExternalUrl(pathFor(target.page, this.language())) + (target.hash ? `#${target.hash}` : '');
   }
 
-  openNavigationMenu(section: string): void {
-    if (window.matchMedia('(hover: hover)').matches || this.mobileNavigationOpen()) this.openNavigation.set(section);
+  /** Click handler for the menu links: plain clicks navigate inside the app, modified clicks keep the browser's behaviour. */
+  onNavigate(event: MouseEvent, target: NavTarget): void {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    this.closeNavigation();
+    this.go(target);
   }
 
-  closeNavigationMenu(section: string): void {
-    if (window.matchMedia('(hover: hover)').matches && !this.mobileNavigationOpen() && this.openNavigation() === section) {
+  go(target: NavTarget): void {
+    const url = pathFor(target.page, this.language()) + (target.hash ? `#${target.hash}` : '');
+    const here = this.location.path(true) || '/';
+    // choosing the place you are already on still scrolls back to it
+    if ((here.startsWith('/') ? here : `/${here}`) === url) void this.settleAfterNavigation(false);
+    else void this.router.navigateByUrl(url);
+  }
+
+  /** The address changed (a link, the language button, back / forward). */
+  private applyAddress(url: string): void {
+    const next = readAddress(url);
+    const pageChanged = next.page !== this.page();
+    const languageChanged = next.language !== this.language();
+    this.page.set(next.page);
+    this.language.set(next.language);
+    this.seo.apply(next.page, next.language);
+    if (!this.isBrowser) return;
+    if (languageChanged) {
+      this.headline3d?.setLanguage(next.language);
+      this.animateSlogan();
+      if (!pageChanged) return; // the reader stays where they are
+    }
+    // Give the view a moment to swap, then re-measure everything that was hidden (scroll triggers, 3D canvases) and scroll.
+    window.setTimeout(() => void this.settleAfterNavigation(pageChanged), 80);
+  }
+
+  private async settleAfterNavigation(changed: boolean): Promise<void> {
+    if (this.destroyed) return;
+    if (changed) {
+      window.dispatchEvent(new Event('resize'));
+      const { ScrollTrigger } = await import('gsap/ScrollTrigger');
+      ScrollTrigger.refresh();
+    }
+    const id = decodeURIComponent(location.hash.slice(1));
+    const target = id ? (document.getElementById(id) ?? document.querySelector<HTMLElement>(`vck-${id}-section`)) : null;
+    if (target) target.scrollIntoView({ block: 'start' });
+    else if (changed) window.scrollTo(0, 0);
+  }
+
+  // ---- Header menu ------------------------------------------------------------------------------------------------------
+  /** The menu that was opened by a click (it then stays open until the visitor chooses, clicks away or presses Escape). */
+  private pinnedSection: string | null = null;
+  private hoverCloseTimer?: number;
+
+  /** Burger layout: narrow screens, and Tamil below 1520px (its labels are longer). Keep in step with site-nav.scss. */
+  private compactNav(): boolean {
+    return window.matchMedia('(max-width: 1270px)').matches || (this.language() === 'ta' && window.matchMedia('(max-width: 1520px)').matches);
+  }
+
+  private canHover(): boolean {
+    return window.matchMedia('(hover: hover)').matches && !this.compactNav();
+  }
+
+  /** Whether the section is the page you are on (shows the red mark and `aria-current`). */
+  isCurrent(section: NavSection): boolean {
+    return !!section.go && section.go.page === this.page();
+  }
+
+  /** Click / tap / Enter on a top-level item that has a menu. */
+  toggleSection(id: string): void {
+    const open = this.openNavigation() === id;
+    // opened by hovering: the first click pins it; a click on one that is already pinned (or on touch) closes it
+    if (open && (this.pinnedSection === id || !this.canHover())) {
       this.openNavigation.set(null);
+      this.pinnedSection = null;
+      return;
+    }
+    this.openNavigation.set(id);
+    this.pinnedSection = id;
+  }
+
+  openNavigationMenu(id: string): void {
+    window.clearTimeout(this.hoverCloseTimer);
+    if (!this.canHover()) return;
+    if (this.pinnedSection && this.pinnedSection !== id) this.pinnedSection = null;
+    this.openNavigation.set(id);
+  }
+
+  closeNavigationMenu(id: string): void {
+    if (!this.canHover() || this.pinnedSection === id) return;
+    window.clearTimeout(this.hoverCloseTimer);
+    // a short grace period, so a pointer that wobbles off the pill on its way to the panel does not lose the menu
+    this.hoverCloseTimer = window.setTimeout(() => {
+      if (this.openNavigation() === id && this.pinnedSection !== id) this.openNavigation.set(null);
+    }, 160);
+  }
+
+  /** Keyboard: Arrow Down opens the menu and moves through its links, Arrow Up goes back, Escape closes and returns to the item. */
+  onGroupKey(event: KeyboardEvent, id: string): void {
+    const group = event.currentTarget as HTMLElement;
+    const toggle = group.querySelector<HTMLElement>('button.sn-link');
+    if (!toggle) return;
+    if (event.key === 'Escape' && this.openNavigation() === id) {
+      this.openNavigation.set(null);
+      this.pinnedSection = null;
+      toggle.focus();
+      event.stopPropagation();
+      return;
+    }
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    event.preventDefault();
+    const links = (): HTMLElement[] => Array.from(group.querySelectorAll<HTMLElement>('a.sn-item'));
+    if (this.openNavigation() !== id) {
+      this.openNavigation.set(id);
+      this.pinnedSection = id;
+      window.setTimeout(() => links()[0]?.focus());
+      return;
+    }
+    const list = links();
+    if (!list.length) return;
+    const index = list.indexOf(document.activeElement as HTMLElement);
+    const next = event.key === 'ArrowDown' ? (index + 1) % list.length : index <= 0 ? list.length - 1 : index - 1;
+    list[next]?.focus();
+  }
+
+  /** Tabbing out of the group closes its menu. */
+  onGroupFocusOut(event: FocusEvent, id: string): void {
+    const group = event.currentTarget as HTMLElement;
+    if (this.openNavigation() === id && !group.contains(event.relatedTarget as Node | null)) {
+      this.openNavigation.set(null);
+      this.pinnedSection = null;
     }
   }
 
   @HostListener('document:click')
   closeNavigation(): void {
+    this.pinnedSection = null;
     this.openNavigation.set(null);
     this.mobileNavigationOpen.set(false);
   }
 
   @HostListener('document:keydown.escape')
   closeNavigationOnEscape(): void {
+    this.pinnedSection = null;
     this.openNavigation.set(null);
     this.mobileNavigationOpen.set(false);
   }
@@ -298,22 +552,31 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     const previous = this.theme();
     const next = previous === 'dark' ? 'light' : 'dark';
     this.theme.set(next);
+    this.headline3d?.setTheme(next);
     try { localStorage.setItem('vck-theme', next); } catch { /* Theme still works if storage is unavailable. */ }
     this.themeTransitionRef.play(this.themeToggleButtonRef.nativeElement, previous);
   }
 
   private readSavedTheme(): 'dark' | 'light' {
+    if (!this.isBrowser) return 'dark';
     try { return localStorage.getItem('vck-theme') === 'light' ? 'light' : 'dark'; }
     catch { return 'dark'; }
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
+    if (!this.isBrowser) return;
+    this.heroSectionRef.nativeElement.removeEventListener('touchstart', this.onSwipeStart);
+    this.heroSectionRef.nativeElement.removeEventListener('touchend', this.onSwipeEnd);
+    this.destroyed = true;
     window.clearInterval(this.sloganTimer);
+    window.clearTimeout(this.signatureTimer);
     if (this.heroAnimationFrame !== undefined) window.cancelAnimationFrame(this.heroAnimationFrame);
     this.heroTextTimeline?.kill();
     this.opening?.destroy();
     this.portraitReveal?.destroy();
     this.handoffCleanup?.();
-    this.starNetwork?.destroy();
+    this.headline3d?.destroy();
+    this.portrait3d?.destroy();
   }
 }

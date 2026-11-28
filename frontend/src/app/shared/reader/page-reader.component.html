@@ -1,0 +1,81 @@
+<div #overlay class="reader" role="dialog" aria-modal="true" [attr.aria-label]="title() + ' — ' + (subtitle() || edition().label)" [attr.lang]="language()">
+  <header class="bar top">
+    <h2 class="title">
+      {{ title() }}
+      <span class="issue">{{ subtitle() || edition().label }}</span>
+    </h2>
+    <p class="count" aria-hidden="true">{{ label() }}</p>
+    <div class="tools">
+      <button class="tool" type="button" (click)="zoomOut()" [disabled]="zoom() === 0" [attr.aria-label]="ui().zoomOut">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14" /></svg>
+      </button>
+      <button class="tool" type="button" (click)="zoomIn()" [disabled]="zoom() === 2" [attr.aria-label]="ui().zoomIn">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14" /></svg>
+      </button>
+      @if (canFullscreen) {
+        <button class="tool" type="button" (click)="toggleFullscreen()" [attr.aria-pressed]="fullscreen()" [attr.aria-label]="fullscreen() ? ui().exitFullscreen : ui().fullscreen">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+        </button>
+      }
+      <button #closeButton class="tool close" type="button" (click)="close()" [attr.aria-label]="ui().close">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+  </header>
+
+  <p class="sr-only" aria-live="polite">{{ label() }}</p>
+
+  <div class="stage" [attr.data-zoom]="zoom()" (pointerdown)="onPointerDown($event)" (pointerup)="onPointerUp($event)">
+    @if (wide()) {
+      <div class="book spread" [class.at-start]="atStart()" [class.at-end]="atEnd()" [class.instant]="instant()">
+        @for (leaf of leaves(); track leaf.index) {
+          <div class="leaf" [class.flipped]="leaf.flipped" [attr.data-offset]="leaf.offset">
+            <div class="face front">
+              <img [src]="url(leaf.front)" [alt]="ui().page + ' ' + leaf.front" draggable="false" decoding="async" />
+            </div>
+            <div class="face back">
+              @if (leaf.back) {
+                <img [src]="url(leaf.back)" [alt]="ui().page + ' ' + leaf.back" draggable="false" decoding="async" />
+              }
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="book single" [class.instant]="instant()">
+        @for (item of singlePages(); track item.number) {
+          <div class="sheet" [attr.data-state]="item.state" [attr.aria-hidden]="item.state !== 'current'">
+            <img [src]="url(item.number)" [alt]="item.state === 'current' ? ui().page + ' ' + item.number : ''" draggable="false" decoding="async" />
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <button class="side prev" type="button" (click)="previous()" [disabled]="!canPrevious()" [attr.aria-label]="ui().previous">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" /></svg>
+  </button>
+  <button class="side next" type="button" (click)="next()" [disabled]="!canNext()" [attr.aria-label]="ui().next">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7" /></svg>
+  </button>
+
+  <footer class="bar bottom">
+    <input
+      class="slider"
+      type="range"
+      min="1"
+      [max]="total()"
+      step="1"
+      [value]="page()"
+      (input)="onSlider($event)"
+      [attr.aria-label]="ui().slider"
+      [attr.aria-valuetext]="label()"
+    />
+    <label class="goto">
+      <span class="sr-only">{{ ui().goTo }}</span>
+      <input type="number" min="1" [max]="total()" [value]="page()" (change)="onGoTo($event)" [attr.aria-label]="ui().goTo" />
+      <span aria-hidden="true">{{ ui().of }} {{ total() }}</span>
+    </label>
+    <p class="note">{{ ui().note }}</p>
+  </footer>
+</div>

@@ -29,7 +29,7 @@ export class HeroPortraitReveal {
   constructor(
     private readonly image: HTMLImageElement,
     private readonly traceCanvas: HTMLCanvasElement,
-    private readonly onNetworkProgress: (progress: number) => void
+    private readonly onProgress: (progress: number) => void
   ) {}
 
   play(reducedMotion: boolean): void {
@@ -50,7 +50,7 @@ export class HeroPortraitReveal {
       scale: 1,
       transformOrigin: '50% 50%'
     });
-    this.onNetworkProgress(0);
+    this.onProgress(0);
 
     this.timeline = gsap.timeline({
       onComplete: () => this.showFinalState()
@@ -63,7 +63,7 @@ export class HeroPortraitReveal {
         progress: 1,
         duration: 2,
         ease: 'power2.inOut',
-        onUpdate: () => this.onNetworkProgress(network.progress)
+        onUpdate: () => this.onProgress(network.progress)
       }, 3)
       .to(this.traceCanvas, { scale: 1.045, duration: 1.2, ease: 'power2.out' }, 3);
   }
@@ -72,7 +72,7 @@ export class HeroPortraitReveal {
     this.timeline?.kill();
     gsap.set(this.image, { autoAlpha: 1, clearProps: 'clipPath,transform' });
     gsap.set(this.traceCanvas, { autoAlpha: 0, clearProps: 'clipPath,transform' });
-    this.onNetworkProgress(1);
+    this.onProgress(1);
   }
 
   destroy(): void {
@@ -137,7 +137,7 @@ export class HeroPortraitReveal {
         if (contourAlpha < 8) continue;
 
         const offset = index * 4;
-        const redSide = x / width;
+        const redSide = 1 - x / width; // the portrait is mirrored on screen, so the colours are mirrored too
         edges.data[offset] = Math.round(39 + (237 - 39) * redSide);
         edges.data[offset + 1] = Math.round(133 + (42 - 133) * redSide);
         edges.data[offset + 2] = Math.round(223 + (64 - 223) * redSide);
@@ -164,7 +164,12 @@ export class HeroPortraitReveal {
     const drawY = mobile ? canvasBounds.height - drawHeight : (canvasBounds.height - drawHeight) / 2;
     context.shadowBlur = 7;
     context.shadowColor = 'rgba(77, 165, 255, .45)';
-    context.drawImage(this.edgeCanvas, drawX, drawY, drawWidth, drawHeight);
+    // The photo is mirrored on screen, so the contours are drawn mirrored too.
+    context.save();
+    context.translate(drawX + drawWidth, drawY);
+    context.scale(-1, 1);
+    context.drawImage(this.edgeCanvas, 0, 0, drawWidth, drawHeight);
+    context.restore();
     context.shadowBlur = 0;
     source.width = 0;
   }

@@ -1,0 +1,31 @@
+// One colour for each type, mixed from the website's standard colours (styles.scss): a light gradient for the card,
+// a strong shade for the tag, the filter dot and the selected filter. The cards look the same in both themes.
+[data-kind='wing'] {
+  --tm-from: color-mix(in srgb, var(--vck-red) 20%, var(--vck-white));
+  --tm-to: color-mix(in srgb, var(--vck-red) 46%, var(--vck-white));
+  --tm-accent: var(--vck-red-deep);
+}
+
+[data-kind='movement'] {
+  --tm-from: color-mix(in srgb, var(--vck-blue) 18%, var(--vck-white));
+  --tm-to: color-mix(in srgb, var(--vck-blue) 50%, var(--vck-white));
+  --tm-accent: var(--vck-blue-deep);
+}
+
+[data-kind='council'] {
+  --tm-from: color-mix(in srgb, var(--vck-red-deep) 5%, var(--vck-white));
+  --tm-to: color-mix(in srgb, var(--vck-red-deep) 24%, var(--vck-white));
+  --tm-accent: color-mix(in srgb, var(--vck-red-deep) 70%, var(--vck-ink));
+}
+
+[data-kind='centre'] {
+  --tm-from: color-mix(in srgb, var(--vck-blue-bright) 14%, var(--vck-white));
+  --tm-to: color-mix(in srgb, var(--vck-blue-bright) 50%, var(--vck-white));
+  --tm-accent: color-mix(in srgb, var(--vck-blue-bright) 45%, var(--vck-ink));
+}
+
+[data-kind='other'] {
+  --tm-from: var(--vck-white);
+  --tm-to: color-mix(in srgb, var(--vck-ink) 17%, var(--vck-white));
+  --tm-accent: color-mix(in srgb, var(--vck-ink) 68%, var(--vck-blue-soft));
+}

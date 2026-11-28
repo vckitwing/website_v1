@@ -1,4 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild, signal, inject, PLATFORM_ID } from '@angular/core';
 import { IDEOLOGY_CONTENT_EN } from './data/ideology-content.en';
 import { IDEOLOGY_CONTENT_TA } from './data/ideology-content.ta';
 import type { IdeologyKey, IdeologyPrinciple } from './data/ideology.types';
@@ -19,6 +20,7 @@ type IdeologyPoint = {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IdeologySectionComponent implements AfterViewInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   @Input({ required: true }) language: 'en' | 'ta' = 'en';
   @ViewChild('sectionRoot', { static: true }) private sectionRoot!: ElementRef<HTMLElement>;
 
@@ -39,6 +41,7 @@ export class IdeologySectionComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
     void createIdeologyAnimation(this.sectionRoot.nativeElement, (index) => {
       if (this.activeIndex() !== index) this.activeIndex.set(index);
     }).then(

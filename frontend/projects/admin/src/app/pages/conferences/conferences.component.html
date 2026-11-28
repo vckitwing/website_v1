@@ -1,0 +1,113 @@
+<div class="page-head">
+  <div>
+    <h1>Conferences</h1>
+    <p class="muted">
+      {{ counts().published }} published · {{ counts().draft }} draft. Only published conferences appear on the website.
+      @if (!auth.canPublish()) {
+        You can save drafts; an editor publishes them.
+      }
+    </p>
+  </div>
+  <button class="btn primary" type="button" (click)="openForm(null)">Add conference</button>
+</div>
+
+<div class="toolbar">
+  <input type="search" placeholder="Search year or name" aria-label="Search conferences" (input)="onSearch($event)" />
+  <select aria-label="Filter by status" (change)="onFilter($event)">
+    <option value="all">All</option>
+    <option value="published">Published</option>
+    <option value="draft">Drafts</option>
+  </select>
+</div>
+
+@if (error()) {
+  <p class="alert" role="alert">{{ error() }}</p>
+}
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Year</th>
+        <th>Name (English)</th>
+        <th>Name (தமிழ்)</th>
+        <th>Status</th>
+        <th>Updated</th>
+        <th><span class="sr-only">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of visible(); track item.id) {
+        <tr>
+          <td>{{ item.year }}</td>
+          <td>{{ item.name_en }}</td>
+          <td class="ta" lang="ta">{{ item.name_ta }}</td>
+          <td><span class="badge" [class.published]="item.status === 'published'" [class.draft]="item.status === 'draft'">{{ item.status }}</span></td>
+          <td class="muted">{{ item.updated_at | date: 'mediumDate' }}</td>
+          <td class="actions">
+            @if (canChange(item)) {
+              <button class="btn small" type="button" (click)="openForm(item)">Edit</button>
+            }
+            @if (auth.canPublish()) {
+              @if (item.status === 'draft') {
+                <button class="btn small" type="button" (click)="setStatus(item, 'published')">Publish</button>
+              } @else {
+                <button class="btn small" type="button" (click)="setStatus(item, 'draft')">Unpublish</button>
+              }
+            }
+            @if (canChange(item)) {
+              <button class="btn small danger" type="button" (click)="remove(item)">Delete</button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="empty">{{ loading() ? 'Loading…' : 'No conferences match.' }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<dialog #dialog aria-labelledby="conf-dialog-title">
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <h2 id="conf-dialog-title">{{ editing() ? 'Edit conference' : 'Add conference' }}</h2>
+    @if (formError()) {
+      <p class="alert" role="alert">{{ formError() }}</p>
+    }
+    <div class="row">
+      <label>
+        Year
+        <input type="number" formControlName="year" min="1982" max="2100" />
+      </label>
+      <label>
+        Order within the year
+        <input type="number" formControlName="position" />
+        <small>Lower numbers come first</small>
+      </label>
+    </div>
+    <label>
+      Name (English)
+      <input type="text" formControlName="name_en" />
+    </label>
+    <label>
+      Name (தமிழ்)
+      <input type="text" formControlName="name_ta" lang="ta" />
+    </label>
+    @if (auth.canPublish()) {
+      <label>
+        Status
+        <select formControlName="status">
+          <option value="draft">Draft (hidden from the website)</option>
+          <option value="published">Published (shown on the website)</option>
+        </select>
+      </label>
+    } @else {
+      <p class="muted">It will be saved as a draft. An editor can publish it.</p>
+    }
+    <div class="buttons">
+      <button class="btn" type="button" (click)="closeForm()">Cancel</button>
+      <button class="btn primary" type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save' }}</button>
+    </div>
+  </form>
+</dialog>

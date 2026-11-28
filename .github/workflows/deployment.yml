@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - feature/dev_landing_page
   workflow_dispatch:
 
 permissions:
@@ -42,11 +43,9 @@ jobs:
           --configuration production
           --base-href /website_v1/
 
-      - name: Prepare GitHub Pages
+      - name: Write robots.txt, sitemap.xml and 404.html
         working-directory: frontend
-        run: |
-          cp dist/vck-website/browser/index.html \
-             dist/vck-website/browser/404.html
+        run: node tools/seo-files.mjs
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v5

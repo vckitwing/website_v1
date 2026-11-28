@@ -1,0 +1,199 @@
+.pub {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.pub-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+
+  h2 {
+    margin: 0;
+  }
+
+  .ta {
+    margin: 2px 0 0;
+    font-size: 18px;
+  }
+}
+
+.badges {
+  display: flex;
+  gap: 8px;
+}
+
+.badge.kind {
+  color: var(--accent);
+}
+
+.badge.failed {
+  color: var(--danger);
+}
+
+.desc {
+  margin: 0;
+  max-width: 80ch;
+}
+
+.ta {
+  font-family: 'Noto Sans Tamil', system-ui, sans-serif;
+}
+
+.small {
+  font-size: 13px;
+}
+
+code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--bg);
+  font-size: 13px;
+}
+
+.note {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--warn);
+  border-radius: 8px;
+  color: var(--warn);
+  font-size: 14px;
+}
+
+.error-text {
+  color: var(--danger);
+}
+
+.pub-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 6px;
+}
+
+.cover-cell {
+  width: 76px;
+}
+
+.cover {
+  display: block;
+  width: 56px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg);
+
+  &.placeholder {
+    background: repeating-linear-gradient(135deg, var(--bg), var(--bg) 6px, var(--line) 6px, var(--line) 7px);
+  }
+}
+
+.state {
+  min-width: 190px;
+
+  progress {
+    display: block;
+    width: 100%;
+    max-width: 220px;
+    margin-bottom: 2px;
+  }
+}
+
+progress {
+  height: 10px;
+  accent-color: var(--accent);
+}
+
+.upload-progress {
+  display: grid;
+  gap: 4px;
+
+  progress {
+    width: 100%;
+    height: 12px;
+  }
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 560px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Phones: each edition becomes a small card (cover on the left, details and buttons stacked), so the buttons are never
+// pushed off to the right of a wide table.
+@media (max-width: 700px) {
+  .table-wrap {
+    overflow: visible;
+    border: 0;
+    background: none;
+  }
+
+  table,
+  tbody,
+  tr,
+  td {
+    display: block;
+  }
+
+  thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  tr {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 6px 14px;
+    margin-bottom: 10px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+  }
+
+  td {
+    padding: 0;
+    border: 0;
+    grid-column: 2;
+  }
+
+  td.cover-cell {
+    grid-column: 1;
+    grid-row: 1 / span 5;
+    width: auto;
+  }
+
+  td:nth-child(3)::after {
+    content: ' pages';
+  }
+
+  td.state {
+    min-width: 0;
+  }
+
+  td.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    text-align: left;
+    white-space: normal;
+
+    .btn + .btn {
+      margin-left: 0;
+    }
+  }
+}

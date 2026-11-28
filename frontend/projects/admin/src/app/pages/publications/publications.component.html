@@ -1,0 +1,308 @@
+<div class="page-head">
+  <div>
+    <h1>Publications</h1>
+    <p class="muted">
+      Books and the monthly magazine. Upload a PDF and the site turns every page into a picture that visitors can read but not download or copy;
+      the PDF itself stays private. @if (!auth.canPublish()) {
+        You can upload; an editor publishes.
+      }
+    </p>
+  </div>
+  @if (auth.canPublish()) {
+    <button class="btn primary" type="button" (click)="openPublication(null)">New publication</button>
+  }
+</div>
+
+@if (error()) {
+  <p class="alert" role="alert">{{ error() }}</p>
+}
+
+@for (item of items(); track item.id) {
+  <section class="card pub" [attr.aria-label]="item.title_en">
+    <header class="pub-head">
+      <div class="titles">
+        <h2>{{ item.title_en }}</h2>
+        <p class="ta" lang="ta">{{ item.title_ta }}</p>
+      </div>
+      <div class="badges">
+        <span class="badge kind">{{ item.kind === 'book' ? 'Book' : 'Monthly' }}</span>
+        <span class="badge" [class.published]="item.status === 'published'" [class.draft]="item.status === 'draft'">{{ item.status }}</span>
+      </div>
+    </header>
+
+    <p class="desc">{{ item.description_en }}</p>
+    <p class="desc ta" lang="ta">{{ item.description_ta }}</p>
+    <p class="muted small">
+      @if (item.author_en || item.author_ta) {
+        By {{ item.author_en }}{{ item.author_en && item.author_ta ? ' / ' : '' }}{{ item.author_ta }} ·
+      }
+      web address name: <code>{{ item.slug }}</code>
+    </p>
+    @if (item.status === 'draft') {
+      <p class="note">This publication is a draft, so visitors cannot see it yet.</p>
+    }
+
+    <div class="pub-actions">
+      <button class="btn small primary" type="button" (click)="openUpload(item)">{{ item.kind === 'monthly' ? 'Add issue' : 'Add edition' }}</button>
+      @if (auth.canPublish()) {
+        <button class="btn small" type="button" (click)="openPublication(item)">Edit details</button>
+        @if (item.status === 'draft') {
+          <button class="btn small" type="button" (click)="setPublicationStatus(item, 'published')">Publish</button>
+        } @else {
+          <button class="btn small" type="button" (click)="setPublicationStatus(item, 'draft')">Unpublish</button>
+        }
+        <button class="btn small danger" type="button" (click)="removePublication(item)">Delete</button>
+      }
+    </div>
+
+    @if (item.editions.length) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th><span class="sr-only">Cover</span></th>
+              <th>{{ item.kind === 'monthly' ? 'Issue' : 'Edition' }}</th>
+              <th>Pages</th>
+              <th>Status</th>
+              <th>Page pictures</th>
+              <th><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (edition of item.editions; track edition.id) {
+              <tr>
+                <td class="cover-cell">
+                  @if (edition.cover_url) {
+                    <a [href]="edition.cover_url" target="_blank" rel="noopener" [attr.aria-label]="'Open the cover of ' + edition.label">
+                      <img class="cover" [src]="edition.cover_url" [alt]="'Cover of ' + edition.label" loading="lazy" />
+                    </a>
+                  } @else {
+                    <span class="cover placeholder" aria-hidden="true"></span>
+                  }
+                </td>
+                <td>
+                  <strong>{{ edition.label }}</strong>
+                  <div class="muted small">{{ editionDate(edition) }}</div>
+                </td>
+                <td>{{ edition.page_count || '…' }}</td>
+                <td>
+                  <span class="badge" [class.published]="edition.status === 'published'" [class.draft]="edition.status === 'draft'">{{ edition.status }}</span>
+                </td>
+                <td class="state">
+                  @switch (edition.state) {
+                    @case ('processing') {
+                      <progress [value]="edition.processed_pages" [max]="edition.page_count || 1" [attr.aria-label]="'Making page pictures for ' + edition.label"></progress>
+                      <span class="small">{{ edition.processed_pages }} of {{ edition.page_count || '…' }} pages</span>
+                    }
+                    @case ('failed') {
+                      <span class="badge failed">failed</span>
+                      <span class="small error-text">{{ edition.error }}</span>
+                    }
+                    @default {
+                      <span class="small">Ready{{ edition.watermark ? ' · watermarked' : '' }}</span>
+                    }
+                  }
+                </td>
+                <td class="actions">
+                  @if (auth.canPublish()) {
+                    @if (edition.state === 'failed') {
+                      <button class="btn small primary" type="button" (click)="retry(edition)">Retry</button>
+                    }
+                    @if (edition.status === 'draft') {
+                      <button class="btn small" type="button" [disabled]="edition.state !== 'ready'" [attr.title]="edition.state !== 'ready' ? 'Available once the page pictures are ready' : null" (click)="setEditionStatus(edition, 'published')">Publish</button>
+                    } @else {
+                      <button class="btn small" type="button" (click)="setEditionStatus(edition, 'draft')">Unpublish</button>
+                    }
+                    <button class="btn small" type="button" (click)="openEdition(edition)">Edit</button>
+                    <button class="btn small danger" type="button" (click)="removeEdition(edition)">Delete</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="muted">No {{ item.kind === 'monthly' ? 'issues' : 'editions' }} yet. Use “{{ item.kind === 'monthly' ? 'Add issue' : 'Add edition' }}” to upload the PDF.</p>
+    }
+  </section>
+} @empty {
+  <p class="empty card">
+    {{ loading() ? 'Loading…' : auth.canPublish() ? 'No publications yet. Create the first one with “New publication”.' : 'No publications yet. An editor needs to create one first.' }}
+  </p>
+}
+
+<!-- create / edit a publication -->
+<dialog #publicationDialog aria-labelledby="pub-dialog-title">
+  <form [formGroup]="publicationForm" (ngSubmit)="savePublication()" novalidate>
+    <h2 id="pub-dialog-title">{{ editingPublication() ? 'Edit publication' : 'New publication' }}</h2>
+    @if (publicationError()) {
+      <p class="alert" role="alert">{{ publicationError() }}</p>
+    }
+    <label>
+      Kind
+      <select formControlName="kind">
+        <option value="book">Book (one PDF)</option>
+        <option value="monthly">Monthly magazine (a new issue every month)</option>
+      </select>
+      @if (editingPublication()) {
+        <small>The kind cannot be changed after it is created.</small>
+      }
+    </label>
+    <div class="row">
+      <label>
+        Title (English)
+        <input type="text" formControlName="title_en" (input)="onTitleInput()" />
+      </label>
+      <label>
+        Title (தமிழ்)
+        <input type="text" formControlName="title_ta" lang="ta" />
+      </label>
+    </div>
+    <label>
+      Web address name
+      <input type="text" formControlName="slug" (input)="onSlugInput()" autocomplete="off" />
+      <small>Lower-case letters, digits and hyphens, for example <code>namathu-thamizhman</code>.</small>
+    </label>
+    <label>
+      Description (English)
+      <textarea formControlName="description_en"></textarea>
+    </label>
+    <label>
+      Description (தமிழ்)
+      <textarea formControlName="description_ta" lang="ta"></textarea>
+    </label>
+    <div class="row">
+      <label>
+        Author <small>optional</small>
+        <input type="text" formControlName="author_en" />
+      </label>
+      <label>
+        Author (தமிழ்) <small>optional</small>
+        <input type="text" formControlName="author_ta" lang="ta" />
+      </label>
+    </div>
+    <label>
+      Status
+      <select formControlName="status">
+        <option value="draft">Draft (hidden from the website)</option>
+        <option value="published">Published (shown once it has a published edition)</option>
+      </select>
+    </label>
+    <div class="buttons">
+      <button class="btn" type="button" (click)="closePublication()">Cancel</button>
+      <button class="btn primary" type="submit" [disabled]="publicationSaving()">{{ publicationSaving() ? 'Saving…' : 'Save' }}</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- upload an edition (PDF) -->
+<dialog #uploadDialog aria-labelledby="upload-dialog-title" (cancel)="uploading() && $event.preventDefault()">
+  <form [formGroup]="uploadForm" (ngSubmit)="upload()" novalidate>
+    <h2 id="upload-dialog-title">
+      {{ uploadFor()?.kind === 'monthly' ? 'Add an issue' : 'Add an edition' }} — {{ uploadFor()?.title_en }}
+    </h2>
+    @if (uploadError()) {
+      <p class="alert" role="alert">{{ uploadError() }}</p>
+    }
+    <label>
+      PDF file <small>up to 80 MB and 800 pages</small>
+      <input #fileInput type="file" accept="application/pdf,.pdf" (change)="onFile($event)" [disabled]="uploading()" />
+      @if (fileError()) {
+        <small class="error-text" role="alert">{{ fileError() }}</small>
+      }
+    </label>
+    <label>
+      Label
+      <input type="text" formControlName="label" [placeholder]="uploadFor()?.kind === 'monthly' ? 'Issue 101' : 'First edition'" />
+    </label>
+    @if (uploadFor()?.kind === 'monthly') {
+      <div class="row">
+        <label>
+          Volume <small>optional</small>
+          <input type="number" formControlName="volume" min="1" />
+        </label>
+        <label>
+          Issue number <small>optional</small>
+          <input type="number" formControlName="issue_number" min="1" />
+        </label>
+      </div>
+      <div class="row">
+        <label>
+          Month
+          <select formControlName="month">
+            @for (name of months; track name; let i = $index) {
+              <option [ngValue]="i + 1">{{ name }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          Year
+          <input type="number" formControlName="year" min="1900" max="2100" />
+        </label>
+      </div>
+    } @else {
+      <label>
+        Year <small>optional</small>
+        <input type="number" formControlName="year" min="1900" max="2100" />
+      </label>
+    }
+    <label class="check"><input type="checkbox" formControlName="watermark" /> Add the faint watermark to every page</label>
+    @if (uploading()) {
+      <div class="upload-progress" role="status">
+        <progress [value]="uploadPercent()" max="100" aria-label="Upload progress"></progress>
+        <span class="small">{{ uploadPercent() < 100 ? 'Uploading… ' + uploadPercent() + '%' : 'Checking the PDF…' }}</span>
+      </div>
+    } @else {
+      <p class="muted small">After the upload the page pictures are made in the background (about two pages a second). You can leave this page; the progress shows here.</p>
+    }
+    <div class="buttons">
+      <button class="btn" type="button" (click)="closeUpload()" [disabled]="uploading()">Cancel</button>
+      <button class="btn primary" type="submit" [disabled]="uploading()">{{ uploading() ? 'Uploading…' : 'Upload' }}</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- edit an edition's details -->
+<dialog #editionDialog aria-labelledby="edition-dialog-title">
+  <form [formGroup]="editionForm" (ngSubmit)="saveEdition()" novalidate>
+    <h2 id="edition-dialog-title">Edit details</h2>
+    @if (editionError()) {
+      <p class="alert" role="alert">{{ editionError() }}</p>
+    }
+    <label>
+      Label
+      <input type="text" formControlName="label" />
+    </label>
+    <div class="row">
+      <label>
+        Volume <small>optional</small>
+        <input type="number" formControlName="volume" min="1" />
+      </label>
+      <label>
+        Issue number <small>optional</small>
+        <input type="number" formControlName="issue_number" min="1" />
+      </label>
+    </div>
+    <div class="row">
+      <label>
+        Month <small>optional</small>
+        <select formControlName="month">
+          <option [ngValue]="null">—</option>
+          @for (name of months; track name; let i = $index) {
+            <option [ngValue]="i + 1">{{ name }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Year <small>optional</small>
+        <input type="number" formControlName="year" min="1900" max="2100" />
+      </label>
+    </div>
+    <p class="muted small">The PDF and the page pictures cannot be changed here. To replace them, upload a new edition and delete this one.</p>
+    <div class="buttons">
+      <button class="btn" type="button" (click)="closeEdition()">Cancel</button>
+      <button class="btn primary" type="submit" [disabled]="editionSaving()">{{ editionSaving() ? 'Saving…' : 'Save' }}</button>
+    </div>
+  </form>
+</dialog>
