@@ -25,9 +25,22 @@
   @if (teams().length) {
     <ul class="tm-grid">
       @for (team of teams(); track team.name.ta) {
-        <li [attr.data-kind]="team.kind">
+        <li [attr.data-kind]="team.kind" [class.is-caution]="team.caution">
           <strong>{{ team.name[language()] }}</strong>
-          <span class="tm-kind">{{ kindLabels[team.kind][language()] }}</span>
+          <span class="tm-foot">
+            @if (team.flow) {
+              <button type="button" class="tm-open" aria-haspopup="dialog" [attr.aria-label]="flowCopy.view[language()] + ': ' + team.name[language()]" (click)="show(team, $event)">
+                {{ flowCopy.view[language()] }}
+              </button>
+            }
+            @if (team.caution) {
+              <span class="tm-caution">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4 21.5 20h-19Z" /><path d="M12 10v4.5M12 17.2v.1" /></svg>
+                {{ copy.caution[language()] }}
+              </span>
+            }
+            <span class="tm-kind">{{ kindLabels[team.kind][language()] }}</span>
+          </span>
         </li>
       }
     </ul>

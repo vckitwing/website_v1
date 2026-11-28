@@ -1,0 +1,233 @@
+// Surfaces come from the page (--ct-* and --og-* variables) and the colours from the team's type.
+@use './org-kinds';
+
+.oh {
+  width: min(560px, calc(100vw - 32px));
+  max-width: none;
+  height: fit-content;
+  max-height: calc(100svh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  color: var(--ct-text);
+  background: transparent;
+
+  &[open] {
+    display: flex;
+  }
+
+  &::backdrop {
+    background: color-mix(in srgb, var(--vck-night) 76%, transparent);
+    backdrop-filter: blur(4px);
+  }
+}
+
+.oh-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  max-height: calc(100svh - 32px);
+  overflow: hidden;
+  border: 1px solid var(--og-line);
+  border-top: 5px solid var(--tm-accent);
+  border-radius: 20px;
+  background: var(--og-panel);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+
+.oh-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--og-line);
+
+  p {
+    margin: 0 0 4px;
+    color: var(--ct-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  h2 {
+    margin: 0;
+    font: 700 21px / 1.35 'Outfit', 'Noto Sans Tamil', sans-serif;
+  }
+}
+
+.oh-close {
+  display: inline-grid;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid var(--og-line);
+  border-radius: 12px;
+  color: var(--ct-text);
+  background: var(--ct-field);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--vck-red);
+    outline-offset: 3px;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+}
+
+.oh-body {
+  min-height: 0;
+  padding: 20px 18px calc(24px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+ol,
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.oh-chart {
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.oh-step {
+  position: relative;
+  display: grid;
+  justify-items: center;
+
+  ul {
+    display: grid;
+    justify-items: center;
+    width: 100%;
+  }
+
+  ul li {
+    display: grid;
+    justify-items: center;
+    width: 100%;
+  }
+
+  // the line from the step above
+  & + .oh-step::before {
+    content: '';
+    width: 2px;
+    height: 20px;
+    background: var(--og-line);
+  }
+}
+
+.oh-card {
+  display: grid;
+  width: min(300px, 100%);
+  height: 100%;
+  min-height: 58px;
+  padding: 10px 12px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--tm-accent) 28%, transparent);
+  border-radius: 14px;
+  color: var(--vck-ink);
+  background: linear-gradient(150deg, var(--tm-from), var(--tm-to));
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+}
+
+// roles of the same level: side by side under a bar
+.oh-step.is-pair {
+  ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    column-gap: 10px;
+  }
+
+  ul li {
+    position: relative;
+    grid-template-rows: 1fr;
+    padding-top: 14px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: calc(50% - 1px);
+      width: 2px;
+      height: 14px;
+      background: var(--og-line);
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: -5px;
+      left: -5px;
+      height: 2px;
+      background: var(--og-line);
+    }
+
+    &:first-child::after {
+      left: 50%;
+    }
+
+    &:last-child::after {
+      right: 50%;
+    }
+  }
+}
+
+// the line that leaves only the second card of the pair above, and returns to the middle
+.oh-step + .oh-step.from-second {
+  padding-top: 26px;
+
+  &::before {
+    position: absolute;
+    top: 0;
+    left: calc(50% - 1px);
+    width: calc(25% + 4.5px);
+    height: 13px;
+    border-right: 2px solid var(--og-line);
+    border-bottom: 2px solid var(--og-line);
+    background: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 13px;
+    left: calc(50% - 1px);
+    width: 2px;
+    height: 13px;
+    background: var(--og-line);
+  }
+}
+
+// phones: the whole screen
+@media (max-width: 700px) {
+  .oh {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+  }
+
+  .oh-panel {
+    max-height: 100%;
+    border-width: 5px 0 0;
+    border-radius: 0;
+  }
+}

@@ -2,6 +2,8 @@
  * The party's organisation, as supplied by the owner (a flowchart). `parents` are the reporting lines; the chart's
  * shape (which role sits on the main line, which beside it) is described separately in `ORG_LEVELS`.
  */
+import type { TeamFlowId } from './org-team-hierarchy.data';
+
 export type Pair = { readonly en: string; readonly ta: string };
 
 export interface OrgRole {
@@ -11,8 +13,8 @@ export interface OrgRole {
   readonly scope?: Pair;
   /** Several roles at this level rank equally. */
   readonly sameCadre?: boolean;
-  /** Bodies or people listed inside the role's card. */
-  readonly members?: readonly Pair[];
+  /** Bodies or people listed inside the role's card; `flow` marks one whose own hierarchy can be opened. */
+  readonly members?: readonly (Pair & { readonly flow?: TeamFlowId })[];
   readonly parents: readonly string[];
 }
 
@@ -21,7 +23,7 @@ export const ORG_ROLES: readonly OrgRole[] = [
   { id: 'president', title: { ta: 'தலைவர்', en: 'President / Leader' }, parents: [] },
   { id: 'general-secretary', title: { ta: 'பொதுச்செயலாளர்', en: 'General Secretary' }, parents: ['president'] },
   { id: 'treasurer', title: { ta: 'பொருளாளர்', en: 'Treasurer' }, parents: ['general-secretary'] },
-  { id: 'spokesperson', title: { ta: 'செய்தி தொடர்பாளர்', en: 'Spokesperson' }, parents: ['treasurer'] },
+  { id: 'spokesperson', title: { ta: 'செய்தி தொடர்பாளர்', en: 'Spokesperson' }, parents: ['general-secretary'] },
   { id: 'hq-secretary', title: { ta: 'தலைமை நிலையச் செயலாளர்', en: 'Headquarters Secretary' }, parents: ['general-secretary'] },
   { id: 'organizing-secretary', title: { ta: 'அமைப்புச் செயலாளர்', en: 'Organizing Secretary' }, parents: ['general-secretary'] },
   {
@@ -30,6 +32,7 @@ export const ORG_ROLES: readonly OrgRole[] = [
     scope: { ta: 'செயற்குழு & பொதுக்குழு', en: 'Executive & General Council' },
     parents: ['general-secretary']
   },
+  { id: 'principal-secretaries', title: { ta: 'முதன்மைச் செயலாளர்கள்', en: 'Principal Secretaries' }, parents: ['general-secretary'] },
   { id: 'deputy-general-secretaries', title: { ta: 'துணைப் பொதுச்செயலாளர்கள்', en: 'Deputy General Secretaries' }, parents: ['general-secretary'] },
   { id: 'state-secretaries', title: { ta: 'மாநிலச் செயலாளர்கள்', en: 'State Secretaries' }, scope: { ta: 'அனைத்து அணிகள்', en: 'All wings' }, parents: ['deputy-general-secretaries'] },
 
@@ -40,20 +43,19 @@ export const ORG_ROLES: readonly OrgRole[] = [
 
   // ---- district
   { id: 'district-secretary', title: { ta: 'மாவட்டச் செயலாளர்', en: 'District Secretary' }, scope: { ta: '1 சட்டமன்ற தொகுதி', en: '1 assembly constituency' }, parents: ['zonal-deputy-assembly'] },
-  {
-    id: 'district-committee',
-    title: { ta: 'மாவட்ட நிர்வாகக் குழு', en: 'District Executive Committee' },
-    members: [
-      { ta: 'மாவட்ட நிர்வாகக் குழு உறுப்பினர்கள்', en: 'District executive committee members' },
-      { ta: 'இளஞ்சிறுத்தை எழுச்சி பாசறை', en: 'Young Panthers Awakening Wing' },
-      { ta: 'மகளிர் விடுதலை இயக்கம்', en: 'Women’s Liberation Movement' }
-    ],
-    parents: ['district-secretary']
-  },
   { id: 'district-treasurer', title: { ta: 'மாவட்டப் பொருளாளர் (அ) நிதிச் செயலாளர்', en: 'District Treasurer / Finance Secretary' }, parents: ['district-secretary'] },
   { id: 'district-spokesperson', title: { ta: 'மாவட்டச் செய்தி தொடர்பாளர்', en: 'District Spokesperson' }, parents: ['district-secretary'] },
   { id: 'district-deputies', title: { ta: 'மாவட்ட துணைச் செயலாளர்கள்', en: 'District Deputy Secretaries' }, parents: ['district-secretary'] },
-  { id: 'district-organizers', title: { ta: 'மாவட்ட அமைப்பாளர்கள்', en: 'District Organizers' }, parents: ['district-secretary'] },
+  {
+    id: 'district-committee',
+    title: { ta: 'மாவட்ட நிர்வாகக் குழு உறுப்பினர்கள்', en: 'District Executive Committee Members' },
+    members: [
+      { ta: 'இளஞ்சிறுத்தைகள் எழுச்சி பாசறை', en: 'Young Panthers Awakening Wing', flow: 'youth' },
+      { ta: 'மகளிர் விடுதலை இயக்கம்', en: 'Women’s Liberation Movement', flow: 'women' }
+    ],
+    parents: ['district-secretary']
+  },
+  { id: 'district-organizers', title: { ta: 'மாவட்ட அமைப்பாளர்கள்', en: 'District Organizers' }, scope: { ta: 'அனைத்து அணிகள்', en: 'All wings' }, parents: ['district-secretary'] },
 
   // ---- local bodies
   { id: 'union-secretaries', title: { ta: 'ஒன்றியச் செயலாளர்கள்', en: 'Union Secretaries' }, sameCadre: true, parents: ['district-organizers'] },
@@ -91,7 +93,7 @@ export const ORG_LEVELS: readonly OrgLevel[] = [
     title: { ta: 'தலைமை', en: 'Central leadership' },
     tiers: [
       { kind: 'role', id: 'president' },
-      { kind: 'role', id: 'general-secretary', offices: ['treasurer', 'hq-secretary', 'organizing-secretary', 'high-level-committee'] },
+      { kind: 'role', id: 'general-secretary', offices: ['treasurer', 'spokesperson', 'hq-secretary', 'organizing-secretary', 'high-level-committee', 'principal-secretaries'] },
       { kind: 'role', id: 'deputy-general-secretaries' },
       { kind: 'role', id: 'state-secretaries' }
     ]
@@ -100,15 +102,14 @@ export const ORG_LEVELS: readonly OrgLevel[] = [
     id: 'zonal',
     title: { ta: 'மண்டலம்', en: 'Zone' },
     tiers: [
-      { kind: 'role', id: 'zonal-secretary', offices: ['zonal-deputy-admin'] },
-      { kind: 'role', id: 'zonal-deputy-assembly' }
+      { kind: 'role', id: 'zonal-secretary', offices: ['zonal-deputy-assembly', 'zonal-deputy-admin'] }
     ]
   },
   {
     id: 'district',
     title: { ta: 'மாவட்டம்', en: 'District' },
     tiers: [
-      { kind: 'role', id: 'district-secretary', offices: ['district-committee', 'district-treasurer', 'district-spokesperson', 'district-deputies'] },
+      { kind: 'role', id: 'district-secretary', offices: ['district-treasurer', 'district-spokesperson', 'district-deputies', 'district-committee'] },
       { kind: 'role', id: 'district-organizers' }
     ]
   },
@@ -155,7 +156,6 @@ export const ORG_COPY = {
   leads: { en: 'Works under this role', ta: 'இதன் கீழ் செயல்படுவோர்' } as Pair,
   chain: { en: 'Line from the President', ta: 'தலைவரிலிருந்து வரும் தொடர்' } as Pair,
   includes: { en: 'Includes', ta: 'இதில் அடங்குவோர்' } as Pair,
-  bodies: { en: 'bodies inside', ta: 'அமைப்புகள்' } as Pair,
   nobody: { en: 'None', ta: 'இல்லை' } as Pair,
   close: { en: 'Close', ta: 'மூடு' } as Pair
 } as const;

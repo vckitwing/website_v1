@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
-import { ORG_TEAMS, TEAM_COPY, TEAM_FILTERS, TEAM_KIND_LABELS, TeamKind } from './data/org-teams.data';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { TEAM_FLOW_COPY } from './data/org-team-hierarchy.data';
+import { ORG_TEAMS, OrgTeam, TEAM_COPY, TEAM_FILTERS, TEAM_KIND_LABELS, TeamKind } from './data/org-teams.data';
+import type { OpenTeam } from './org-team-overlay.component';
 
 /** The list of the party's teams on the Org View page: search (both languages) and filter by type. */
 @Component({
@@ -11,10 +13,13 @@ import { ORG_TEAMS, TEAM_COPY, TEAM_FILTERS, TEAM_KIND_LABELS, TeamKind } from '
 })
 export class OrgTeamsComponent {
   readonly language = input.required<'en' | 'ta'>();
+  /** A team with a hierarchy was chosen. */
+  readonly openTeam = output<OpenTeam>();
 
   readonly copy = TEAM_COPY;
   readonly filters = TEAM_FILTERS;
   readonly kindLabels = TEAM_KIND_LABELS;
+  readonly flowCopy = TEAM_FLOW_COPY;
 
   readonly query = signal('');
   readonly kind = signal<'all' | TeamKind>('all');
@@ -37,6 +42,11 @@ export class OrgTeamsComponent {
     if (this.language() === 'ta') return shown === total ? `${total} அணிகள்` : `${total} அணிகளில் ${shown}`;
     return shown === total ? `${total} teams` : `${shown} of ${total} teams`;
   });
+
+  show(team: OrgTeam, event: Event): void {
+    const button = event.currentTarget as HTMLElement;
+    this.openTeam.emit({ team, from: button.closest('li') ?? button });
+  }
 
   onSearch(event: Event): void {
     this.query.set((event.target as HTMLInputElement).value);

@@ -2,7 +2,10 @@ import { NgTemplateOutlet } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, Input, OnDestroy, signal, ViewChild } from '@angular/core';
 import { createContactAnimation } from '../contact/contact-animation';
 import { ORG_COPY, ORG_LEVELS, ORG_ROLES, OrgRole } from './data/org-structure.data';
-import { TEAM_COPY } from './data/org-teams.data';
+import { TeamFlowId } from './data/org-team-hierarchy.data';
+import { ORG_TEAMS, TEAM_COPY } from './data/org-teams.data';
+import { createGlidingRows, GlidingRows } from './org-rows';
+import { OpenTeam, OrgTeamOverlayComponent } from './org-team-overlay.component';
 import { OrgTeamsComponent } from './org-teams.component';
 
 const BY_ID = new Map(ORG_ROLES.map((role) => [role.id, role]));
@@ -13,11 +16,12 @@ const MAX_RESULTS = 8;
  * The main line of command runs down the middle; offices sit beside it (all always shown); the local bodies run
  * as parallel branches that join again at the polling booth. Choosing a role lights up its line from the President and
  * opens a panel (a bottom sheet on phones) with who it reports to and who works under it.
+ * On phones, roles of the same level sit in a row that moves slowly sideways (see org-rows.ts).
  */
 @Component({
   selector: 'vck-org-structure-page',
   standalone: true,
-  imports: [NgTemplateOutlet, OrgTeamsComponent],
+  imports: [NgTemplateOutlet, OrgTeamsComponent, OrgTeamOverlayComponent],
   templateUrl: './org-structure-page.component.html',
   // reuses the contact page's page / heading / button styles (the `ct-*` classes), then adds its own
   styleUrls: ['../contact/contact-page.component.scss', './org-structure-page.component.scss'],
@@ -33,6 +37,8 @@ export class OrgStructurePageComponent implements AfterViewInit, OnDestroy {
 
   readonly selectedId = signal<string | null>(null);
   readonly query = signal('');
+  /** The team whose hierarchy is open over the page. */
+  readonly teamOpen = signal<OpenTeam | null>(null);
   readonly selected = computed(() => {
     const id = this.selectedId();
     return id ? (BY_ID.get(id) ?? null) : null;
@@ -70,9 +76,14 @@ export class OrgStructurePageComponent implements AfterViewInit, OnDestroy {
   });
 
   private disposeAnimation?: () => void;
+  private rows?: GlidingRows;
   private destroyed = false;
 
   ngAfterViewInit(): void {
+    this.rows = createGlidingRows(
+      Array.from(this.pageRoot.nativeElement.querySelectorAll<HTMLElement>('.og-row')),
+      () => this.selectedId() !== null || this.query().trim() !== '' || this.teamOpen() !== null
+    );
     void createContactAnimation(this.pageRoot.nativeElement).then(
       (dispose) => {
         if (this.destroyed) dispose();
@@ -85,6 +96,7 @@ export class OrgStructurePageComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroyed = true;
     this.disposeAnimation?.();
+    this.rows?.dispose();
   }
 
   role(id: string): OrgRole {
@@ -129,9 +141,16 @@ export class OrgStructurePageComponent implements AfterViewInit, OnDestroy {
     this.query.set('');
     window.setTimeout(() => {
       const card = this.card(id);
-      card?.scrollIntoView({ block: this.sheetLayout() ? 'start' : 'center', behavior: this.scrollBehaviour() });
+      // `inline` brings a card in a sideways row (phones) to the middle of it
+      card?.scrollIntoView({ block: this.sheetLayout() ? 'start' : 'center', inline: 'center', behavior: this.scrollBehaviour() });
       card?.focus({ preventScroll: true });
     }, 60);
+  }
+
+  /** From the committee's details: open a body's own hierarchy. */
+  openFlow(flow: TeamFlowId, event: Event): void {
+    const team = ORG_TEAMS.find((t) => t.flow === flow);
+    if (team) this.teamOpen.set({ team, from: event.currentTarget as HTMLElement });
   }
 
   onSearch(event: Event): void {
@@ -142,11 +161,6 @@ export class OrgStructurePageComponent implements AfterViewInit, OnDestroy {
     event.preventDefault();
     const first = this.results()[0];
     if (first) this.show(first.id);
-  }
-
-  /** Roles that report to an office and are not on the main line. */
-  under(officeId: string, siblings: readonly string[]): OrgRole[] {
-    return ORG_ROLES.filter((role) => role.parents.includes(officeId) && !siblings.includes(role.id));
   }
 
   /** From a role's panel down to the list of teams (the panel closes so it does not cover the list). */
@@ -161,6 +175,7 @@ export class OrgStructurePageComponent implements AfterViewInit, OnDestroy {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
+    if (this.teamOpen()) return; // the window over the page handles its own Escape
     if (this.query()) this.query.set('');
     else this.clear();
   }

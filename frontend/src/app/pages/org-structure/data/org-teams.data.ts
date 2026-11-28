@@ -4,19 +4,25 @@
  * `kind` is only for the filter buttons and follows the word the Tamil name ends with
  * (அணி / பாசறை = wing, இயக்கம் = movement, பேரவை = council, மையம் = centre, anything else = other).
  */
+import type { TeamFlowId } from './org-team-hierarchy.data';
+
 export type TeamKind = 'wing' | 'movement' | 'council' | 'centre' | 'other';
 
 export interface OrgTeam {
   readonly kind: TeamKind;
   readonly name: { readonly ta: string; readonly en: string };
+  /** The hierarchy that opens from the team's card; `null` for a body that shows none. */
+  readonly flow: TeamFlowId | null;
+  /** The card carries a caution mark. */
+  readonly caution?: boolean;
 }
 
-const team = (kind: TeamKind, ta: string, en: string): OrgTeam => ({ kind, name: { ta, en } });
+const team = (kind: TeamKind, ta: string, en: string, flow: TeamFlowId | null = 'common'): OrgTeam => ({ kind, name: { ta, en }, flow });
 
 export const ORG_TEAMS: readonly OrgTeam[] = [
   team('other', 'கட்சி', 'Party'),
-  team('wing', 'இளஞ்சிறுத்தைகள் எழுச்சி பாசறை', 'Young Panthers Awakening Wing / Camp'),
-  team('movement', 'மகளிர் விடுதலை இயக்கம்', 'Women’s Liberation Movement'),
+  team('wing', 'இளஞ்சிறுத்தைகள் எழுச்சி பாசறை', 'Young Panthers Awakening Wing / Camp', 'youth'),
+  team('movement', 'மகளிர் விடுதலை இயக்கம்', 'Women’s Liberation Movement', 'women'),
   team('movement', 'உழைக்கும் மக்கள் பண்பாட்டு இயக்கம்', 'Working People’s Cultural Movement'),
   team('wing', 'பொறியாளர் அணி', 'Engineers’ Wing'),
   team('centre', 'விளையாட்டு திறன் மேம்பாட்டு மையம்', 'Sports Skill Development Center'),
@@ -51,7 +57,9 @@ export const ORG_TEAMS: readonly OrgTeam[] = [
   team('wing', 'ஓவியர் அணி', 'Painters’ / Artists’ Wing'),
   team('council', 'தமிழ்தேசிய எழுச்சி பேரவை', 'Tamil Nationalist Awakening Council'),
   team('other', 'சமத்துவ வழக்கறிஞர் சங்கம்', 'Equality Lawyers’ Association'),
-  team('other', 'கருத்தியல் பரப்பு குழு', 'Ideological Propaganda / Outreach Committee')
+  team('other', 'கருத்தியல் பரப்பு குழு', 'Ideological Propaganda / Outreach Committee'),
+  team('movement', 'பழங்குடியினர் விடுதலை இயக்கம்', 'Tribal Liberation Movement'),
+  { ...team('other', 'ஒழுங்கு நடவடிக்கைக் குழு', 'Disciplinary Action Committee', null), caution: true }
 ];
 
 /** The word shown at the top of a team's card. */
@@ -73,6 +81,7 @@ export const TEAM_FILTERS: readonly { readonly id: 'all' | TeamKind; readonly en
 ];
 
 export const TEAM_COPY = {
+  caution: { en: 'Caution', ta: 'எச்சரிக்கை' },
   title: { en: 'Teams and wings', ta: 'அணிகளும் அமைப்புகளும்' },
   lede: { en: 'The bodies through which the party works with different sections of people.', ta: 'பல்வேறு மக்கள் பிரிவினருடன் கட்சி செயல்படும் அமைப்புகள்.' },
   search: { en: 'Find a team', ta: 'அணியைத் தேடுக' },

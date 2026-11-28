@@ -111,6 +111,7 @@ input:focus-visible {
 
   button {
     display: grid;
+    align-content: center;
     gap: 2px;
     width: 100%;
     min-height: 46px;
@@ -225,6 +226,11 @@ input:focus-visible {
   width: 2px;
   height: 28px;
   background: var(--og-line);
+}
+
+// the line down into a same-level row (phones only)
+.og-drop {
+  display: none;
 }
 
 // ---- Cards: one size, the same light gradient style as the team cards below; blue or red by level -------------------------------
@@ -345,16 +351,9 @@ input:focus-visible {
   }
 }
 
-.og-sub {
-  display: grid;
-  justify-items: center;
-
-  &::before {
-    content: '';
-    width: 2px;
-    height: 18px;
-    background: var(--og-line);
-  }
+// five or more offices that do not fit in one line sit in threes (three and two, three and three)
+.og-offices:has(> li:nth-child(5)) {
+  max-width: calc(3 * var(--og-w) + 56px);
 }
 
 // ---- Parallel branches that join again -------------------------------------------------------------------------------------------
@@ -509,6 +508,23 @@ input:focus-visible {
   font-size: 13.5px;
 }
 
+.og-flow-link {
+  min-height: 40px;
+  padding: 7px 12px;
+  border: 1px solid var(--og-line);
+  border-radius: 12px;
+  color: var(--ct-text);
+  background: var(--ct-field);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--ct-accent);
+  }
+}
+
 .og-chips {
   display: flex;
   flex-wrap: wrap;
@@ -516,6 +532,8 @@ input:focus-visible {
 
   button {
     display: grid;
+    align-content: center; // keeps the text in the middle of the box
+    justify-items: center;
     gap: 2px;
     min-height: 40px;
     padding: 7px 12px;
@@ -525,7 +543,7 @@ input:focus-visible {
     background: var(--ct-field);
     font-size: 13px;
     font-weight: 600;
-    text-align: left;
+    text-align: center;
     cursor: pointer;
 
     small {
@@ -658,6 +676,7 @@ input:focus-visible {
     --og-h: 112px;
   }
 
+  // a single office stays under its role
   .og-offices {
     flex-direction: column;
     align-items: center;
@@ -667,22 +686,114 @@ input:focus-visible {
     }
   }
 
-  // one branch after another, each marked by a line down its side
-  .og-branches {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
+  // ---- Roles of the same level: a row that moves slowly sideways (org-rows.ts) -----------------------------------------------
+  .og-drop {
+    display: block;
+    width: 2px;
+    height: 18px;
+    background: var(--og-line);
+  }
 
-    > li,
-    > li:first-child,
+  .og-offices.og-row,
+  .og-branches.og-row {
+    --og-w: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+    margin: 0;
+    padding: 0 4px 16px; // room for the shadow of a chosen card
+    border: 0;
+    border-radius: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    // holding a thumb on a row pauses it, so it must not start a text selection
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    // a row with room to spare sits in the middle
+    > li:first-child {
+      margin-left: auto;
+    }
+
     > li:last-child {
-      padding: 0 0 0 16px;
-      border-left: 2px solid var(--og-line);
+      margin-right: auto;
+    }
 
-      &::before,
+    // about two cards and the edge of the next
+    > li {
+      position: relative;
+      display: grid;
+      flex: 0 0 44%;
+      justify-items: stretch;
+      align-content: start;
+      min-width: 0;
+      max-width: none;
+      padding: 18px 0 0;
+
+      // the same-level line: a bar across the row with a drop into each card
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: calc(50% - 1px);
+        width: 2px;
+        height: 18px;
+        background: var(--og-line);
+      }
+
       &::after {
-        display: none;
+        content: '';
+        position: absolute;
+        top: 0;
+        right: -5px;
+        left: -5px;
+        height: 2px;
+        background: var(--og-line);
+      }
+
+      &:first-child::after {
+        left: 50%;
+      }
+
+      &:last-child::after {
+        right: 50%;
       }
     }
+
+    .og-step + .og-step {
+      justify-items: stretch;
+
+      &::before {
+        justify-self: center;
+      }
+    }
+
+    .og-title {
+      font-size: 13px;
+    }
+
+    .og-scope {
+      font-size: 11px;
+    }
+
+    .og-card:hover,
+    .og-card.is-selected {
+      transform: none;
+    }
+  }
+
+  .og-offices.og-row:has(> li:nth-child(5)) {
+    max-width: none;
   }
 
   .og-join {

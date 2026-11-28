@@ -1,0 +1,27 @@
+<dialog #dialog class="oh" [attr.data-kind]="opened().team.kind" [attr.lang]="language()" aria-labelledby="oh-title" (cancel)="onCancel($event)" (click)="onBackdrop($event)">
+  <div #panel class="oh-panel">
+    <header class="oh-head">
+      <div>
+        <p>{{ copy.heading[language()] }}</p>
+        <h2 id="oh-title">{{ opened().team.name[language()] }}</h2>
+      </div>
+      <button type="button" class="oh-close" (click)="close()" [attr.aria-label]="copy.close[language()]">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </header>
+
+    <div class="oh-body">
+      <ol class="oh-chart">
+        @for (step of steps(); track $index) {
+          <li class="oh-step" [class.is-pair]="step.roles.length > 1" [class.from-second]="step.fromSecond">
+            <ul>
+              @for (role of step.roles; track role.en) {
+                <li><span class="oh-card">{{ role[language()] }}</span></li>
+              }
+            </ul>
+          </li>
+        }
+      </ol>
+    </div>
+  </div>
+</dialog>

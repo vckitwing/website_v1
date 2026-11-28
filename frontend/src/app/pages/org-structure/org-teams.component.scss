@@ -1,4 +1,6 @@
 // Colours and surfaces come from the page (--ct-* and --og-* variables), so both themes work.
+@use './org-kinds';
+
 :host {
   display: block;
 }
@@ -24,38 +26,6 @@
 .tm-summary {
   margin: 18px 0 14px;
   font-size: 13.5px;
-}
-
-// One colour for each type, mixed from the website's standard colours (styles.scss): a light gradient for the card,
-// a strong shade for the tag, the filter dot and the selected filter. The cards look the same in both themes.
-[data-kind='wing'] {
-  --tm-from: color-mix(in srgb, var(--vck-red) 20%, var(--vck-white));
-  --tm-to: color-mix(in srgb, var(--vck-red) 46%, var(--vck-white));
-  --tm-accent: var(--vck-red-deep);
-}
-
-[data-kind='movement'] {
-  --tm-from: color-mix(in srgb, var(--vck-blue) 18%, var(--vck-white));
-  --tm-to: color-mix(in srgb, var(--vck-blue) 50%, var(--vck-white));
-  --tm-accent: var(--vck-blue-deep);
-}
-
-[data-kind='council'] {
-  --tm-from: color-mix(in srgb, var(--vck-red-deep) 5%, var(--vck-white));
-  --tm-to: color-mix(in srgb, var(--vck-red-deep) 24%, var(--vck-white));
-  --tm-accent: color-mix(in srgb, var(--vck-red-deep) 70%, var(--vck-ink));
-}
-
-[data-kind='centre'] {
-  --tm-from: color-mix(in srgb, var(--vck-blue-bright) 14%, var(--vck-white));
-  --tm-to: color-mix(in srgb, var(--vck-blue-bright) 50%, var(--vck-white));
-  --tm-accent: color-mix(in srgb, var(--vck-blue-bright) 45%, var(--vck-ink));
-}
-
-[data-kind='other'] {
-  --tm-from: var(--vck-white);
-  --tm-to: color-mix(in srgb, var(--vck-ink) 17%, var(--vck-white));
-  --tm-accent: color-mix(in srgb, var(--vck-ink) 68%, var(--vck-blue-soft));
 }
 
 button {
@@ -175,6 +145,7 @@ input:focus-visible {
   list-style: none;
 
   li {
+    position: relative;
     display: flex;
     min-height: 180px;
     flex-direction: column;
@@ -203,8 +174,73 @@ input:focus-visible {
   }
 }
 
+.tm-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+// the button's hit area covers the whole card
+.tm-open {
+  padding: 0;
+  border: 0;
+  color: var(--vck-ink);
+  background: none;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 16px;
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::after {
+      outline: 3px solid var(--vck-red);
+      outline-offset: 3px;
+    }
+  }
+}
+
+// a body to be careful with: a red edge and a warning sign
+.tm-grid li.is-caution {
+  border: 2px solid var(--vck-red-deep);
+}
+
+.tm-caution {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px 3px 9px;
+  border-radius: 999px;
+  color: var(--vck-white);
+  background: var(--vck-red-deep);
+  font-size: 12px;
+  font-weight: 700;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
 .tm-kind {
-  align-self: flex-end;
+  margin-left: auto;
   padding: 3px 12px;
   border-radius: 999px;
   color: var(--vck-white);

@@ -22,10 +22,6 @@
       @if (item.scope; as scope) {
         <span class="og-scope">{{ scope[language] }}</span>
       }
-      @if (item.members; as members) {
-        <!-- the names are listed in the details panel, so every card keeps the same size -->
-        <span class="og-tag">{{ members.length }} {{ copy.bodies[language] }}</span>
-      }
       @if (item.sameCadre) {
         <span class="og-tag">{{ copy.sameCadre[language] }}</span>
       }
@@ -76,22 +72,21 @@
                 <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ id: tier.id, main: true }" />
 
                 @if (tier.offices; as offices) {
-                  <ul class="og-offices" [id]="'offices-' + tier.id" [class.is-single]="offices.length === 1">
+                  @if (offices.length > 1) {
+                    <div class="og-drop" aria-hidden="true"></div>
+                  }
+                  <ul class="og-offices" [id]="'offices-' + tier.id" [class.is-single]="offices.length === 1" [class.og-row]="offices.length > 1">
                     @for (office of offices; track office) {
                       <li>
                         <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ id: office, main: false }" />
-                        @for (sub of under(office, offices); track sub.id) {
-                          <div class="og-sub">
-                            <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ id: sub.id, main: false }" />
-                          </div>
-                        }
                       </li>
                     }
                   </ul>
                 }
               </div>
             } @else {
-              <ul class="og-branches">
+              <div class="og-drop" aria-hidden="true"></div>
+              <ul class="og-branches og-row">
                 @for (column of tier.columns; track column[0]) {
                   <li>
                     @for (id of column; track id) {
@@ -131,7 +126,13 @@
           <h3>{{ copy.includes[language] }}</h3>
           <ul class="og-plain">
             @for (member of members; track member.en) {
-              <li>{{ member[language] }}</li>
+              <li>
+                @if (member.flow; as flow) {
+                  <button type="button" class="og-flow-link" aria-haspopup="dialog" (click)="openFlow(flow, $event)">{{ member[language] }} ›</button>
+                } @else {
+                  {{ member[language] }}
+                }
+              </li>
             }
           </ul>
         }
@@ -181,6 +182,10 @@
   </div>
 
   <div class="og-teams" id="level-teams">
-    <vck-org-teams [language]="language" />
+    <vck-org-teams [language]="language" (openTeam)="teamOpen.set($event)" />
   </div>
+
+  @if (teamOpen(); as opened) {
+    <vck-org-team-overlay [language]="language" [opened]="opened" (closed)="teamOpen.set(null)" />
+  }
 </div>
