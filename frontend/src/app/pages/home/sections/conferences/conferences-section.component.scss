@@ -10,6 +10,9 @@
   --conf-gap: clamp(10px, 1.1vw, 16px);
   --conf-pad: clamp(18px, 5vw, 72px);
   position: relative;
+  // Overflow .hero-shell's side padding equally on both sides (full window width), like the history section.
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
   overflow: clip;
   padding: clamp(72px, 12vh, 132px) var(--conf-pad) clamp(72px, 10vh, 120px);
   color: var(--conf-ink);

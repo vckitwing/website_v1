@@ -13,7 +13,7 @@ const ROW_SPEED = [24, 19, 29] as const;
 /**
  * The conferences "spread rows" motion: a single card sits in the middle of the stage, then the cards fan out sideways,
  * split into three rows, and the rows drift on in alternating directions. Plays once when the section comes into view;
- * the drift pauses when the section is off screen, while the pointer rests on it, and from the user's switch.
+ * the drift pauses when the section is off screen and from the user's switch.
  */
 export async function createConferencesAnimation(root: HTMLElement): Promise<ConferencesAnimation> {
   const { ScrollTrigger } = await import('gsap/ScrollTrigger');
@@ -27,11 +27,12 @@ export async function createConferencesAnimation(root: HTMLElement): Promise<Con
   }
 
   let userPaused = false;
-  let hoverPaused = false;
   let inView = false;
   const marquee: gsap.core.Tween[] = [];
+  // The rows keep drifting under the pointer (they span the whole window, so a hover pause made them look stuck);
+  // the visible Pause button stops them.
   const applyPause = (): void => {
-    const paused = userPaused || hoverPaused || !inView;
+    const paused = userPaused || !inView;
     marquee.forEach((tween) => {
       gsap.to(tween, { timeScale: paused ? 0 : 1, duration: 0.5, ease: 'power1.out', overwrite: true });
     });
@@ -117,27 +118,11 @@ export async function createConferencesAnimation(root: HTMLElement): Promise<Con
       }
     });
 
-    const onEnter = (): void => {
-      hoverPaused = true;
-      applyPause();
-    };
-    const onLeave = (): void => {
-      hoverPaused = false;
-      applyPause();
-    };
-    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    if (finePointer) {
-      stage.addEventListener('pointerenter', onEnter);
-      stage.addEventListener('pointerleave', onLeave);
-    }
-
     return () => {
       enter.kill();
       visibility.kill();
       intro.kill();
       marquee.splice(0).forEach((tween) => tween.kill());
-      stage.removeEventListener('pointerenter', onEnter);
-      stage.removeEventListener('pointerleave', onLeave);
       gsap.set(tracks, { clearProps: 'transform' });
       gsap.set(tiles.flat(), { clearProps: 'transform,opacity,visibility,zIndex' });
     };
@@ -175,8 +160,9 @@ export async function createConferencesAnimation(root: HTMLElement): Promise<Con
     keep(
       registerStarLeg(root, {
         id: 'conferences-to-footer',
-        // leaves a moment after it has landed, and arrives when the footer's star is ~55% down the screen
-        start: () => confCentre() - window.innerHeight * 0.38,
+        // stays above the heading while the conferences are read, and only leaves once the visitor moves on to the footer
+        // (this section's bottom reaches the bottom of the screen); arrives when the footer's star is ~55% down the screen
+        start: () => root.getBoundingClientRect().bottom + window.scrollY - window.innerHeight,
         end: () => {
           const target = footerStar.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.55;
           return Math.min(target, document.documentElement.scrollHeight - window.innerHeight - 4);

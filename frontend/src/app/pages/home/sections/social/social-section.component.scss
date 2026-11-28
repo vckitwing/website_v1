@@ -9,6 +9,9 @@
   --soc-tile: clamp(120px, 11vw, 156px);
   --soc-gap: clamp(14px, 2vw, 28px);
   position: relative;
+  // Overflow .hero-shell's side padding equally on both sides (full window width), like the history section.
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
   overflow: clip;
   padding: clamp(72px, 11vh, 120px) clamp(18px, 5vw, 72px) clamp(80px, 12vh, 132px);
   color: var(--soc-ink);
@@ -78,7 +81,8 @@
 
 .soc-list {
   position: relative;
-  z-index: 1;
+  // Above the page's flying star (.story-star-journey, z-index 90): it lands BEHIND the tiles, into .soc-star.
+  z-index: 91;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
