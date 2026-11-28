@@ -1,4 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, inject, signal, ViewChild } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, inject, signal, ViewChild, PLATFORM_ID } from '@angular/core';
 import { SiteContentService } from '../../../../shared/content/site-content.service';
 import { createHistoryAnimation } from './history-animation';
 
@@ -10,6 +11,7 @@ import { createHistoryAnimation } from './history-animation';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HistorySectionComponent implements AfterViewInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   @Input({ required: true }) language: 'en' | 'ta' = 'en';
   @ViewChild('sectionRoot', { static: true }) private sectionRoot!: ElementRef<HTMLElement>;
 
@@ -20,6 +22,7 @@ export class HistorySectionComponent implements AfterViewInit, OnDestroy {
   private destroyed = false;
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
     void createHistoryAnimation(this.sectionRoot.nativeElement, this.milestones.length, (index) => {
       if (this.activeIndex() !== index) this.activeIndex.set(index);
     }).then(

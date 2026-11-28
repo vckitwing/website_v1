@@ -1,5 +1,5 @@
-import { NgTemplateOutlet } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild, inject, PLATFORM_ID } from '@angular/core';
 import { SOCIAL_LINKS } from './data/social-links';
 import { createSocialAnimation } from './social-animation';
 
@@ -12,6 +12,7 @@ import { createSocialAnimation } from './social-animation';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SocialSectionComponent implements AfterViewInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   @Input({ required: true }) language: 'en' | 'ta' = 'en';
   @ViewChild('sectionRoot', { static: true }) private sectionRoot!: ElementRef<HTMLElement>;
 
@@ -21,6 +22,7 @@ export class SocialSectionComponent implements AfterViewInit, OnDestroy {
   private destroyed = false;
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
     void createSocialAnimation(this.sectionRoot.nativeElement).then(
       (dispose) => {
         if (this.destroyed) {

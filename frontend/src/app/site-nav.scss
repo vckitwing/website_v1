@@ -464,3 +464,16 @@ $compact-width-ta: 1520px;
     animation: none;
   }
 }
+
+// the language switch is a real link (to the same page in the other language), styled like the theme button
+.hero-shell a.language {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.opening-screen.is-skipped {
+  display: none;
+}
+

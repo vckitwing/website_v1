@@ -1,4 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, Input, OnDestroy, signal, ViewChild } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, Input, OnDestroy, signal, ViewChild, PLATFORM_ID } from '@angular/core';
 import { createContactAnimation } from '../../pages/contact/contact-animation';
 import { SiteContentService } from '../content/site-content.service';
 import { PublishedEdition, PublishedPublication } from '../content/publication.types';
@@ -20,6 +21,7 @@ import { BOOK_COPY, BOOK_SLUG } from './featured-book.data';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FeaturedBookComponent implements AfterViewInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   @Input({ required: true }) language: 'en' | 'ta' = 'en';
   @ViewChild('pageRoot') private pageRoot?: ElementRef<HTMLElement>;
   @ViewChild('bookCanvas') private bookCanvas?: ElementRef<HTMLCanvasElement>;
@@ -45,6 +47,7 @@ export class FeaturedBookComponent implements AfterViewInit, OnDestroy {
   private readonly reduceMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
     const root = this.pageRoot?.nativeElement;
     if (!root) return;
     void createContactAnimation(root).then(

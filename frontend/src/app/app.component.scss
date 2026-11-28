@@ -22,6 +22,7 @@
 .brand-mark { width:42px; height:42px; flex:0 0 42px; display:block; object-fit:cover; border:1px solid rgba(39,133,223,.75); border-radius:50%; background:#fff; position:relative; }
 .brand-copy { display:grid; align-items:start; gap:3px; text-align:left; }.brand-copy strong { font:600 17px/1 'Montserrat','Noto Sans Tamil',sans-serif; letter-spacing:.12em; }.brand-copy small { font-size:8px; letter-spacing:.13em; color:#a5a79d; }
 .top-actions { display:flex; align-items:center; gap:8px; }
+.language { padding:0 7px; }
 .language,.theme-toggle { min-height:44px; border:1px solid rgba(242,239,223,.2); border-radius:2px; color:#dbd8ca; background:rgba(244,247,252,.025); font:500 11px/1 'Montserrat','Noto Sans Tamil',sans-serif; letter-spacing:.08em; padding:0 14px; cursor:pointer; transition:background .2s,border-color .2s,color .2s; }
 .language:hover,.theme-toggle:hover { background:rgba(244,247,252,.08); border-color:rgba(209,165,108,.65); }
 .theme-toggle { width:44px; padding:0; font-size:20px; color:var(--vck-red); overflow:hidden; }

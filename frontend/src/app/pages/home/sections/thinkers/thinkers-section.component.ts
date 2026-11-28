@@ -1,4 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild, inject, PLATFORM_ID } from '@angular/core';
 import { THINKERS } from './data/thinkers.data';
 import { createThinkersAnimation } from './thinkers-animation';
 
@@ -10,6 +11,7 @@ import { createThinkersAnimation } from './thinkers-animation';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ThinkersSectionComponent implements AfterViewInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   @Input({ required: true }) language: 'en' | 'ta' = 'en';
   @ViewChild('sectionRoot', { static: true }) private sectionRoot!: ElementRef<HTMLElement>;
 
@@ -19,6 +21,7 @@ export class ThinkersSectionComponent implements AfterViewInit, OnDestroy {
   private destroyed = false;
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
     void createThinkersAnimation(this.sectionRoot.nativeElement).then(
       (dispose) => {
         if (this.destroyed) {

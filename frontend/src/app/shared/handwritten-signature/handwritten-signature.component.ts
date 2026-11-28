@@ -1,4 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, QueryList, ViewChild, ViewChildren, inject, PLATFORM_ID } from '@angular/core';
 import { gsap } from 'gsap';
 import { SIGNATURE_FILL_PATH, SIGNATURE_STROKES, SIGNATURE_VIEWBOX, type SignatureGroup } from './signature-strokes';
 
@@ -27,6 +28,7 @@ let nextId = 0;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HandwrittenSignatureComponent implements AfterViewInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   /** Accessible name for the signature image. */
   @Input() label = 'Handwritten signature';
   /** 'viewport' writes when scrolled into view; 'manual' waits for `play()` (e.g. until an intro has finished). */
@@ -48,6 +50,7 @@ export class HandwrittenSignatureComponent implements AfterViewInit, OnDestroy {
   private timeline?: gsap.core.Timeline;
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
     const paths = this.penStrokes.map((ref) => ref.nativeElement);
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || typeof IntersectionObserver === 'undefined') {

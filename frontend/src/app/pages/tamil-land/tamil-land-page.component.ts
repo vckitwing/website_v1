@@ -1,4 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, inject, Input, OnDestroy, signal, ViewChild } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, inject, Input, OnDestroy, signal, ViewChild, PLATFORM_ID } from '@angular/core';
 import { SiteContentService } from '../../shared/content/site-content.service';
 import { PublishedEdition, PublishedPublication } from '../../shared/content/publication.types';
 import { PageReaderComponent } from '../../shared/reader/page-reader.component';
@@ -22,6 +23,7 @@ const PAGE_SIZE = 8;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TamilLandPageComponent implements AfterViewInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   @Input({ required: true }) language: 'en' | 'ta' = 'en';
   @ViewChild('pageRoot', { static: true }) private pageRoot!: ElementRef<HTMLElement>;
 
@@ -66,6 +68,7 @@ export class TamilLandPageComponent implements AfterViewInit, OnDestroy {
   private destroyed = false;
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
     void createContactAnimation(this.pageRoot.nativeElement).then(
       (dispose) => {
         if (this.destroyed) dispose();

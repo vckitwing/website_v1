@@ -1,4 +1,10 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, signal } from '@angular/core';
+import { isPlatformBrowser, Location } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnDestroy, OnInit, PLATFORM_ID, QueryList, ViewChild, ViewChildren, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs';
+import { Language, otherLanguage, PageName, pathFor, readAddress } from './routing/pages';
+import { SeoService } from './seo/seo.service';
 import { gsap } from 'gsap';
 import { hasCompletedHeroPortraitReveal, HeroPortraitReveal } from './pages/home/hero/hero-portrait-reveal';
 import { createHeroFlagHandoff } from './pages/home/hero/hero-star-handoff';
@@ -20,7 +26,6 @@ import { HandwrittenSignatureComponent } from '@shared/handwritten-signature/han
 import { ThinkersSectionComponent } from './pages/home/sections/thinkers/thinkers-section.component';
 import { ThemeSwitchTransitionComponent } from './shared/theme-switch-transition/theme-switch-transition.component';
 
-type PageName = 'home' | 'contact' | 'donate' | 'tamil-land' | 'amaipai-thiralvom' | 'org-structure';
 /** Where a menu item goes: another page, or somewhere on the home page (`hash` is an element id or a section name). */
 type NavTarget = { page: PageName; hash?: string };
 type NavItem = { ta: string; en: string; go?: NavTarget };
@@ -61,6 +66,13 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('heroEyebrow', { static: true }) private heroEyebrowRef!: ElementRef<HTMLElement>;
   @ViewChild('heroHeadline', { static: true }) private heroHeadlineRef!: ElementRef<HTMLParagraphElement>;
   @ViewChildren('heroHeadlineLine') private heroHeadlineLineRefs!: QueryList<ElementRef<HTMLElement>>;
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly location = inject(Location);
+  private readonly router = inject(Router);
+  private readonly seo = inject(SeoService);
+  private readonly destroyRef = inject(DestroyRef);
+  /** The page and language of the address the visit started on. */
+  private readonly start = readAddress(this.location.path(true));
   readonly slogans = [
     { ta: 'அடங்க மறு, அத்து மீறு, திமிறி எழு, திருப்பி அடி', en: 'Refuse to submit, transgress the limits, rise up in defiance, strike back.' },
     { ta: 'விழிப்பாய் இரு! நெருப்பாய் எழு!', en: 'Stay alert! Rise up like fire!' },
@@ -84,7 +96,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly slides = [0, 1, 2, 3] as const;
   readonly activeSlide = signal(0);
   readonly activeSlogan = computed(() => this.sloganDeck[this.activeSlide()] ?? 0);
-  readonly language = signal<'en' | 'ta'>('en');
+  readonly language = signal<Language>(this.start.language);
   readonly formattedSlogan = computed(() => this.slogans[this.activeSlogan()][this.language()].replace(/([!;])\s*/g, '$1\n'));
   readonly formattedSloganLines = computed<SloganLine[]>(() => {
     const text = this.formattedSlogan();
@@ -116,10 +128,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly theme = signal<'dark' | 'light'>(this.readSavedTheme());
   readonly openNavigation = signal<string | null>(null);
   readonly mobileNavigationOpen = signal(false);
-  /** Folder the app is served from (`/` locally, `/website_v1/` on GitHub Pages), always with a trailing slash. */
-  private readonly basePath = new URL(document.baseURI).pathname.replace(/\/?$/, '/');
-  private readonly homeTitle = document.title;
-  readonly page = signal<PageName>(this.readPage());
+  readonly page = signal<PageName>(this.start.page);
   readonly navigation: NavSection[] = [
     { id: 'home', ta: 'முகப்பு', en: 'Home', go: { page: 'home', hash: 'home' }, items: [] },
     {
@@ -156,7 +165,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     { id: 'contact', ta: 'தொடர்புக்கு', en: 'Contact', go: { page: 'contact' }, items: [] },
     { id: 'donate', ta: 'நன்கொடை', en: 'Donate Us', go: { page: 'donate' }, items: [] }
   ];
-  readonly openingActive = signal(true);
+  /** A visit that starts on a sub-page has no intro: its flight to the hero would have nothing to land on. */
+  readonly skipIntro = this.start.page !== 'home';
+  readonly openingActive = signal(this.start.page === 'home');
   readonly portraitRevealPending = signal(true);
   private headline3d?: HeroTypography3D;
   private portrait3d?: HeroPortrait3D;
@@ -171,8 +182,15 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private heroTextTimeline?: gsap.core.Timeline;
   private heroAnimationFrame?: number;
 
+  constructor() {
+    this.seo.apply(this.page(), this.language());
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd), takeUntilDestroyed(this.destroyRef))
+      .subscribe((event) => this.applyAddress(event.urlAfterRedirects));
+  }
+
   ngOnInit(): void {
-    document.title = this.titleFor(this.page());
+    if (!this.isBrowser) return; // everything below needs a real screen
     this.portraitRevealPending.set(!hasCompletedHeroPortraitReveal());
     // The relief portrait is a progressive enhancement: skipped entirely for reduced motion (the flat photo stays).
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -217,6 +235,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   };
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
     const hero = this.heroSectionRef.nativeElement;
     hero.addEventListener('touchstart', this.onSwipeStart, { passive: true });
     hero.addEventListener('touchend', this.onSwipeEnd, { passive: true });
@@ -250,18 +269,23 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       // The hero is now visible: let the president sign it (small beat after the intro settles).
       this.signatureTimer = window.setTimeout(() => this.heroSignatureRef.play(), 900);
     });
-    // Opening the site straight on a sub-page skips the intro (its flight to the hero would have nothing to land on).
-    this.opening.play(window.matchMedia('(prefers-reduced-motion: reduce)').matches || this.page() !== 'home');
+    this.opening.play(window.matchMedia('(prefers-reduced-motion: reduce)').matches || this.skipIntro);
 
     void createHeroFlagHandoff(this.heroAnchorRef.nativeElement).then((cleanup) => {
       this.handoffCleanup = cleanup;
     }, (error: unknown) => console.error('Unable to initialize the hero-to-flag star handoff.', error));
   }
 
-  toggleLanguage(): void {
-    this.language.update((value) => value === 'en' ? 'ta' : 'en');
-    this.headline3d?.setLanguage(this.language());
-    this.animateSlogan();
+  /** The address of this page in the other language. */
+  languageHref(): string {
+    return this.location.prepareExternalUrl(pathFor(this.page(), otherLanguage(this.language())));
+  }
+
+  toggleLanguage(event: MouseEvent): void {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    const hash = this.location.path(true).match(/#.*$/)?.[0] ?? '';
+    void this.router.navigateByUrl(pathFor(this.page(), otherLanguage(this.language())) + hash);
   }
 
   /** Splits a slogan line into words, keeping a highlighted word whole even when punctuation follows it. */
@@ -370,17 +394,11 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.openNavigation.set(null);
   }
 
-  // ---- Pages (the History API; the Angular router is not used) ---------------------------------------------------------
+  // ---- Pages: the Angular router owns the address; this component shows the page ------------------------------------------
 
-  private readPage(): PageName {
-    const path = location.pathname.startsWith(this.basePath) ? location.pathname.slice(this.basePath.length) : location.pathname.replace(/^\//, '');
-    const name = path.replace(/\/$/, '');
-    return name === 'contact' || name === 'donate' || name === 'tamil-land' || name === 'amaipai-thiralvom' || name === 'org-structure' ? name : 'home';
-  }
-
-  /** Real address of a target, so links open in a new tab, copy and bookmark properly. */
+  /** Real address of a target, so links open in a new tab, copy and bookmark properly (and search engines follow them). */
   hrefFor(target: NavTarget): string {
-    return this.basePath + (target.page === 'home' ? '' : target.page) + (target.hash ? `#${target.hash}` : '');
+    return this.location.prepareExternalUrl(pathFor(target.page, this.language())) + (target.hash ? `#${target.hash}` : '');
   }
 
   /** Click handler for the menu links: plain clicks navigate inside the app, modified clicks keep the browser's behaviour. */
@@ -392,29 +410,29 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   go(target: NavTarget): void {
-    const url = this.hrefFor(target);
-    if (location.pathname + location.hash !== url) history.pushState(null, '', url);
-    this.applyLocation();
+    const url = pathFor(target.page, this.language()) + (target.hash ? `#${target.hash}` : '');
+    const here = this.location.path(true) || '/';
+    // choosing the place you are already on still scrolls back to it
+    if ((here.startsWith('/') ? here : `/${here}`) === url) void this.settleAfterNavigation(false);
+    else void this.router.navigateByUrl(url);
   }
 
-  private titleFor(page: PageName): string {
-    const ta = this.language() === 'ta';
-    if (page === 'contact') return ta ? 'தொடர்புக்கு — விசிக' : 'Contact — VCK';
-    if (page === 'donate') return ta ? 'நன்கொடை — விசிக' : 'Donate — VCK';
-    if (page === 'tamil-land') return ta ? 'நமது தமிழ்மண் — விசிக' : 'Our Tamil Land — VCK';
-    if (page === 'amaipai-thiralvom') return ta ? 'அமைப்பாய்த் திரள்வோம் — விசிக' : 'Amaippai Thiralvom — VCK';
-    if (page === 'org-structure') return ta ? 'அமைப்பு வரைபடம் — விசிக' : 'Org View — VCK';
-    return this.homeTitle;
-  }
-
-  @HostListener('window:popstate')
-  applyLocation(): void {
-    const next = this.readPage();
-    const changed = next !== this.page();
-    this.page.set(next);
-    document.title = this.titleFor(next);
+  /** The address changed (a link, the language button, back / forward). */
+  private applyAddress(url: string): void {
+    const next = readAddress(url);
+    const pageChanged = next.page !== this.page();
+    const languageChanged = next.language !== this.language();
+    this.page.set(next.page);
+    this.language.set(next.language);
+    this.seo.apply(next.page, next.language);
+    if (!this.isBrowser) return;
+    if (languageChanged) {
+      this.headline3d?.setLanguage(next.language);
+      this.animateSlogan();
+      if (!pageChanged) return; // the reader stays where they are
+    }
     // Give the view a moment to swap, then re-measure everything that was hidden (scroll triggers, 3D canvases) and scroll.
-    window.setTimeout(() => void this.settleAfterNavigation(changed), 80);
+    window.setTimeout(() => void this.settleAfterNavigation(pageChanged), 80);
   }
 
   private async settleAfterNavigation(changed: boolean): Promise<void> {
@@ -540,11 +558,14 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private readSavedTheme(): 'dark' | 'light' {
+    if (!this.isBrowser) return 'dark';
     try { return localStorage.getItem('vck-theme') === 'light' ? 'light' : 'dark'; }
     catch { return 'dark'; }
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
+    if (!this.isBrowser) return;
     this.heroSectionRef.nativeElement.removeEventListener('touchstart', this.onSwipeStart);
     this.heroSectionRef.nativeElement.removeEventListener('touchend', this.onSwipeEnd);
     this.destroyed = true;

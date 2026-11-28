@@ -1,5 +1,5 @@
-import { NgTemplateOutlet } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, Input, OnDestroy, signal, ViewChild } from '@angular/core';
+import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, Input, OnDestroy, signal, ViewChild, inject, PLATFORM_ID } from '@angular/core';
 import { createContactAnimation } from '../contact/contact-animation';
 import { ORG_COPY, ORG_LEVELS, ORG_ROLES, OrgRole } from './data/org-structure.data';
 import { TeamFlowId } from './data/org-team-hierarchy.data';
@@ -28,6 +28,7 @@ const MAX_RESULTS = 8;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrgStructurePageComponent implements AfterViewInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   @Input({ required: true }) language: 'en' | 'ta' = 'en';
   @ViewChild('pageRoot', { static: true }) private pageRoot!: ElementRef<HTMLElement>;
 
@@ -80,6 +81,7 @@ export class OrgStructurePageComponent implements AfterViewInit, OnDestroy {
   private destroyed = false;
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
     this.rows = createGlidingRows(
       Array.from(this.pageRoot.nativeElement.querySelectorAll<HTMLElement>('.og-row')),
       () => this.selectedId() !== null || this.query().trim() !== '' || this.teamOpen() !== null

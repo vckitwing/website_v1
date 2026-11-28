@@ -92,6 +92,8 @@ export class SiteContentService {
   source: 'built-in' | 'published' = 'built-in';
 
   async load(): Promise<void> {
+    // while the HTML is being built there is nothing to fetch from: the built-in content is used
+    if (typeof window === 'undefined') return;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), LOAD_TIMEOUT_MS);
     try {

@@ -1,4 +1,5 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, inject, signal, ViewChild } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, inject, signal, ViewChild, PLATFORM_ID } from '@angular/core';
 import { SiteContentService } from '../../../../shared/content/site-content.service';
 import type { Conference } from './data/conference.types';
 import { createConferencesAnimation, type ConferencesAnimation } from './conferences-animation';
@@ -13,6 +14,7 @@ const ROWS = 3;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ConferencesSectionComponent implements AfterViewInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   @Input({ required: true }) language: 'en' | 'ta' = 'en';
   @ViewChild('sectionRoot', { static: true }) private sectionRoot!: ElementRef<HTMLElement>;
 
@@ -33,6 +35,7 @@ export class ConferencesSectionComponent implements AfterViewInit, OnDestroy {
   private destroyed = false;
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
     void createConferencesAnimation(this.sectionRoot.nativeElement).then(
       (animation) => {
         if (this.destroyed) {
